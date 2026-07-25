@@ -17,9 +17,10 @@
   - DADO um débito, pendência ou guarda novo QUANDO registrado ENTÃO entra no `DEBT.md` da raiz como linha `DT-NNN` (próximo número livre — numeração global, nunca reutilizada) com natureza, descrição, origem, data de abertura, gatilho de correção e status
   - DADO um item quitado QUANDO a correção mergeia ENTÃO o status do item muda para quitado, com data — a linha nunca é apagada (a trajetória aberto→quitado é o registro da evolução)
   - DADO um tipo de projeto que recebe `docs/adrs/` na matriz de detection.md QUANDO o scaffold do projeto-init roda ENTÃO cria também `DEBT.md` a partir do template da skill, e só se não existir
-- R19 (delta-007) — STATE.md é diário de bordo, não acumulador de estado.
-  - DADO o template STATE.md do projeto-init QUANDO o scaffold cria o arquivo ENTÃO o formato tem as seções "Agora", "Feito recentemente", "Problemas atuais" e "Próximos passos imediatos", com janela rolante declarada e a regra de merge "união das verdades" mantida
-  - DADO conteúdo que tem dono próprio (as-built → TRUTH.md/README, débito/pendência/lição → DEBT.md, decisão com renúncia → ADR, histórico → CHANGELOG) QUANDO ele surgir no STATE.md ENTÃO é movido para o dono no mesmo bloco de trabalho e o STATE.md apenas referencia
+- R19 (delta-010) — HANDOFF.md é diário de bordo, não acumulador de estado.
+  - DADO o template HANDOFF.md do projeto-init QUANDO o scaffold cria o arquivo ENTÃO o formato tem as seções "Agora", "Feito recentemente", "Problemas atuais" e "Próximos passos imediatos", com janela rolante declarada e a regra de merge "união das verdades" mantida
+  - DADO conteúdo que tem dono próprio (as-built → TRUTH.md/README, débito/pendência/lição → DEBT.md, decisão com renúncia → ADR, histórico → CHANGELOG) QUANDO ele surgir no HANDOFF.md ENTÃO é movido para o dono no mesmo bloco de trabalho e o HANDOFF.md apenas referencia
+  - DADO as referências ativas do framework (CLAUDE.md, canonical-rules.md, detection.md, deps.toml, README, template) QUANDO nomeiam o diário de bordo ENTÃO usam `HANDOFF.md`, não `STATE.md`, e não há dois donos de "onde paramos" — arquivos imutáveis (`specs/_archive/**`, ADRs Accepted, CHANGELOG lançado) preservam o nome histórico (guarda DT-010)
 
 ## Infraestrutura
 
@@ -82,8 +83,10 @@
 
 ## Handoff de sessão
 
-- R20 (delta-008) — a skill handoff compacta a sessão nos registros com dono.
-  - DADO uma sessão de trabalho neste repositório ou num projeto do framework QUANDO o usuário invoca `/sdd-iuri:handoff [foco da próxima sessão]` ENTÃO o `STATE.md` (diário de bordo) é atualizado nas quatro seções — Agora, Feito recentemente, Problemas atuais, Próximos passos imediatos — com o foco informado refletido nos próximos passos
+- R20 (delta-010) — a skill handoff compacta a sessão nos registros com dono.
+  - DADO uma sessão de trabalho neste repositório ou num projeto do framework QUANDO o usuário invoca `/sdd-iuri:handoff [foco da próxima sessão]` ENTÃO o `HANDOFF.md` (diário de bordo) é atualizado nas quatro seções — Agora, Feito recentemente, Problemas atuais, Próximos passos imediatos — com o foco informado refletido nos próximos passos
+  - DADO o handoff fechado QUANDO ele imprime o prompt de retomada ENTÃO é uma linha única apontando o `HANDOFF.md` com o foco (variante multi-repo: os `HANDOFF.md` dos repos, âncora primeiro)
+  - DADO um projeto com `STATE.md` legado e sem `HANDOFF.md` QUANDO o handoff roda ENTÃO ele renomeia `STATE.md` → `HANDOFF.md` (`git mv`) antes de escrever, sem deixar os dois arquivos coexistirem
   - DADO débito, pendência ou lição descoberto na sessão e ainda sem registro QUANDO o handoff roda ENTÃO ele entra no `DEBT.md` (linha `DT-NNN` ou seção Lições) antes de o diário ser fechado
   - DADO uma delta em curso em `specs/NNN-*/` QUANDO o handoff roda ENTÃO o diário cita a delta, a fase em que parou e o veredito do último gate
   - DADO conteúdo já registrado em spec/plan/ADR/DEBT/CHANGELOG/commit QUANDO o handoff escreve ENTÃO referencia por caminho/ID em vez de duplicar, e segredo/PII não entra no diário

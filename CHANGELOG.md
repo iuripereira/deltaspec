@@ -8,11 +8,13 @@ O formato segue [Keep a Changelog 1.0.0](https://keepachangelog.com/pt-BR/1.0.0/
 
 ## [Não lançado]
 
+## [0.6.0] - 2026-07-24
+
 ### Adicionado
 - `doc-entregavel`: **Sumário automático no formato de contrato** (título pontilhado até o nº de página, subseções indentadas) em página própria após a capa, nos dois formatos. No pdf, os números de página vêm de **duas passadas de render** — a 1ª mede a página física de cada título (h1–h3, extensão `toc` do python-markdown) extraindo texto com pdftotext/pypdf em **busca reversa** (ignora as ocorrências dos títulos no próprio Sumário); sem extrator, sai sem números com aviso. No docx, campo `TOC` nativo com `updateFields` — o próprio Word gera pontilhado e paginação ao abrir. Selftest cobre campo no docx e nº de página no pdf.
 - `doc-entregavel`: **corpo com linhas justificadas** por padrão nos dois formatos (títulos, tabelas e código permanecem à esquerda); pdf com hifenização pt-BR (`hyphens: auto` + `lang='pt-BR'`), docx justificando só parágrafos de corpo sem alinhamento explícito (capa e células de tabela intactas). Selftest cobre a justificação.
 - `eu-tenho-tdah`: skill de estilo de escrita pessoal do Iuri (baseado em ayghri/i-have-adhd), fora do ciclo de delta specs — documentada no README.
-- `handoff`: passo 5 — ao fechar a sessão, a skill imprime o **prompt de retomada** ("Leia o STATE.md… Foco: <primeiro próximo passo>"), com variante para workspace multi-repo. O prompt referencia os registros, nunca os resume.
+- `handoff`: passo 5 — ao fechar a sessão, a skill imprime o **prompt de retomada** ("Leia o HANDOFF.md… Foco: <primeiro próximo passo>"), com variante para workspace multi-repo. O prompt referencia os registros, nunca os resume.
 
 ### Adicionado
 - **Stack de diagramas completo com vínculo normativo categoria → ferramenta** (ADR-0009, ainda Proposed): tabela de categorias no ADR ganha Excalidraw (diagramas explicativos; alternativa a D2 na arquitetura visual moderna) e a regra "a ferramenta segue a categoria — não reaproveite diagrama de outra categoria" (modo de falha observado no piloto IMEX: tudo diagramado em Mermaid por inércia). `doc-profile.yaml` (template) ganha a ferramenta `excalidraw`, a categoria `explicativos` e passa a apontar `structurizr` como default de arquitetura; `cycle.md` e `doc-entregavel` repetem o vínculo no ponto de uso.
@@ -34,6 +36,7 @@ O formato segue [Keep a Changelog 1.0.0](https://keepachangelog.com/pt-BR/1.0.0/
 - `scripts/instala-motores.sh`: instala os três motores de terceiros em uma chamada só (substitui o pipeline `printf | xargs` do README); falha em um motor não interrompe os demais e o aviso sugere o `marketplace add` que pode faltar.
 
 ### Mudado
+- **`STATE.md` renomeado para `HANDOFF.md`** em todo o framework (delta-010): o diário de bordo passa a ter o nome que diz o seu papel — o arquivo que a próxima sessão lê para retomar. Natureza intacta (janela rolante, digest que roteia, "união das verdades"). Template do `projeto-init`, `canonical-rules.md`, `detection.md`, `CLAUDE.md`, `deps.toml` (exclude), `README.md` e a skill `handoff` (prompt de retomada de uma linha) acompanham; `MUDA R19`/`MUDA R20` no `TRUTH.md`. Decisão e renúncias em [ADR-0010](docs/adrs/ADR-0010-handoff-renomeia-state.md). **BREAKING CHANGE:** projetos com `STATE.md` existente — a skill `handoff` migra em runtime (`git mv STATE.md HANDOFF.md` quando não há `HANDOFF.md`).
 - README reescrito para leitura humana: estados da delta e ciclo em diagramas Mermaid (render nativo no GitHub, no lugar do bloco ASCII), seção "Como funciona" nova, instalação condensada em 3 comandos (motores de terceiros em lista estilo `requirements.txt` via `xargs -n1 claude plugin install`) e linha do `handoff` citando o prompt de retomada.
 - delta-009 arquivada: `MUDA R12` (delta-006 → delta-009) consolidado no `TRUTH.md` — o gate mecânico agora cobre C1–C7 (o C7 mede o split de PR). DT-003 quitado. (#29)
 - Espelhos do limiar de tamanho de PR enxugados de 4 para 1 (DT-002): `SKILL.md`, `detection.md` e `analyze.md` passam a citar "o limiar canônico" em vez de repetir o `500`, que fica materializado só no `CLAUDE.md` (regras canônicas do próprio repo). Sob o teto de 2–3 espelhos da guarding-doc-integrity.

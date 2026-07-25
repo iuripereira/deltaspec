@@ -54,4 +54,4 @@ Arquivo já existe? **Não** clobber.
 
 - `references/canonical-rules.md` — módulos montáveis do CLAUDE.md (as regras).
 - `references/detection.md` — matriz tipo × módulos × arquivos de scaffold.
-- `references/templates/` — CHANGELOG, STATE, DEBT, ADR-TEMPLATE, SPEC-TEMPLATE, GLOSSARY, DATA_DICTIONARY, doc-profile.yaml, gitignore-secrets.
+- `references/templates/` — CHANGELOG, HANDOFF, DEBT, ADR-TEMPLATE, SPEC-TEMPLATE, GLOSSARY, DATA_DICTIONARY, doc-profile.yaml, gitignore-secrets.

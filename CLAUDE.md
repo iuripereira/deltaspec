@@ -12,7 +12,7 @@
 - **Parar e perguntar em ambiguidade:** o PRD/spec é soberano sobre regras de negócio. Se algo for ambíguo, **pare e pergunte** — não invente regra.
 - **Débito honesto:** valores hardcoded, duplicações e anti-padrões conhecidos são **documentados** (com "quando/como corrigir"), nunca escondidos.
 - **Idioma:** documentação e mensagens de commit em **PT-BR** salvo indicação contrária. Identificadores e comentários dos scripts também em PT-BR — é o padrão já vigente em `check_cycle.py` e `validate_integrity.py`; não misture idiomas dentro de um script.
-- **Atualize a doc no mesmo change:** toda mudança relevante de comportamento atualiza a doc mais próxima (e o `STATE.md`) no mesmo commit, para que sempre reflita a realidade.
+- **Atualize a doc no mesmo change:** toda mudança relevante de comportamento atualiza a doc mais próxima (e o `HANDOFF.md`) no mesmo commit, para que sempre reflita a realidade.
 
 ## Versionamento, Changelog e Commits (tríade de release)
 
@@ -41,7 +41,7 @@
 
 - **ADRs** (`docs/adrs/ADR-NNNN-titulo.md`) — formato Nygard (Context / Decision / Consequences), numeração de 4 dígitos. **Imutáveis após `Accepted`**: mudou a decisão? crie uma nova ADR com `Supersedes ADR-XXXX` e marque a antiga `Superseded by`. Crie ADR quando a **renúncia de uma alternativa** precisa registrar o *porquê*.
 - **IDs estáveis e citáveis** — `Rn`/`RNFn` no `specs/TRUTH.md`, `delta-NNN` por delta, `ADR-NNNN`. São referenciados em vários arquivos: mantenha-os estáveis.
-- **`STATE.md`** — diário de bordo: o que está em curso **agora**, feito recente, problemas atuais e próximos passos imediatos; atualizado com frequência na própria sessão, janela rolante (histórico permanente = CHANGELOG + git). Em conflito de merge, mantenha a **união das verdades** — nunca sobrescreva progresso de outra sessão.
+- **`HANDOFF.md`** — diário de bordo: o que está em curso **agora**, feito recente, problemas atuais e próximos passos imediatos; atualizado com frequência na própria sessão, janela rolante (histórico permanente = CHANGELOG + git). Em conflito de merge, mantenha a **união das verdades** — nunca sobrescreva progresso de outra sessão.
 - **`DEBT.md`** — registro canônico de débito, pendências e lições, com IDs `DT-NNN` estáveis: natureza, descrição, origem, data de abertura, gatilho de correção e status. Item quitado **muda de status para `quitado (data, ref)`, nunca some**. Issue/ticket referencia o DT, nunca o substitui. (ADR-0007)
 - **Documentação em camadas:** leia o `CLAUDE.md` mais próximo do que você toca; cada subpasta relevante tem o seu. Numa skill, a `SKILL.md` orquestra e o detalhe vive em `references/`.
 

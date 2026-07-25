@@ -27,7 +27,7 @@ Placeholders `{{assim}}` são preenchidos a partir da inspeção do projeto. Tex
 - **Parar e perguntar em ambiguidade:** o PRD/spec é soberano sobre regras de negócio. Se algo for ambíguo, **pare e pergunte** — não invente regra.
 - **Débito honesto:** valores hardcoded, duplicações e anti-padrões conhecidos são **documentados** (com "quando/como corrigir"), nunca escondidos.
 - **Idioma:** documentação e mensagens de commit em **{{idioma}}** salvo indicação contrária. {{Se técnico: identificadores e comentários de código em inglês; senão, comentários também em {{idioma}}.}}
-- **Atualize a doc no mesmo change:** toda mudança relevante de comportamento atualiza a doc mais próxima (e o `STATE.md`) no mesmo commit, para que sempre reflita a realidade.
+- **Atualize a doc no mesmo change:** toda mudança relevante de comportamento atualiza a doc mais próxima (e o `HANDOFF.md`) no mesmo commit, para que sempre reflita a realidade.
 ```
 
 ---
@@ -73,7 +73,7 @@ Placeholders `{{assim}}` são preenchidos a partir da inspeção do projeto. Tex
 
 ---
 
-## MÓDULO: docs-sdd — Incluir quando: projeto com governança (app, backend, site). "leve" em site pequeno; "STATE só" em dados.
+## MÓDULO: docs-sdd — Incluir quando: projeto com governança (app, backend, site). "leve" em site pequeno; "HANDOFF só" em dados.
 
 ```markdown
 ## Documentação (Spec-Driven Development)
@@ -85,7 +85,7 @@ Estrutura em `docs/` (ou `.claude/`): PRD magro + pastas especializadas onde o d
 - **Épicos** (`docs/epics/`) — blocos grandes de trabalho.
 - **IDs estáveis e citáveis** — `RN-NNN` (regra de negócio), `RNF-NNN`, `DEP-NNN`, `ADR-NNNN`, `EPIC-NN`. São referenciados em vários arquivos: mantenha-os estáveis.
 - **Regra de propagação:** mudou uma regra de negócio? atualize o `DATA_DICTIONARY.md` **e** o serviço correspondente **na mesma mudança**. Valor concreto duplicado em vários arquivos é governado pelo manifesto `deps.toml` (dono → espelhos sancionados) e validado pela skill `guarding-doc-integrity` como **gate pré-commit** — grep ad-hoc não é garantia, o script é.
-- **`STATE.md`** — diário de bordo: o que está em curso **agora**, feito recente, problemas atuais e próximos passos imediatos; atualizado com frequência na própria sessão, janela rolante (histórico permanente = CHANGELOG + git). Em conflito de merge, mantenha a **união das verdades** — nunca sobrescreva progresso de outra sessão.
+- **`HANDOFF.md`** — diário de bordo: o que está em curso **agora**, feito recente, problemas atuais e próximos passos imediatos; atualizado com frequência na própria sessão, janela rolante (histórico permanente = CHANGELOG + git). Em conflito de merge, mantenha a **união das verdades** — nunca sobrescreva progresso de outra sessão.
 - **`DEBT.md`** — registro canônico de débito, pendências e lições, com IDs `DT-NNN` estáveis: natureza, descrição, origem, data de abertura, gatilho de correção e status. Item quitado **muda de status para `quitado (data, ref)`, nunca some** — a trajetória é o registro da evolução. Issue/ticket referencia o DT, nunca o substitui.
 - **Documentação em camadas:** leia o `CLAUDE.md` mais próximo do que você toca; cada subpasta relevante tem o seu.
 ```

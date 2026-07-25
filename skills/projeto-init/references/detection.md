@@ -26,7 +26,7 @@ Legenda: ✅ incluir · ⚠️ versão leve/subset · ❌ pular.
 | release-triad | ✅ | ✅ | ⚠️ | ❌ | ✅ |
 | git-workflow | ✅ | ✅ | ✅ | ⚠️ | ✅ |
 | co-author | opcional | opcional | opcional | opcional | opcional |
-| docs-sdd | ✅ | ✅ | ⚠️ | ❌ (STATE só) | ⚠️ |
+| docs-sdd | ✅ | ✅ | ⚠️ | ❌ (HANDOFF só) | ⚠️ |
 | sdd-ciclo | ✅ | ✅ | ⚠️ (reduzido) | ❌ | ✅ |
 | clean-code | ✅ | ✅ | ✅ | ⚠️ | ✅ |
 | testing | ✅ | ✅ | ❌ | ❌ | ⚠️ |
@@ -41,8 +41,8 @@ Legenda: ✅ incluir · ⚠️ versão leve/subset · ❌ pular.
 |---|---|---|
 | release-triad · site-estatico | SemVer+tag, Keep a Changelog PT-BR, Conventional Commits | correlação commit→bump automatizada e job de CI de validação |
 | git-workflow · workspace-dados | main protegida, branch por escopo, higiene pós-merge | PR acima do limiar (dados não têm diff de código), `[skip ci]` |
-| docs-sdd · site-estatico | ADRs, STATE.md, DEBT.md | specs/épicos, IDs RN/RNF/DEP/EPIC, regra de propagação |
-| docs-sdd · tooling | ADRs, IDs estáveis, STATE.md, DEBT.md, doc em camadas | specs/épicos estáticos (o ciclo sdd cobre), regra de propagação (sem DATA_DICTIONARY) |
+| docs-sdd · site-estatico | ADRs, HANDOFF.md, DEBT.md | specs/épicos, IDs RN/RNF/DEP/EPIC, regra de propagação |
+| docs-sdd · tooling | ADRs, IDs estáveis, HANDOFF.md, DEBT.md, doc em camadas | specs/épicos estáticos (o ciclo sdd cobre), regra de propagação (sem DATA_DICTIONARY) |
 | sdd-ciclo · site-estatico | módulo inteiro | nada — mas com a linha do ciclo reduzido ativada |
 | clean-code · workspace-dados | não duplicar lógica, zero valor mágico, nomenclatura | camada de domínio/UI, vendored, lint (sem código de app) |
 | testing · tooling | co-localização, TDD (recomendado), CI valida convenções | comandos de suíte web (vitest/playwright) — cite os reais do projeto |
@@ -78,7 +78,7 @@ Só crie o arquivo se **não existir** (nunca sobrescreva — ver SKILL.md).
 |---|:--:|:--:|:--:|:--:|:--:|
 | `CLAUDE.md` | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `CHANGELOG.md` | ✅ | ✅ | ⚠️ | ❌ | ✅ |
-| `STATE.md` | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `HANDOFF.md` | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `.gitignore` (append secrets/PII) | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `docs/adrs/` + `ADR-TEMPLATE.md` | ✅ | ✅ | ⚠️ | ❌ | ⚠️ |
 | `DEBT.md` (espelha a linha de `docs/adrs/`) | ✅ | ✅ | ⚠️ | ❌ | ⚠️ |
@@ -88,7 +88,7 @@ Só crie o arquivo se **não existir** (nunca sobrescreva — ver SKILL.md).
 | `DATA_DICTIONARY.md` | ✅ | ✅ | ❌ | ✅ | ❌ |
 | `doc-profile.yaml` (decisão de documentação visual — ADR-0009) | ✅ | ✅ | ❌ | ❌ | ⚠️ |
 
-Regra prática (alinhada à matriz acima): **workspace-dados** recebe `CLAUDE.md` (com módulo `data-workspace`) + `STATE.md` + `DATA_DICTIONARY.md` (schema dos dados) + `.gitignore` de PII — **sem** CHANGELOG, docs SDD (adrs/specs/epics) ou testes. `GLOSSARY.md` só se houver termos de domínio além do schema. **site-estatico** recebe a tríade leve, sem `testing`/`architecture`.
+Regra prática (alinhada à matriz acima): **workspace-dados** recebe `CLAUDE.md` (com módulo `data-workspace`) + `HANDOFF.md` + `DATA_DICTIONARY.md` (schema dos dados) + `.gitignore` de PII — **sem** CHANGELOG, docs SDD (adrs/specs/epics) ou testes. `GLOSSARY.md` só se houver termos de domínio além do schema. **site-estatico** recebe a tríade leve, sem `testing`/`architecture`.
 
 Nos tipos com ciclo, o scaffold de specs é `specs/` + `specs/TRUTH.md` (copie o template de `${CLAUDE_PLUGIN_ROOT}/skills/spec-feature/references/templates/TRUTH.md`; o template delta-spec assume o papel do antigo SPEC-TEMPLATE). `docs/adrs/`, STATE, DEBT, CHANGELOG e GLOSSARY seguem inalterados — o `plan.md` do ciclo gera ADR em `docs/adrs/` quando a decisão for durável. **Não crie** `docs/specs/` + `SPEC-TEMPLATE.md` nesses tipos (repos existentes com `docs/specs/` ficam como estão — não migre sem pedido).
 
