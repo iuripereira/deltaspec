@@ -11,6 +11,8 @@ O formato segue [Keep a Changelog 1.0.0](https://keepachangelog.com/pt-BR/1.0.0/
 ## [0.6.0] - 2026-07-24
 
 ### Adicionado
+- `doc-entregavel`: **Sumário automático no formato de contrato** (título pontilhado até o nº de página, subseções indentadas) em página própria após a capa, nos dois formatos. No pdf, os números de página vêm de **duas passadas de render** — a 1ª mede a página física de cada título (h1–h3, extensão `toc` do python-markdown) extraindo texto com pdftotext/pypdf em **busca reversa** (ignora as ocorrências dos títulos no próprio Sumário); sem extrator, sai sem números com aviso. No docx, campo `TOC` nativo com `updateFields` — o próprio Word gera pontilhado e paginação ao abrir. Selftest cobre campo no docx e nº de página no pdf.
+- `doc-entregavel`: **corpo com linhas justificadas** por padrão nos dois formatos (títulos, tabelas e código permanecem à esquerda); pdf com hifenização pt-BR (`hyphens: auto` + `lang='pt-BR'`), docx justificando só parágrafos de corpo sem alinhamento explícito (capa e células de tabela intactas). Selftest cobre a justificação.
 - `eu-tenho-tdah`: skill de estilo de escrita pessoal do Iuri (baseado em ayghri/i-have-adhd), fora do ciclo de delta specs — documentada no README.
 - `handoff`: passo 5 — ao fechar a sessão, a skill imprime o **prompt de retomada** ("Leia o HANDOFF.md… Foco: <primeiro próximo passo>"), com variante para workspace multi-repo. O prompt referencia os registros, nunca os resume.
 

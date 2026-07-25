@@ -47,7 +47,8 @@ Distinção central (ADR-0009): documentação **interna** é viva (Mermaid inli
      --titulo "<capa.titulo>" --projeto "<nome>" --versao <v> --data "<data por extenso>" \
      --anexo "<capa.anexo>" --local "<capa.local>" --assinatura "<capa.assinaturas[0]>" ...
    ```
-5. **Verificar e reportar**: abra/inspecione o resultado (tamanho > 0, diagramas presentes, capa correta) e liste os arquivos gerados. Dependências do host: `pip install pypandoc-binary python-docx markdown` (docx/pdf) e google-chrome (pdf) — ausentes, reporte o comando e pare o formato afetado, sem quebrar o outro.
+   O exportador aplica por padrão: **corpo justificado** (títulos/tabelas/código à esquerda; pdf com hifenização pt-BR) e **Sumário** em página própria após a capa, no formato de contrato (título pontilhado até o nº de página, subseções indentadas). No pdf os números vêm de **duas passadas de render** (a 1ª mede a página física de cada título via pdftotext/pypdf; sem nenhum dos dois, sai sem números com aviso no stderr). No docx o Sumário é campo TOC nativo com `updateFields` — **quem gera é o próprio Word ao abrir** (pontilhado e paginação dele; até lá o campo mostra um texto-guia com F9).
+5. **Verificar e reportar**: abra/inspecione o resultado (tamanho > 0, diagramas presentes, capa correta, Sumário com números de página, corpo justificado) e liste os arquivos gerados. Dependências do host: `pip install pypandoc-binary python-docx markdown pypdf` (docx/pdf; `pypdf` só para os números do Sumário quando não há `pdftotext`) e google-chrome (pdf) — ausentes, reporte o comando e pare o formato afetado, sem quebrar o outro.
 
 ## Erros comuns
 
@@ -73,5 +74,5 @@ Distinção central (ADR-0009): documentação **interna** é viva (Mermaid inli
 
 ## Arquivos da skill
 
-- `scripts/exporta_entregavel.py` — md → docx (pypandoc + python-docx) e md → pdf (markdown → HTML+CSS → chrome headless), capa parametrizada. `--selftest` valida o próprio script.
+- `scripts/exporta_entregavel.py` — md → docx (pypandoc + python-docx) e md → pdf (markdown → HTML+CSS → chrome headless), capa parametrizada, corpo justificado e Sumário formato contrato (pdf em 2 passadas com nº de página; docx via campo TOC do Word). `--selftest` valida o próprio script (inclui Sumário com nº de página no pdf e justificação no docx).
 - `scripts/tabela_cliente.py` — formato cliente para PRD sdd-iuri: cenários e RNFs das seções de RF/RNF (localizadas pelo título, independentes da numeração) viram tabelas (Pré-condição · Ação · Resultado esperado; Métrica · Verificação); indentação aninhada corrigida para o caminho pdf. `--selftest` valida o próprio script.
