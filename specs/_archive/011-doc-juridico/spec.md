@@ -1,5 +1,5 @@
 # delta-011 — doc-juridico
-Estado: proposta · Data: 2026-07-26 · Branch: feat/011-doc-juridico
+Estado: arquivada · Data: 2026-07-26 · Branch: feat/011-doc-juridico
 
 ## Contexto (≤3 linhas)
 A `doc-entregavel` só sabe exportar PRD/spec congelado; documento jurídico-comercial (NDA, contrato de TI, documento de requisitos para cliente) tem estrutura, base legal e formatação próprias que a skill não conhece.
@@ -34,4 +34,4 @@ A delta versiona esse conhecimento como reference canônico e liga a SKILL.md a 
 ## Dependências e riscos
 - Precedente jurisprudencial citado no reference (STJ REsp 2.205.708-PR, Info 871, 04/11/2025; REsp 2.150.278-PR, 24/09/2024) pode ser superado — o reference declara data de verificação e a política conservadora não depende dele para funcionar
 - O reference não substitui advogado: toda saída é minuta, por R2
-- [ ] Rodapé `CONFIDENCIAL` e marca d'água em todas as páginas ainda são instrução manual — o `exporta_entregavel.py` não tem flag para isso
+- [x] Rodapé `CONFIDENCIAL` e marca d'água em todas as páginas ainda são instrução manual — o `exporta_entregavel.py` não tem flag para isso (roteada: DT-011)
