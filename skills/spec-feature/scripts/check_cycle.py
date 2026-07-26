@@ -30,8 +30,14 @@ TRUTH_LIMITE = 800
 PR_LIMITE = 500  # espelho da regra canônica de tamanho de PR (dono: canonical-rules.md; sancionado no deps.toml)
 ORDEM = {"CRÍTICO": 0, "ALTO": 1, "MÉDIO": 2, "BAIXO": 3}
 
-CABECALHO = re.compile(r"^###\s+(R(?:NF)?\d+)\s*[—-]\s*(ADICIONA|MUDA|REMOVE)\b(.*)$")
-ALVO = re.compile(r"\b(R(?:NF)?\d+)\s*\((?:Δ\s*|delta-)\d+\)")  # aceita (ΔNNN) legado e (delta-NNN)
+# Duas notações de ID aceitas: Rn/RNFn (default do framework) e RF-NN/RNF-NN com
+# numeração hierárquica opcional (RF-01.1). A segunda existe porque projeto com
+# corpus legado cita o ID em massa — renomear centenas de citações para chegar ao
+# mesmo lugar é churn, e o tabela_cliente.py do doc-entregavel já exige RF-NN.
+REQ_ID = r"R(?:NF|F)?-?\d+(?:\.\d+)*"
+
+CABECALHO = re.compile(rf"^###\s+({REQ_ID})\s*[—-]\s*(ADICIONA|MUDA|REMOVE)\b(.*)$")
+ALVO = re.compile(rf"\b({REQ_ID})\s*\((?:Δ\s*|delta-)\d+\)")  # aceita (ΔNNN) legado e (delta-NNN)
 TAREFA = re.compile(r"^\s*-\s*\[[ xX]\]\s*(T\d+)")
 SECAO_RISCOS = re.compile(r"^##\s+Depend[êe]ncias e riscos\s*$(.*?)(?=^##\s|\Z)", re.M | re.S)
 PENDENCIA_ABERTA = re.compile(r"^\s*-\s*\[ \]", re.M)
@@ -163,10 +169,13 @@ def c4_archive(root: Path, bs, v: list) -> None:
             perdidos.update(r for r in ALVO.findall(line) if r not in alvos)
     # ID ainda presente no TRUTH resultante não é perda — cobre reescrita de sufixo em massa
     # (ex.: (ΔNNN)→(delta-NNN)), que remove a linha antiga no diff mas mantém o requisito.
-    truth_atual = root / "specs" / "TRUTH.md"
-    if truth_atual.is_file():
-        presentes = set(ALVO.findall(truth_atual.read_text(encoding="utf-8")))
-        perdidos -= presentes
+    # Lê o TRUTH particionado também: com specs/truth/<dominio>.md, o requisito vive na
+    # partição e ler só o índice acusaria perda que não houve.
+    presentes: set[str] = set()
+    for t in [root / "specs" / "TRUTH.md", *sorted((root / "specs" / "truth").glob("*.md"))]:
+        if t.is_file():
+            presentes |= set(ALVO.findall(t.read_text(encoding="utf-8")))
+    perdidos -= presentes
     for rid in sorted(perdidos):
         v.append(("CRÍTICO", "specs/TRUTH.md", f"{rid} sumiu do TRUTH.md sem MUDA/REMOVE que o declare", "restaurar o requisito ou declarar o alvo na delta"))
 
@@ -309,6 +318,11 @@ Estado: proposta · Data: 2026-01-01 · Branch: feat/001-x
 
     assert rodar(limpa_spec, limpa_tasks) == [], "delta limpa deveria passar sem achados"
 
+    # mesma delta na notação RF-NN/RNF-NN (corpus legado, numeração hierárquica)
+    limpa_spec_rf = limpa_spec.replace("### R1 —", "### RF-01.1 —").replace("### RNF1 —", "### RNF-01 —")
+    limpa_tasks_rf = limpa_tasks.replace("cobre: R1", "cobre: RF-01.1").replace("cobre: RNF1", "cobre: RNF-01")
+    assert rodar(limpa_spec_rf, limpa_tasks_rf) == [], "delta limpa em notação RF-NN deveria passar sem achados"
+
     achados = " · ".join(f"{o} {q}" for _, o, q, _ in rodar(suja_spec, suja_tasks))
     for esperado in (
         "spec.md R1 cenário de aceite sem DADO/QUANDO/ENTÃO",  # C1 Rn
@@ -350,8 +364,9 @@ def selftest_c4() -> None:
     """C4 com git real: perda já commitada é acusada; alvo declarado em MUDA não é."""
     import tempfile
 
-    def rodar(resultante: str, spec: str = ""):
-        """TRUTH base legado (Δ000) → estado `resultante` num commit; roda o C4 sobre `spec`."""
+    def rodar(resultante: str, spec: str = "", particoes: dict | None = None, base: str | None = None):
+        """TRUTH base legado (Δ000) → estado `resultante` num commit; roda o C4 sobre `spec`.
+        `particoes`: {nome: conteúdo} gravado em specs/truth/<nome>.md no estado resultante."""
         with tempfile.TemporaryDirectory() as d:
             root = Path(d)
 
@@ -362,11 +377,15 @@ def selftest_c4() -> None:
             git("config", "user.email", "selftest@sdd")
             git("config", "user.name", "selftest")
             (root / "specs").mkdir()
-            (root / "specs" / "TRUTH.md").write_text("- R1 (Δ000) — a\n- R2 (Δ000) — b\n", encoding="utf-8")
+            (root / "specs" / "TRUTH.md").write_text(
+                base if base is not None else "- R1 (Δ000) — a\n- R2 (Δ000) — b\n", encoding="utf-8")
             git("add", "-A")
             git("commit", "-qm", "base")
             git("checkout", "-qb", "docs/archive")
             (root / "specs" / "TRUTH.md").write_text(resultante, encoding="utf-8")
+            for nome, conteudo in (particoes or {}).items():
+                (root / "specs" / "truth").mkdir(exist_ok=True)
+                (root / "specs" / "truth" / f"{nome}.md").write_text(conteudo, encoding="utf-8")
             git("add", "-A")
             git("commit", "-qm", "consolida")  # commitado: a antiga janela cega do diff HEAD
             v: list = []
@@ -387,7 +406,20 @@ def selftest_c4() -> None:
     # reescrita de sufixo (Δ→delta) preserva os IDs no arquivo → não é perda, sem MUDA
     reescreve = rodar("- R1 (delta-000) — a\n- R2 (delta-000) — b\n")
     assert reescreve == [], f"C4 acusou reescrita de sufixo como perda: {reescreve}"
-    print("selftest C4: OK (git real; perda acusada, MUDA e reescrita de sufixo liberados)")
+    # particionamento (C5): TRUTH.md vira índice e os requisitos passam a viver em
+    # specs/truth/<dominio>.md — ler só o índice acusaria perda que não houve
+    particiona = rodar("# Índice\n- ver truth/dominio.md\n",
+                       particoes={"dominio": "- R1 (Δ000) — a\n- R2 (Δ000) — b\n"})
+    assert particiona == [], f"C4 acusou particionamento do TRUTH como perda: {particiona}"
+    # notação RF-NN/RNF-NN (corpus legado) tem o mesmo tratamento que Rn/RNFn
+    rf_perdido = rodar("- RF-02 (delta-000) — b\n", base="- RF-01 (delta-000) — a\n- RF-02 (delta-000) — b\n")
+    assert any(s == "CRÍTICO" and "RF-01" in q for s, _, q, _ in rf_perdido), \
+        f"C4 não acusou perda na notação RF-NN: {rf_perdido}"
+    rf_declara = rodar("- RF-02 (delta-000) — b\n",
+                       "### RF-09 — MUDA RF-01 (delta-000): a\n- DADO a QUANDO b ENTÃO c\n",
+                       base="- RF-01 (delta-000) — a\n- RF-02 (delta-000) — b\n")
+    assert rf_declara == [], f"C4 acusou falso positivo com MUDA declarado em RF-NN: {rf_declara}"
+    print("selftest C4: OK (git real; perda acusada em Rn e RF-NN, MUDA/sufixo/partição liberados)")
 
 
 def selftest_c7() -> None:
