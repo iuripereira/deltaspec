@@ -1,6 +1,6 @@
 ---
 name: doc-entregavel
-description: Use when exporting a frozen client deliverable (PDF/DOCX with signature cover and embedded diagrams) from a project whose doc-profile.yaml declares publico.cliente true — at the moment declared in the profile (entrega-prd, fechamento-fase). Triggers include "/sdd-iuri:doc-entregavel", "exportar entregável", "gerar PDF para o cliente", "documento para assinatura", "congelar o PRD", or the visual-documentation gate of the sdd-iuri spec flow.
+description: Use when producing or exporting a frozen client deliverable — a PDF/DOCX with signature cover and embedded diagrams from a project whose doc-profile.yaml declares publico.cliente true, or a legal-commercial document (NDA, IT services contract, client requirements/vision document). Triggers include "/sdd-iuri:doc-entregavel", "exportar entregável", "gerar PDF para o cliente", "documento para assinatura", "congelar o PRD", "gerar NDA", "acordo de confidencialidade", "minuta de contrato", "contrato de prestação de serviços", "documento de requisitos para o cliente", "proposta com orçamento e cronograma", or the visual-documentation gate of the sdd-iuri spec flow.
 ---
 
 # doc-entregavel
@@ -10,6 +10,21 @@ description: Use when exporting a frozen client deliverable (PDF/DOCX with signa
 Exporta o **entregável congelado para o cliente**: renderiza os diagramas declarados no `doc-profile.yaml`, monta o documento final (PRD/spec + diagramas embutidos + capa de assinatura) e exporta **PDF e/ou DOCX** em `docs/entregaveis/`. Generalização do pipeline validado nos PRDs e contratos IMEX. Documentação cliente é **isenta da economia de tokens** (exceção registrada na ADR-0009 do sdd-iuri) — completude e fidelidade visual dominam; a renderização é via CLI, o custo de tokens é marginal.
 
 Distinção central (ADR-0009): documentação **interna** é viva (Mermaid inline, mantida junto do código); o **entregável** é congelado — exportado em momento definido, versionado no nome do arquivo, re-assinado a cada baseline. **Nunca sobrescreva um entregável já enviado**: nova baseline → novo arquivo → nova assinatura.
+
+## Tipos de entregável
+
+Identifique o `tipo` antes de qualquer coisa; pergunte **uma** vez, com opções fechadas, só se o pedido for ambíguo.
+
+| `tipo` | O que é | Conteúdo | Export |
+|---|---|---|---|
+| `prd-cliente` | PRD/spec congelado do projeto (default) | o documento base do repo + diagramas do perfil | processo abaixo, integral |
+| `juridico-nda` | acordo de confidencialidade, não circunvenção e PI | [references/juridico.md](references/juridico.md) | passos 3–5 |
+| `juridico-contrato-ti` | contrato de prestação de serviços de TI | [references/juridico.md](references/juridico.md) | passos 3–5 |
+| `requisitos-cliente` | documento de requisitos e visão (Anexo I do contrato) | [references/juridico.md](references/juridico.md) | passos 3–5 |
+
+- **Regras de conteúdo jurídico não vivem aqui** — minuta, base legal, cláusulas, formatação de contrato, duas versões do `requisitos-cliente` e checklist de eficácia estão no reference, fonte canônica.
+- Tipos `juridico-*` e `requisitos-cliente` **não dependem do `doc-profile.yaml`** (não são artefato do ciclo do projeto): pule o passo 1 e vá ao passo 2 se houver diagrama a renderizar, ou direto ao 3.
+- `scripts/tabela_cliente.py` vale para `prd-cliente` e para `requisitos-cliente` (IDs `RF-*`/`RNF-*`); **não** para os tipos `juridico-*`, cuja formatação é a de contrato (cláusulas em caixa alta, `§`, incisos).
 
 ## Processo
 
@@ -70,9 +85,15 @@ Distinção central (ADR-0009): documentação **interna** é viva (Mermaid inli
 | DOCX sem diagramas | pandoc gfm descarta `<img>` dentro de div HTML — no md do docx a figura é linha de imagem markdown pura |
 | Figura gigante/minúscula no docx | pandoc dimensiona pelo DPI (pHYs) do PNG — regravar o DPI para caber na página |
 | Heading seguinte "engolido" como linha da tabela de cenários/RNFs | Corrigido no `tabela_cliente.py` (linha em branco garantida + preservação do conteúdo pós-RNF); rode a versão atual |
+| Aplicar ABNT (NBR 14724) a contrato porque o usuário pediu "seguir ABNT" | Norma acadêmica; instrumento contratual segue a convenção de mercado do reference — corrija a premissa antes de formatar |
+| Documento `juridico-*` entregue sem nota de minuta ou sem bloco de duas testemunhas com CPF | Ambos são obrigatórios (reference, "Eficácia executiva"); testemunhas ficam mesmo com assinatura eletrônica, por redundância deliberada |
+| Versão A e Versão B do `requisitos-cliente` no mesmo arquivo | Uma versão por arquivo: a A é pré-NDA e não carrega arquitetura, modelagem nem backlog |
+| `requisitos-cliente` sem orçamento, prazo ou cronograma "porque o valor ainda não fechou" | As três seções são obrigatórias; valor ausente vira placeholder em destaque, nunca omissão |
+| Citar lei, artigo ou julgado que não está no reference | `[VERIFICAR COM ADVOGADO]` no lugar — nunca inventar dispositivo |
 | Tabela de decisão dentro de item de lista (RNs do §5) vira texto com hífen literal no pdf | `deepen_indents` só aprofunda bullets, não blocos aninhados — na montagem, indente o bloco 2→4 e garanta linha em branco antes do item seguinte (achado IMEX 20-07; candidato a fix no script) |
 
 ## Arquivos da skill
 
+- `references/juridico.md` — regras de **conteúdo** dos tipos `juridico-nda`, `juridico-contrato-ti` e `requisitos-cliente`: minuta e disclaimers, formatação de mercado (não ABNT), eficácia executiva (testemunhas, assinatura eletrônica, RTD), estrutura canônica, cláusulas obrigatórias por tipo, duas versões do documento de requisitos (com orçamento, prazo e cronograma obrigatórios) e checklist de eficácia. Base jurídica datada.
 - `scripts/exporta_entregavel.py` — md → docx (pypandoc + python-docx) e md → pdf (markdown → HTML+CSS → chrome headless), capa parametrizada, corpo justificado e Sumário formato contrato (pdf em 2 passadas com nº de página; docx via campo TOC do Word). `--selftest` valida o próprio script (inclui Sumário com nº de página no pdf e justificação no docx).
 - `scripts/tabela_cliente.py` — formato cliente para PRD sdd-iuri: cenários e RNFs das seções de RF/RNF (localizadas pelo título, independentes da numeração) viram tabelas (Pré-condição · Ação · Resultado esperado; Métrica · Verificação); indentação aninhada corrigida para o caminho pdf. `--selftest` valida o próprio script.

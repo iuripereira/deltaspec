@@ -2,12 +2,13 @@
 
 > Andamento contínuo do trabalho: o que está em curso **agora**, o que acabou de ser feito, os problemas do momento e os próximos passos imediatos. Atualize com frequência dentro da própria sessão. **Janela rolante:** entrada antiga sai — histórico permanente é [CHANGELOG](CHANGELOG.md) + git; débito/pendência/lição é [DEBT.md](DEBT.md); decisão com renúncia é [docs/adrs/](docs/adrs/); o que vige é [specs/TRUTH.md](specs/TRUTH.md). Em conflito de merge, mantenha a **união das verdades** — nunca sobrescreva o progresso de outra sessão.
 
-**Atualizado em:** 2026-07-21
+**Atualizado em:** 2026-07-26
 
 ## Agora
-- Nada em curso — sessão IMEX de 20-07 (noite) fechada; próximo marco é a delta real no travelplanner.
+- delta-011 (`doc-juridico`) implementada na branch `feat/011-doc-juridico`, analyze LIBERADO; falta o PR mergear e o archive (consolidar R1–R3 no TRUTH + rotear a pendência do rodapé CONFIDENCIAL para DT-011).
 
 ## Feito recentemente
+- 2026-07-26 — **delta-011 implementada:** auditoria do prompt jurídico solto (não versionado) e integração como `doc-entregavel/references/juridico.md`, com dispatch por tipo na SKILL.md. Achado principal: a premissa sobre assinatura eletrônica estava invertida — o STJ (REsp 2.205.708-PR, Info 871, 04/11/2025) dispensa testemunhas com qualquer modalidade cuja integridade seja conferida por provedor, sem exigir ICP-Brasil; a política conservadora ficou, agora como redundância declarada. `requisitos-cliente` passou a exigir Visão (produto e/ou projeto), orçamento por fase, prazo e cronograma com marcos de pagamento. Detalhes no CHANGELOG (`[Não lançado]`).
 - 2026-07-21 — Skill `eu-tenho-tdah` (perfil de escrita pessoal do Iuri) adicionada, fora do ciclo de delta specs; README documenta como skill always-on.
 - 2026-07-21 — Balanço da rodada IMEX no DT-004: evidência parcial anotada (5 skills validadas nos 4 repos; ciclo de deltas com gate ainda sem execução externa) e gatilho precisado — quita com a delta real arquivada no travelplanner. Segue aberto.
 - 2026-07-20 (noite) — **Stack visual normativo + regras de página + guia de prosa** (#33) e erro comum de tabela aninhada (#34), da revisão pré-assinatura IMEX: ADR-0009 ganhou a tabela categoria→ferramenta (com Excalidraw) e o vínculo "a ferramenta segue a categoria"; `exporta_entregavel.py` com regras de página (break-inside, `.fig-pagina`/`.paisagem`, cantSplit/tblHeader); `spec-feature/references/prosa.md` (EARS PT-BR, tabelas de decisão, checklist pré-baseline); fixes do export validados nos 4 PRDs IMEX (8 exports, 2 rodadas). Toolchain `.dsl` (docker structurizr→C4-PlantUML) e `.excalidraw` (Playwright) validada. Novo DT-009.
@@ -30,7 +31,8 @@
 - Nenhum bloqueio. Débito durável: [DEBT.md](DEBT.md) (DT-001, DT-003..DT-007 abertos; DT-002/DT-008 quitados).
 
 ## Próximos passos imediatos
+- Mergear o PR da delta-011 e arquivar (TRUTH + DT-011 da pendência do rodapé CONFIDENCIAL).
 - Rodar `/plugin update sdd-iuri` no Claude Code local (cache anterior às deltas 007–008).
 - Rodar uma delta real com o gate do specify no imex-travelplanner (fecha o piloto ADR-0009 e o gatilho do DT-004).
 - Promover a ADR-0009 quando o piloto fechar: `Accepted` + MUDA RNF1 no TRUTH.md + avaliar check mecânico do doc-profile.
-- Próxima delta livre: 010. Débito aberto: DT-001, DT-004, DT-005, DT-006 (guarda), DT-007, DT-009.
+- Próxima delta livre: 012 (011 em curso). Débito aberto: DT-001, DT-004, DT-005, DT-006 (guarda), DT-007, DT-009.
