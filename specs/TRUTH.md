@@ -91,6 +91,23 @@
   - DADO uma delta em curso em `specs/NNN-*/` QUANDO o handoff roda ENTÃO o diário cita a delta, a fase em que parou e o veredito do último gate
   - DADO conteúdo já registrado em spec/plan/ADR/DEBT/CHANGELOG/commit QUANDO o handoff escreve ENTÃO referencia por caminho/ID em vez de duplicar, e segredo/PII não entra no diário
 
+## Entregáveis para cliente
+
+- R21 (delta-011) — a `doc-entregavel` despacha por tipo de documento.
+  - DADO um pedido de entregável QUANDO a skill roda ENTÃO ela identifica o `tipo` entre `prd-cliente` (fluxo vigente), `juridico-nda`, `juridico-contrato-ti` e `requisitos-cliente`, perguntando com opções fechadas apenas quando o pedido for ambíguo
+  - DADO um `tipo` `juridico-*` ou `requisitos-cliente` QUANDO a skill monta o conteúdo ENTÃO as regras de conteúdo, estrutura e base legal vêm de `skills/doc-entregavel/references/juridico.md` e o export continua sendo o pipeline vigente da SKILL.md (render de diagramas, capa, Sumário, PDF/DOCX)
+  - DADO a SKILL.md QUANDO ela cita uma regra jurídica ENTÃO referencia o reference sem reproduzir o texto da regra (fonte canônica única)
+- R22 (delta-011) — documento jurídico sai como minuta, com eficácia executiva verificável.
+  - DADO um documento de tipo `juridico-*` QUANDO ele é gerado ENTÃO o topo do arquivo traz a nota de minuta ("sujeita a revisão por advogado(a)", gerada por IA, não é aconselhamento jurídico) e o fecho traz bloco de assinaturas com as partes e duas testemunhas identificadas por nome e CPF
+  - DADO uma base legal não listada no reference QUANDO o texto precisaria citá-la ENTÃO a skill grava `[VERIFICAR COM ADVOGADO]` no lugar, sem inventar dispositivo, número de lei ou julgado
+  - DADO um documento `juridico-*` concluído QUANDO a skill encerra ENTÃO imprime o checklist de eficácia do reference (testemunhas, assinatura eletrônica com integridade conferida por provedor, rubrica, duas vias, revisão por advogado, registro em RTD no dia da assinatura quando optado)
+  - DADO um pedido para "seguir ABNT" em instrumento contratual QUANDO a skill formata ENTÃO corrige a premissa (NBR 14724 é norma acadêmica) e aplica a convenção de mercado do reference
+- R23 (delta-011) — `requisitos-cliente` cobre projeto e produto, em duas versões, com orçamento, prazo e cronograma.
+  - DADO um pedido de `requisitos-cliente` QUANDO a skill monta o documento ENTÃO ele declara explicitamente o recorte coberto — requisitos de projeto e/ou de produto/serviço — e traz seção de Visão do produto e/ou Visão do projeto conforme o recorte declarado
+  - DADO um documento `requisitos-cliente` QUANDO ele é gerado ENTÃO as seções de previsão de orçamento (por fase, com premissas da estimativa e faixa), prazo total estimado e cronograma (fases, marcos, dependências e marcos de pagamento vinculados) estão presentes e preenchidas ou marcadas com placeholder em destaque
+  - DADO o estado da negociação QUANDO a skill escolhe a versão ENTÃO gera a Versão A (proposta executiva, pré-NDA: visão, problema, macro-funcionalidades, faixa de investimento e prazo macro, sem arquitetura detalhada, modelagem de dados ou backlog decomposto) ou a Versão B (especificação completa, pós-NDA assinado, com rodapé `CONFIDENCIAL` e nota de titularidade), nunca as duas no mesmo arquivo
+  - DADO um documento `requisitos-cliente` QUANDO ele lista requisitos ENTÃO usa os IDs rastreáveis do framework (`OBJ-*`, `ESC-*`, `RF-*`, `RNF-*`, `RC-*`, `PRE-*`, `RSK-*`), compatíveis com o `tabela_cliente.py` da própria skill
+
 ## Não funcionais
 
 - RNF1 (delta-000) — economia de tokens é requisito, não consequência.

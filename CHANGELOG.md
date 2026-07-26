@@ -8,6 +8,8 @@ O formato segue [Keep a Changelog 1.0.0](https://keepachangelog.com/pt-BR/1.0.0/
 
 ## [Não lançado]
 
+## [0.7.0] - 2026-07-26
+
 ### Adicionado
 - `doc-entregavel`: **tipos de entregável jurídico-comercial** (delta-011). A skill passa a despachar por `tipo` — `prd-cliente` (fluxo vigente), `juridico-nda`, `juridico-contrato-ti` e `requisitos-cliente` — com as regras de **conteúdo** no novo `references/juridico.md` (fonte canônica; a SKILL.md aponta, não duplica): minuta obrigatória, formatação de mercado (a NBR 14724 é acadêmica e **não** se aplica a contrato), eficácia executiva (duas testemunhas com CPF, assinatura eletrônica, RTD), estrutura canônica do instrumento particular, cláusulas obrigatórias por tipo e checklist de eficácia. Tipos `juridico-*` não dependem do `doc-profile.yaml`; o export continua sendo o pipeline vigente.
 - `doc-entregavel`: `requisitos-cliente` declara o recorte (requisitos **de projeto e/ou de produto/serviço**) com a seção de **Visão** correspondente, e traz **previsão de orçamento por fase** (com premissas da estimativa e faixa), **prazo total estimado** e **cronograma com marcos de pagamento** como seções obrigatórias — placeholder em destaque quando o valor não fechou, nunca omissão. Duas versões por regra de proteção de PI: A (proposta executiva, pré-NDA, sem arquitetura/modelagem/backlog) e B (especificação completa, pós-NDA), uma por arquivo.
