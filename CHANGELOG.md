@@ -8,6 +8,10 @@ O formato segue [Keep a Changelog 1.0.0](https://keepachangelog.com/pt-BR/1.0.0/
 
 ## [Não lançado]
 
+### Corrigido
+- `check_cycle.py`: **C4 lê o TRUTH particionado**. Com `specs/truth/<dominio>.md` (particionamento que o próprio C5 recomenda acima de 800 linhas), a verificação de "requisito ainda presente" lia só `specs/TRUTH.md` — o índice — e acusava **CRÍTICO falso de perda** para todo requisito que vivia numa partição. O diff já cobria `specs/truth`; só a leitura do estado resultante não. Selftest cobre o caso (falha sem o fix).
+- `check_cycle.py`: **aceita a notação `RF-NN`/`RNF-NN`** além de `Rn`/`RNFn`, com numeração hierárquica opcional (`RF-01.1`). Projeto com corpus legado cita o ID de requisito em massa (o piloto IMEX tem 443 ocorrências em 70 arquivos, além das âncoras de um entregável contratual já assinado) — renomear tudo para `Rn` seria churn para chegar ao mesmo lugar, e o `tabela_cliente.py` do `doc-entregavel` **já exigia** `RF-NN`, deixando duas notações incompatíveis em dois scripts do mesmo plugin. Selftest cobre as duas notações em C1/C2 e C4.
+
 ## [0.6.0] - 2026-07-24
 
 ### Adicionado
