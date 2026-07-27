@@ -28,6 +28,26 @@
   - DADO um repositório já configurado QUANDO a skill `projeto-infra` roda de novo ENTÃO ela consulta o que existe, preenche só as lacunas e relata no-op no restante
   - DADO falha de infra (sem rede, `gh` não autenticado) QUANDO o init a invoca ENTÃO o init reporta e segue, sem travar
 
+## Descoberta (pré-specify)
+
+- R24 (delta-012) — a skill `descoberta` cobre a fase pré-specify, produzindo dossiê a partir de insumos brutos.
+  - DADO um projeto com insumos brutos de descoberta (transcrição/resumo de reunião, planilha, vídeo, docs legados) QUANDO `/sdd-iuri:descoberta` roda ENTÃO ela inventaria os insumos (o que existe, o que falta, pessoas-fonte, sistemas citados) e grava o dossiê em `docs/discovery/AAAA-MM-DD-<evento>.md` com o processo as-is, entidades, regras e dores minerados
+  - DADO um vídeo entre os insumos QUANDO `ffmpeg` está disponível ENTÃO frames amostrados (scene detection + intervalo fixo) dos trechos relevantes são fonte válida de mineração; `ffmpeg` ausente → o vídeo entra no inventário como lacuna, com aviso, sem quebrar a skill
+- R25 (delta-012) — todo claim do dossiê carrega nível de confiança e fonte rastreável.
+  - DADO um claim extraído dos insumos QUANDO registrado no dossiê ENTÃO carrega uma tag `confirmado` (evidência direta), `inferido` (dedução/padrão) ou `lacuna` (requer validação humana) e a fonte rastreável (timestamp da transcrição, `arquivo:linha` ou frame); claim sem fonte não entra no dossiê
+- R26 (delta-012) — a descoberta popula GLOSSARY.md e DATA_DICTIONARY.md.
+  - DADO termos de domínio e entidades minerados QUANDO o dossiê fecha ENTÃO `GLOSSARY.md` e `DATA_DICTIONARY.md` do projeto recebem as entradas novas com o nível de confiança, por append/merge — entrada existente nunca é sobrescrita sem divergência apontada
+- R27 (delta-012) — divergências contra a baseline vigente.
+  - DADO um PRD ou TRUTH.md vigente no projeto QUANDO a mineração encontra contradição ou omissão ENTÃO gera `docs/discovery/divergencias-<baseline>.md` com tabela *baseline diz × descoberta revelou × impacto (IDs afetados) × ação proposta*
+  - DADO um projeto sem baseline QUANDO a skill roda ENTÃO a etapa de divergências se omite com aviso
+- R28 (delta-012) — pauta de validação em Mob Elaboration.
+  - DADO o dossiê fechado QUANDO a skill encerra ENTÃO existem `docs/discovery/questions.md` (perguntas ranqueadas por dono/stakeholder) e um roteiro de sessão de validação em que a IA propõe o entendimento claim a claim e o stakeholder valida/corrige (Mob Elaboration; Domain Storytelling como técnica de condução)
+- R29 (delta-012) — presunção não vira requisito sem validação.
+  - DADO claims `inferido` ou `lacuna` QUANDO o resultado da descoberta alimenta um PRD ou o specify ENTÃO eles entram marcados `[PRESUNÇÃO]`; somente claim `confirmado` ou validado em sessão entra sem marca
+- R30 (delta-012) — ponte da descoberta com o ciclo registrada nos adapters.
+  - DADO o plugin `max` instalado QUANDO a descoberta encerra ENTÃO a skill oferece `max:write-prd` como motor do PRD rascunho, com o dossiê como contexto e o contrato de `[PRESUNÇÃO]` na invocação; `max` ausente → fallback nativo (PRD rascunho próprio) com o aviso de degradação
+  - DADO a tabela de contrato de `adapters.md` QUANDO a delta consolida ENTÃO existe a linha da fase `descoberta` (pré-specify) com skill esperada, ponto sensível e fallback
+
 ## Ciclo de features
 
 - R5 (delta-001) — uma feature é uma delta spec, com numeração global ao repositório.

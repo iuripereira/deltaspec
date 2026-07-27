@@ -2,12 +2,13 @@
 
 > Andamento contínuo do trabalho: o que está em curso **agora**, o que acabou de ser feito, os problemas do momento e os próximos passos imediatos. Atualize com frequência dentro da própria sessão. **Janela rolante:** entrada antiga sai — histórico permanente é [CHANGELOG](CHANGELOG.md) + git; débito/pendência/lição é [DEBT.md](DEBT.md); decisão com renúncia é [docs/adrs/](docs/adrs/); o que vige é [specs/TRUTH.md](specs/TRUTH.md). Em conflito de merge, mantenha a **união das verdades** — nunca sobrescreva o progresso de outra sessão.
 
-**Atualizado em:** 2026-07-26
+**Atualizado em:** 2026-07-27
 
 ## Agora
-- Nada em curso — delta-011 arquivada e `v0.7.0` cortada.
+- Nada em curso — delta-012 arquivada e `v0.8.0` cortada. Próximo evento esperado: desfecho da primeira execução externa da `descoberta` no imex-estoque-inteligente (DT-012).
 
 ## Feito recentemente
+- 2026-07-27 — **delta-012 implementada e arquivada** (#50 + PR de archive): skill `descoberta` (fase pré-specify — insumos brutos → dossiê com claims `confirmado`/`inferido`/`lacuna`, GLOSSARY/DATA_DICTIONARY, divergências, pauta de Mob Elaboration), R24–R30 no TRUTH.md, ADR-0011, adapters com contrato descoberta/write-prd, `v0.8.0`. Motivada pelo gap real do imex-estoque-inteligente (PRD contratualizado sem validação da stakeholder, contradito pelo kickoff). Pendência DT-012 (execução externa) roteada.
 - 2026-07-26 — **delta-011 arquivada** (#49): R21–R23 consolidados no TRUTH.md, pendência do rodapé `CONFIDENCIAL`/marca d'água roteada para DT-011, `v0.7.0`.
 - 2026-07-26 — **delta-011 implementada** (#48): auditoria do prompt jurídico solto (não versionado) e integração como `doc-entregavel/references/juridico.md`, com dispatch por tipo na SKILL.md. Achado principal: a premissa sobre assinatura eletrônica estava invertida — o STJ (REsp 2.205.708-PR, Info 871, 04/11/2025) dispensa testemunhas com qualquer modalidade cuja integridade seja conferida por provedor, sem exigir ICP-Brasil; a política conservadora ficou, agora como redundância declarada. `requisitos-cliente` passou a exigir Visão (produto e/ou projeto), orçamento por fase, prazo e cronograma com marcos de pagamento. Detalhes no CHANGELOG (`[Não lançado]`).
 - 2026-07-21 — Skill `eu-tenho-tdah` (perfil de escrita pessoal do Iuri) adicionada, fora do ciclo de delta specs; README documenta como skill always-on.
