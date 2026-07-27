@@ -1,6 +1,6 @@
 # Tasks — delta-012
 <!-- ordenado por dependência; cada task executável sem contexto extra -->
-- [ ] T1 — criar `skills/descoberta/SKILL.md` (6 fases, erros comuns, fallbacks ffmpeg/max) · arquivos: skills/descoberta/SKILL.md · cobre: R1, R2, R5, R6 · verificação: frontmatter com name+description; as 6 fases presentes; fallback de ffmpeg e de max citados
+- [ ] T1 — criar `skills/descoberta/SKILL.md` (6 fases, erros comuns, fallbacks ffmpeg/max; fase 3 = dossiê + população de GLOSSARY/DATA_DICTIONARY por append/merge) · arquivos: skills/descoberta/SKILL.md · cobre: R1, R2, R3, R5, R6 · verificação: frontmatter com name+description; as 6 fases presentes; fallback de ffmpeg e de max citados; regra de append/merge sem sobrescrita presente
 - [ ] T2 (dep: T1) — criar templates dossiê/divergências/pauta · arquivos: skills/descoberta/references/templates/{dossie,divergencias,pauta-validacao}.md · cobre: R2, R4, R5 · verificação: os 3 arquivos existem, ≤40 linhas cada, citados pelo SKILL.md
 - [ ] T3 (dep: T1) — cabear descoberta e write-prd nos adapters + 1 linha no Overview do spec-feature · arquivos: skills/spec-feature/references/adapters.md, skills/spec-feature/SKILL.md · cobre: R7 · verificação: `grep -n descoberta` mostra linha na tabela, seção de contrato e fallback
 - [ ] T4 (dep: T1) — atualizar distribuição e governança · arquivos: README.md, .claude-plugin/marketplace.json, CHANGELOG.md, HANDOFF.md · cobre: infra · verificação: `grep -ic` de contagem de skills consistente (9) nos dois primeiros; CHANGELOG com entrada em [Não lançado]
