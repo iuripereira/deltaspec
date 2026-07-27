@@ -6,11 +6,18 @@ Princípio: acoplamento = (i) **contrato na invocação** (instrução de format
 
 | Fase | Skill esperada | Ponto sensível a breaking change |
 |---|---|---|
+| descoberta (pré-specify) | `sdd-iuri:descoberta` (própria) · `max:write-prd` (motor do PRD) | nome da skill max; formato/local do PRD gerado |
 | clarify | `max:grill-me` · `max:grill-with-docs` | nome das skills; formato de ADR próprio do plugin |
 | plan | `superpowers:writing-plans` | local default de planos (`docs/superpowers/plans/`) e a frase "User preferences for plan location override this default" |
 | implement | `superpowers:executing-plans` · `superpowers:subagent-driven-development` · `superpowers:test-driven-development` · `superpowers:using-git-worktrees` | nomes das skills; obrigatoriedade de TDD |
 | review | `superpowers:requesting-code-review` (estágios 1–2) · `ponytail:ponytail-review` | nomes; formato da delete-list |
 | transversal | `ponytail:ponytail` (hook always-on) | nível default; `PONYTAIL_SUBAGENT_MATCHER` |
+
+## descoberta / write-prd (pré-specify — delta-012)
+
+- **Quando:** projeto sem PRD validado ou com insumos brutos de descoberta (transcrição, planilha legada, vídeo) — a `sdd-iuri:descoberta` roda antes do specify e produz o dossiê com claims tagueados (`confirmado`/`inferido`/`lacuna`).
+- **Invocação (write-prd):** passe o dossiê como contexto com o contrato — *"claims `inferido`/`lacuna` entram no PRD marcados `[PRESUNÇÃO]`; só `confirmado`/validado entra sem marca"*. **Verificação pós-fase:** nenhum claim não-confirmado sem `[PRESUNÇÃO]` no PRD.
+- **Fallback (max ausente):** PRD rascunho nativo com a mesma regra de marcação e o aviso *"saída degradada: max/write-prd não instalado"*. A skill `descoberta` em si é própria do framework — não degrada.
 
 ## grill-me / grill-with-docs (max@max4c-skills)
 

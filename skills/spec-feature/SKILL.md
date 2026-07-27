@@ -15,6 +15,8 @@ specify → clarify → plan → tasks → analyze → implement → review → 
 ```
 Detalhe das fases (critérios de entrada/saída, máquina de estados, consolidação da entrevista): `references/cycle.md`. Gate analyze: `references/analyze.md`.
 
+Pré-fase opcional: projeto sem PRD validado ou com insumos brutos de descoberta (transcrição de reunião, planilha legada) → rode `sdd-iuri:descoberta` antes do specify (contrato em `references/adapters.md`).
+
 ## Aplicabilidade por tipo (coluna `ciclo` do projeto-init/detection.md)
 
 | Tipo | Ciclo |
