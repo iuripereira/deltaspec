@@ -1,5 +1,5 @@
 # delta-012 — descoberta
-Estado: proposta · Data: 2026-07-27 · Branch: feat/012-descoberta
+Estado: arquivada · Data: 2026-07-27 · Branch: feat/012-descoberta
 
 ## Contexto (≤3 linhas)
 O ciclo começa no specify com "pedido de feature" pronto; tudo que o produz (entrevista de negócio, processo legado as-is, ingestão de transcrição/planilha) está fora do framework, e GLOSSARY/DATA_DICTIONARY nascem vazios sem processo que os preencha. A skill `descoberta` cobre essa fase pré-specify, inspirada em AI-DLC (Mob Elaboration), BMAD (document-project) e Reversa (modelo de confiança).
@@ -42,4 +42,4 @@ O ciclo começa no specify com "pedido de feature" pronto; tudo que o produz (en
 ## Dependências e riscos
 - Leitura visual de frames depende de harness multimodal; sem ela, frames viram lacuna no inventário.
 - `max:write-prd` cobre entrevista com o dev, não com stakeholder externo — a sessão de validação (R5) continua sendo o mecanismo com terceiros.
-- [ ] Primeira execução externa real da skill (projeto imex-estoque-inteligente) alimenta a evidência do DT-004 — registrar o resultado no DEBT.md após a rodada.
+- [x] Primeira execução externa real da skill (projeto imex-estoque-inteligente) alimenta a evidência do DT-004 — registrar o resultado no DEBT.md após a rodada.

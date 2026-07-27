@@ -8,6 +8,8 @@ O formato segue [Keep a Changelog 1.0.0](https://keepachangelog.com/pt-BR/1.0.0/
 
 ## [Não lançado]
 
+## [0.8.0] - 2026-07-27
+
 ### Adicionado
 - Skill **`descoberta`** (delta-012): fase **pré-specify** do ciclo — inventário de insumos brutos (transcrição/resumo de reunião, planilha legada, vídeo com frames via `ffmpeg`), mineração do processo as-is com **claims tagueados** `confirmado`/`inferido`/`lacuna` e fonte rastreável (modelo Reversa), dossiê em `docs/discovery/`, **população de `GLOSSARY.md`/`DATA_DICTIONARY.md`** por append/merge, divergências contra a baseline vigente (PRD/TRUTH) e pauta de validação em **Mob Elaboration** (AI-DLC: a IA propõe claim a claim, o stakeholder valida). Saída para `max:write-prd` com contrato de `[PRESUNÇÃO]` (claim não confirmado nunca vira requisito sem marca); fallback nativo quando o `max` falta. Renúncias (delegar ao write-prd, portar BMAD) registradas na [ADR-0011](docs/adrs/ADR-0011-descoberta-skill-propria.md). Adapters do `spec-feature` ganham a linha da pré-fase e o contrato descoberta/write-prd.
 
