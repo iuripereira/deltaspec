@@ -5,7 +5,7 @@
 **Atualizado em:** 2026-07-27
 
 ## Agora
-- Nada em curso — delta-012 arquivada e `v0.8.0` cortada. Próximo evento esperado: desfecho da primeira execução externa da `descoberta` no imex-estoque-inteligente (DT-012).
+- Nada em curso — delta-012 arquivada, `v0.8.0` cortada e DT-012 quitado no mesmo dia (primeira execução externa da `descoberta` no imex-estoque-inteligente, PR #14 de lá).
 
 ## Feito recentemente
 - 2026-07-27 — **delta-012 implementada e arquivada** (#50 + PR de archive): skill `descoberta` (fase pré-specify — insumos brutos → dossiê com claims `confirmado`/`inferido`/`lacuna`, GLOSSARY/DATA_DICTIONARY, divergências, pauta de Mob Elaboration), R24–R30 no TRUTH.md, ADR-0011, adapters com contrato descoberta/write-prd, `v0.8.0`. Motivada pelo gap real do imex-estoque-inteligente (PRD contratualizado sem validação da stakeholder, contradito pelo kickoff). Pendência DT-012 (execução externa) roteada.
