@@ -21,6 +21,7 @@ No archive, a delta move para `specs/_archive/` e consolida no `TRUTH.md` — de
 
 ```mermaid
 flowchart LR
+    descoberta["descoberta<br>(pré-specify, opcional<br>+ write-prd)"] -.-> specify
     specify --> clarify["clarify<br>(grill-me)"]
     clarify --> plan["plan<br>(superpowers)"]
     plan --> tasks
@@ -54,7 +55,7 @@ curl -fsSL https://raw.githubusercontent.com/iuripereira/sdd-iuri/main/scripts/i
 |---|---|
 | `superpowers` | plan · implement · review |
 | `ponytail` | anti-over-engineering always-on |
-| `max` | clarify (grill-me / grill-with-docs) |
+| `max` | clarify (grill-me / grill-with-docs) · PRD da descoberta (write-prd) |
 
 As skills ficam sob o namespace `sdd-iuri:`. O `/sdd-iuri:projeto-init` confere os motores na inicialização de cada projeto; faltando algum, a fase que depende dele degrada com aviso em vez de quebrar.
 
@@ -86,6 +87,7 @@ O bloco de entregável só é necessário em projeto com `publico.cliente: true`
 |---|---|---|
 | `/sdd-iuri:projeto-init` | uma vez por repositório | Detecta o tipo (app-web · backend · site-estatico · workspace-dados · tooling), gera o `CLAUDE.md` a partir das regras canônicas, cria o scaffold (CHANGELOG, STATE, DEBT, ADRs, `specs/` + TRUTH.md nos tipos com ciclo), oferece a infra e confere os plugins. Nunca sobrescreve nada |
 | `/sdd-iuri:projeto-infra` | após criar o remote GitHub; ou avulsa em repo existente | Branch protection (rulesets), CI, Conventional Commits, release-please (changelog PT-BR), CodeRabbit/claude-code-action. Idempotente: 2ª rodada = no-op relatado |
+| `/sdd-iuri:descoberta` | antes do specify, quando não há PRD validado ou há insumos brutos (transcrição de reunião, planilha legada, vídeo, processo na cabeça de funcionários) | Descoberta pré-specify: inventaria insumos, minera o as-is em dossiê com claims `confirmado`/`inferido`/`lacuna` (fonte rastreável), popula GLOSSARY/DATA_DICTIONARY, aponta divergências contra a baseline e gera a pauta de validação (Mob Elaboration); saída via `max:write-prd` com `[PRESUNÇÃO]` obrigatória |
 | `/sdd-iuri:spec-feature` | a cada incremento de feature | Orquestra o ciclo: specify → clarify → plan → tasks → analyze → implement → review → archive → PR. Cria `specs/NNN-nome/`, numeração global, branch semântica; no archive consolida o `TRUTH.md` |
 | `/sdd-iuri:spec-review` | opcional, antes do implement | Revisão adversarial da spec/plan via grill-me — recomendada quando a spec toca segurança, dados persistentes, contrato externo ou dependência nova |
 | `/sdd-iuri:guarding-doc-integrity` | quando um valor de negócio vive em mais de um arquivo | Governança de fontes de verdade: manifesto `deps.toml` (dono → espelhos sancionados) + validador determinístico como gate pré-commit. É o executor da "regra de propagação" do `CLAUDE.md` |
