@@ -92,7 +92,7 @@ O bloco de entregável só é necessário em projeto com `publico.cliente: true`
 | `/sdd-iuri:spec-review` | opcional, antes do implement | Revisão adversarial da spec/plan via grill-me — recomendada quando a spec toca segurança, dados persistentes, contrato externo ou dependência nova |
 | `/sdd-iuri:guarding-doc-integrity` | quando um valor de negócio vive em mais de um arquivo | Governança de fontes de verdade: manifesto `deps.toml` (dono → espelhos sancionados) + validador determinístico como gate pré-commit. É o executor da "regra de propagação" do `CLAUDE.md` |
 | `/sdd-iuri:handoff` | ao encerrar a sessão de trabalho (argumento opcional: foco da próxima) | Fecha a sessão nos registros com dono: atualiza o `HANDOFF.md` (diário de bordo), roteia débito/lição novo para o `DEBT.md` (DT-NNN), cita a delta em curso com fase e gate e imprime o prompt de retomada da próxima sessão |
-| `/sdd-iuri:doc-entregavel` | no `momento` declarado no `doc-profile.yaml` (`entrega-prd`, `fechamento-fase`) — projeto com `publico.cliente: true` | Congela o entregável cliente: renderiza os diagramas do perfil (mmdc/dbml-renderer), monta o documento com capa de assinatura parametrizada e exporta PDF/DOCX versionado em `docs/entregaveis/`. **Experimental** (ADR-0009, piloto imex-travelplanner) |
+| `/sdd-iuri:doc-entregavel` | no `momento` declarado no `doc-profile.yaml` (`entrega-prd`, `fechamento-fase`) — projeto com `publico.cliente: true` | Congela o entregável cliente: renderiza os diagramas do perfil (mmdc/dbml-renderer), monta o documento com capa de assinatura parametrizada e exporta PDF/DOCX versionado em `docs/entregaveis/` (ADR-0009) |
 
 ### Skill de estilo (fora do ciclo)
 
