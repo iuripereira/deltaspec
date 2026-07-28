@@ -29,7 +29,7 @@ Princípio: acoplamento = (i) **contrato na invocação** (instrução de format
 ## Superpowers
 
 - **plan:** input = delta spec pós-clarify (**a spec do sdd-iuri é a fonte da verdade; o brainstorming/spec do Superpowers não é**). Local: a preferência no CLAUDE.md (módulo sdd-ciclo) redireciona para `specs/NNN-nome/plan.md`; reforce na invocação. Formato: o dele, **sem pós-processamento**. **Pós-fase:** (1) plano no local certo — se foi para `docs/superpowers/plans/`, mova; (2) prependa o cabeçalho de `templates/resumo-plan.md`.
-- **implement:** TDD conforme a coluna `tdd` do tipo. `recomendado`/`off` → instrua na invocação a dispensa permitida, com justificativa registrada no plan.md por task dispensada.
+- **implement:** TDD conforme a coluna `tdd` do tipo. `recomendado`/`off` → instrua na invocação a dispensa permitida, com justificativa registrada no plan.md por task dispensada. Unidades paralelizáveis (cycle.md, "Execução paralela por unidades") → um subagente com worktree por unidade (superpowers:using-git-worktrees); sem subagentes/worktree → sequencial topológico com aviso.
 - **Fallback (superpowers ausente):** gere `plan.md` próprio (cabeçalho-resumo + plano detalhado com caminhos e verificação por passo) e rode o implement inline, com o aviso *"plan degradado: superpowers/writing-plans não instalado"*. O fallback **não substitui a fase tasks**: `tasks.md` continua sendo gerado dele (o analyze depende do tasks.md).
 - **Fallback do review eixo Spec (superpowers ausente):** conduza a conferência inline — cada Rn/RNFn da spec confrontado com o diff da delta, com veredito por requisito — e registre o aviso *"review eixo Spec degradado: superpowers/requesting-code-review não instalado"*. O eixo Qualidade segue o fallback do ponytail abaixo.
 

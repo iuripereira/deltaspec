@@ -17,10 +17,10 @@ proposta ──(analyze LIBERADO + implement + review + merge)──▶ aplicada
 | specify | pedido de feature; `TRUTH.md` lido | `specs/NNN-nome/spec.md` rascunho no template; branch `tipo/NNN-nome` criada | nativo |
 | clarify | spec rascunho | ambiguidades resolvidas; spec consolidada: todo Rn com DADO/QUANDO/ENTÃO; RNFs aplicáveis (desempenho, segurança, acessibilidade, ...) elicitados com métrica; ADRs gravados se grill-with-docs | max:grill-me / max:grill-with-docs |
 | plan | spec consolidada | `plan.md` em `specs/NNN-nome/` com o cabeçalho-resumo (≤15 linhas) prependido | superpowers:writing-plans |
-| tasks | plan.md | `tasks.md`: cada task com arquivos, `cobre: Rn`/`RNFn` (ou `cobre: infra`, para task sem requisito) e verificação, ordenada por dependência | nativo (template) |
+| tasks | plan.md | `tasks.md`: cada task com arquivos, `cobre:` e verificação, ordenada por dependência, com arestas `(dep: Tn)` explícitas quando há bloqueio (C9 valida) | nativo (template) |
 | test-plan | tasks.md pronto | `test-plan.md` derivado dos cenários da spec e das verificações das tasks (template; C8 valida; dispensável no perfil enxuto — tabela abaixo) | nativo (template) |
 | analyze | spec + plan + tasks | `analyze.md` com veredito LIBERADO (ou ressalvas aceitas pelo usuário) | nativo (analyze.md) |
-| implement | analyze liberado | todas as tasks concluídas com as verificações rodadas; TDD conforme coluna `tdd` do tipo | superpowers:executing-plans ou subagent-driven-development |
+| implement | analyze liberado | todas as tasks concluídas com as verificações rodadas; TDD conforme coluna `tdd` do tipo; unidades paralelizáveis podem rodar em worktrees (seção abaixo) | superpowers:executing-plans ou subagent-driven-development |
 | review | implementação completa | eixo Spec ok; eixo Qualidade ok com delete-list tratada; convergentes tratados (contrato: adapters.md, "Review em dois eixos"; perfil enxuto: eixos fundidos — tabela abaixo) | superpowers + ponytail:ponytail-review |
 | archive | PR mergeado | Estado: arquivada; TRUTH.md consolidado; diretório em `_archive/` | nativo (regras abaixo) |
 
@@ -70,6 +70,17 @@ No specify, a IA propõe `Perfil: completo|enxuto` no cabeçalho com justificati
 | test-plan | obrigatório (C8: ALTO se ausente) | dispensável — `Test-plan: dispensado — <motivo>` no cabeçalho (C8: BAIXO) |
 | review | dois eixos em subagentes paralelos (R35) | eixos fundidos num único subagente (regra: adapters.md, "Review em dois eixos") |
 | plan · tasks · analyze · archive | integrais | integrais |
+
+## Execução paralela por unidades (delta-016)
+
+O grafo do `tasks.md` (arestas `(dep: Tn[, Tm])`; task sem `dep:` é livre) define as
+unidades de execução: **duas tasks sem caminho entre si são paralelizáveis**. No
+implement, harness com subagentes → cada unidade pode rodar num subagente com
+worktree isolada (motor `superpowers:using-git-worktrees`, contrato em adapters.md),
+com convergência (merge das worktrees) antes do review. Harness sem subagentes ou
+sem worktree → execução sequencial na ordem topológica, com aviso de degradação
+(RNF2). O C9 valida o grafo — dep existente e aciclicidade; arquivo sem nenhum
+`dep:` vale como cadeia linear implícita pela ordem (retrocompatível).
 
 ## Prototipação opcional (R2, delta-015 — estágio CONDITIONAL)
 
