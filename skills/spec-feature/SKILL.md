@@ -60,5 +60,6 @@ delta-001 **não** é "o sistema inteiro": é o walking skeleton — a menor fat
 - `references/cycle.md` — máquina de estados, critérios de entrada/saída por fase, consolidação entrevista→spec, regras de archive/TRUTH.md.
 - `references/analyze.md` — roteiro do gate de verificação cruzada + formato do relatório.
 - `references/adapters.md` — contratos de integração (max, superpowers, ponytail), fallbacks, política de versões e detecção de breaking change.
+- `references/harness.md` — vocabulário canônico de harness (initializer, gate determinístico, unidade paralelizável, ...); os demais docs linkam, não redefinem.
 - `references/templates/` — `delta-spec.md`, `bugfix-spec.md`, `tasks.md`, `test-plan.md`, `TRUTH.md`, `resumo-plan.md`.
-- `scripts/check_cycle.py` — gate determinístico (C1 aceite · C2 cobertura · C3 estado · C4 archive sem perda · C5 tamanho do TRUTH · C6 pendência roteada · C7 split de PR · C8 plano de testes). `--selftest` valida o próprio script.
+- `scripts/check_cycle.py` — gate determinístico (C1 aceite · C2 cobertura · C3 estado · C4 archive sem perda · C5 tamanho do TRUTH · C6 pendência roteada · C7 split de PR · C8 plano de testes · C9 grafo de tasks · C10 convergência no archive). `--selftest` valida o próprio script.
