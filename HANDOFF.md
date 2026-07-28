@@ -5,9 +5,11 @@
 **Atualizado em:** 2026-07-28
 
 ## Agora
-- **delta-013 (higiene) em implement** — Fase 0 do plano de upgrade aprovado em 2026-07-28 (`~/.claude/plans/esse-framework-sdd-iuri-sleepy-raccoon.md`): inventário de skills sincronizado + check no CI, hook pré-commit real (DT-005), ADR-0009 Accepted, `eu-tenho-tdah` a consolidar no TRUTH. Analyze LIBERADO; falta review + PR + archive.
+- Nada em curso — delta-013 arquivada e `v0.9.0` cortada. Fase 0 do plano de upgrade concluída (`~/.claude/plans/esse-framework-sdd-iuri-sleepy-raccoon.md`); próxima é a Fase 1 (delta-014, recontratação dos motores).
 
 ## Feito recentemente
+- 2026-07-28 — **delta-013 (higiene) implementada e arquivada** (#53 + PR de archive): Fase 0 do plano de upgrade — manifestos com as 9 skills + check de inventário no CI, hook pré-commit versionado (DT-005 quitado; cobre deleção de `.md`), ADR-0009 `Accepted` com MUDA RNF1 (exceção de doc cliente), R31–R33 no TRUTH, DT-013 roteado (check do doc-profile), `v0.9.0`. Review em 2 eixos com subagentes paralelos (padrão que a Fase 1 formaliza nos adapters).
+- 2026-07-28 — **Plano de reavaliação/upgrade do framework aprovado**: pesquisa verificada (AI-DLC, Pocock atual, superpowers 6.2, harness Anthropic, Jira acli/Rovo MCP, Figma vs Mermaid, graphify) + 6 fases (deltas 013–018). Decisões-chave: tickets.md canônico no repo com Jira como projeção; Mermaid fonte + Figma apresentação; graphify como 4º motor opcional.
 - 2026-07-27 — **delta-012 implementada e arquivada** (#50 + PR de archive): skill `descoberta` (fase pré-specify — insumos brutos → dossiê com claims `confirmado`/`inferido`/`lacuna`, GLOSSARY/DATA_DICTIONARY, divergências, pauta de Mob Elaboration), R24–R30 no TRUTH.md, ADR-0011, adapters com contrato descoberta/write-prd, `v0.8.0`. Motivada pelo gap real do imex-estoque-inteligente (PRD contratualizado sem validação da stakeholder, contradito pelo kickoff). Pendência DT-012 (execução externa) roteada.
 - 2026-07-26 — **delta-011 arquivada** (#49): R21–R23 consolidados no TRUTH.md, pendência do rodapé `CONFIDENCIAL`/marca d'água roteada para DT-011, `v0.7.0`.
 - 2026-07-26 — **delta-011 implementada** (#48): auditoria do prompt jurídico solto (não versionado) e integração como `doc-entregavel/references/juridico.md`, com dispatch por tipo na SKILL.md. Achado principal: a premissa sobre assinatura eletrônica estava invertida — o STJ (REsp 2.205.708-PR, Info 871, 04/11/2025) dispensa testemunhas com qualquer modalidade cuja integridade seja conferida por provedor, sem exigir ICP-Brasil; a política conservadora ficou, agora como redundância declarada. `requisitos-cliente` passou a exigir Visão (produto e/ou projeto), orçamento por fase, prazo e cronograma com marcos de pagamento. Detalhes no CHANGELOG (`[Não lançado]`).
@@ -33,8 +35,7 @@
 - Nenhum bloqueio. Débito durável: [DEBT.md](DEBT.md) (DT-001, DT-004..DT-007, DT-009..DT-011 abertos; DT-002/DT-003/DT-008 quitados).
 
 ## Próximos passos imediatos
-- Fechar a delta-013: review em 2 estágios → PR → archive (consolida R31–R33 + MUDA RNF1, quita DT-005, roteia pendência do check do doc-profile) → tag `v0.9.0`.
-- Fases 1–5 do plano de upgrade (deltas 014–018): recontratação dos motores → fluxo completo → harness+graphify → Jira → visual híbrido.
-- Rodar uma delta real com o gate do specify no imex-travelplanner (gatilho do DT-004 — não foi quitado pela promoção da ADR-0009).
+- Fase 1 do plano de upgrade (delta-014): recontratação dos motores — decidir pin do max (upstream matou `write-prd` → `grilling`/`to-spec`/`to-tickets`), formalizar review em 2 eixos paralelos nos adapters.
+- Rodar uma delta real com o gate do specify no imex-travelplanner (gatilho do DT-004 e do DT-013).
 - Rodar `/plugin update sdd-iuri` no Claude Code local (cache anterior à delta-013).
-- Próxima delta livre: 014. Débito aberto: DT-001, DT-004, DT-006 (guarda), DT-007, DT-009, DT-010 (guarda), DT-011 (DT-005 quita no archive da 013).
+- Próxima delta livre: 014. Débito aberto: DT-001, DT-004, DT-006 (guarda), DT-007, DT-009, DT-010 (guarda), DT-011, DT-013.

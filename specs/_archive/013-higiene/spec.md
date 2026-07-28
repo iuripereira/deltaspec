@@ -1,5 +1,5 @@
 # delta-013 — higiene
-Estado: proposta · Data: 2026-07-28 · Branch: feat/013-higiene
+Estado: arquivada · Data: 2026-07-28 · Branch: feat/013-higiene
 
 ## Contexto (≤3 linhas)
 Fase 0 do plano de upgrade aprovado em 2026-07-28: drift de inventário nos dois manifestos (7 vs 8 vs 9 skills — reincidência da classe registrada nas Lições), DT-005 aberto há 10 dias (gate pré-commit prometido em 5 arquivos sem hook algum), ADR-0009 travada em `Proposed` bloqueando o MUDA RNF1, e a skill `eu-tenho-tdah` sem requisito no TRUTH.
@@ -30,6 +30,6 @@ Fase 0 do plano de upgrade aprovado em 2026-07-28: drift de inventário nos dois
 - Hook pré-commit obrigatório/auto-instalado em projetos de usuário — instalação é opt-in oferecida no bootstrap (RNF3).
 
 ## Dependências e riscos
-- [ ] Avaliar o check mecânico do doc-profile no `check_cycle.py` quando o formato do perfil estabilizar (condição da ADR-0009); no archive vira DT.
+- [x] Avaliar o check mecânico do doc-profile no `check_cycle.py` quando o formato do perfil estabilizar (condição da ADR-0009) — roteado como DT-013.
 - A promoção da ADR-0009 a `Accepted` se apoia na evidência do piloto doc-profile+doc-entregavel (4 repos IMEX, 8 exports, 2026-07-20); a delta externa com gate do specify (travelplanner) segue pendente e continua sendo o gatilho do DT-004 — a promoção não o quita.
 - `core.hooksPath` não se propaga por clone: cada checkout ativa o hook uma vez (documentado no bootstrap da skill).
