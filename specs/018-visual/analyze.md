@@ -8,3 +8,5 @@ Checks 3 e 5 (juízo humano, rodados nesta sessão): **3 — scope creep:** o re
 Ressalvas aceitas: 2026-07-28 — achado 1 é o comportamento desenhado pela delta-015 para o perfil enxuto (primeiro dogfood real).
 
 **Veredito:** LIBERADO COM RESSALVAS
+
+Review (fundido, perfil enxuto — R35/R36): eixo Spec 12/12 cenários sem lacuna (ADR-0009 intocada conferida no diff; R3 com os 2 cenários vigentes do R5 íntegros); eixo Qualidade delete-list vazia (padrão replica prototipo/graphify, sem debt novo); nenhum convergente — 2026-07-28
