@@ -1,5 +1,5 @@
 # delta-018 — visual
-Estado: proposta · Data: 2026-07-28 · Branch: feat/018-visual · Perfil: enxuto — delta só de contrato/documentação (categoria no doc-profile, ADR, adapters, references), sem código de gate; risco baixo (aprovado: 2026-07-28) · Test-plan: dispensado — delta só de prosa/contrato; as verificações (YAML parseável, links vivos, leitura) vivem nas tasks
+Estado: arquivada · Data: 2026-07-28 · Branch: feat/018-visual · Perfil: enxuto — delta só de contrato/documentação (categoria no doc-profile, ADR, adapters, references), sem código de gate; risco baixo (aprovado: 2026-07-28) · Test-plan: dispensado — delta só de prosa/contrato; as verificações (YAML parseável, links vivos, leitura) vivem nas tasks
 <!-- Numeração: a regra mecânica daria 017, mas o usuário reservou 017 para a Fase 4 (Jira) e nomeou esta delta 018 (decisão de 2026-07-28). O mecanismo normativo da reserva entra pelo R3 (MUDA R5) abaixo — preserva o gatilho "delta-017" da ADR-0012 e do R34. -->
 
 ## Contexto (≤3 linhas)
@@ -34,4 +34,4 @@ Fase 5 do plano de upgrade: implementar o veredito da pesquisa (2026-07-28) — 
 ## Dependências e riscos
 - Depende do plano de upgrade aprovado (2026-07-28) e das Fases 0–3 arquivadas (deltas 013–016)
 - Risco aceito: `generate_diagram` é beta e "will eventually be a usage-based paid feature" — fora do caminho crítico por design (R2)
-- [ ] Pendência: reavaliar a camada Figma quando o preço do `generate_diagram` for anunciado (vira DT-NNN no archive, próximo número livre)
+- [x] Pendência: reavaliar a camada Figma quando o preço do `generate_diagram` for anunciado — roteada como DT-014 no DEBT.md (archive, 2026-07-28)

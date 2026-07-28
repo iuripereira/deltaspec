@@ -50,9 +50,10 @@
 
 ## Ciclo de features
 
-- R5 (delta-001) — uma feature é uma delta spec, com numeração global ao repositório.
+- R5 (delta-018) — uma feature é uma delta spec, com numeração global ao repositório e reserva explícita admitida.
   - DADO um incremento novo QUANDO a skill `spec-feature` abre a delta ENTÃO cria `specs/NNN-nome/` com `NNN` = max(`specs/`, `specs/_archive/`) + 1 e a branch `tipo/NNN-nome`
   - DADO uma versão maior do projeto QUANDO uma delta nova é aberta ENTÃO a numeração continua do maior existente e nunca reinicia
+  - DADO uma reserva de número declarada explicitamente pelo usuário QUANDO uma delta abre ENTÃO ela pode saltar o número reservado (ou consumi-lo, se for a delta reservada), mantendo a unicidade global — nenhum número é reutilizado, e tanto a delta que salta quanto a que consome citam a reserva de forma citável no spec (padrão R43)
 - R6 (delta-006) — a delta declara só o que muda em relação ao TRUTH.md.
   - DADO o `TRUTH.md` vigente QUANDO a spec é redigida ENTÃO cada bloco é ADICIONA, MUDA ou REMOVE, e blocos MUDA/REMOVE citam o alvo vigente (ex.: "MUDA R2 (delta-001)")
   - DADO um requisito na delta QUANDO a spec é validada ENTÃO ele tem cenário DADO/QUANDO/ENTÃO verificável; qualidade sem limiar fechado vira pendência em riscos, não RNF
@@ -181,6 +182,16 @@
   - DADO um documento `requisitos-cliente` QUANDO ele é gerado ENTÃO as seções de previsão de orçamento (por fase, com premissas da estimativa e faixa), prazo total estimado e cronograma (fases, marcos, dependências e marcos de pagamento vinculados) estão presentes e preenchidas ou marcadas com placeholder em destaque
   - DADO o estado da negociação QUANDO a skill escolhe a versão ENTÃO gera a Versão A (proposta executiva, pré-NDA: visão, problema, macro-funcionalidades, faixa de investimento e prazo macro, sem arquitetura detalhada, modelagem de dados ou backlog decomposto) ou a Versão B (especificação completa, pós-NDA assinado, com rodapé `CONFIDENCIAL` e nota de titularidade), nunca as duas no mesmo arquivo
   - DADO um documento `requisitos-cliente` QUANDO ele lista requisitos ENTÃO usa os IDs rastreáveis do framework (`OBJ-*`, `ESC-*`, `RF-*`, `RNF-*`, `RC-*`, `PRE-*`, `RSK-*`), compatíveis com o `tabela_cliente.py` da própria skill
+- R45 (delta-018) — Figma/FigJam como camada de apresentação a cliente, com Mermaid fonte.
+  - DADO um projeto cujo `doc-profile.yaml` declara a categoria `apresentacao` QUANDO um diagrama Mermaid versionado precisa de acabamento para stakeholder ENTÃO ele é materializado no FigJam a partir do `.mmd` fonte (fluxo Mermaid → `generate_diagram` do Figma MCP → retoque manual), e o arquivo `.mmd` em git permanece a única fonte da verdade
+  - DADO um diagrama já materializado no Figma QUANDO o `.mmd` fonte muda ENTÃO a materialização é refeita a partir do fonte; edição feita direto no Figma nunca retorna ao git como fonte — em divergência, o `.mmd` governa
+  - DADO um `.mmd` de tipo não suportado pelo `generate_diagram` (~6 tipos aceitos, só FigJam, sem ajuste fino) QUANDO a materialização roda ENTÃO o fallback é render CLI (pipeline vigente) com a imagem colada no FigJam para retoque — limitação registrada na ADR-0015
+  - DADO o template `doc-profile.yaml` QUANDO a delta consolida ENTÃO a categoria `apresentacao` existe no bloco `artefatos:` como opcional (`obrigatorio: false` por default), com comentário apontando ferramenta (`figma-figjam`), fluxo e a ADR-0015 — mesmo padrão da categoria `prototipo` (delta-015)
+- R46 (delta-018) — entregável congelado fora do caminho do Figma, com contrato de motor e degradação graciosa.
+  - DADO um entregável congelado (PDF/DOCX da `doc-entregavel`) QUANDO ele é gerado ENTÃO o pipeline CLI vigente (mmdc/dbml-renderer → export) permanece o caminho único — a camada Figma não entra no caminho crítico do documento assinável — e a SKILL.md da `doc-entregavel` documenta o papel do Figma (camada de apresentação, nunca no export)
+  - DADO a tabela de contrato de `adapters.md` QUANDO a delta consolida ENTÃO existe a linha do Figma MCP (contexto: categoria `apresentacao`) com ponto sensível a breaking (`generate_diagram` beta → "usage-based paid feature" anunciada) e fallback declarado, e a política de versões tem a entrada com verificação datada (R34; versão "n/a — serviço remoto" com nota)
+  - DADO o Figma MCP ausente, não autenticado ou a categoria `apresentacao` não declarada QUANDO o ciclo ou a doc-entregavel rodam ENTÃO o fluxo atual segue com no máximo 1 linha de aviso — degradação graciosa (RNF2)
+  - DADO um cliente que exige o acabamento FigJam no documento congelado QUANDO o export é montado ENTÃO o caminho é retoque/export manual, registrado na ADR-0015 como limitação **não verificada** (claim de fonte única, 2026-07-28) — verificar na primeira materialização real
 
 ## Não funcionais
 

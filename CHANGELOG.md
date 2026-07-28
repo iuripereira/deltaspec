@@ -8,6 +8,8 @@ O formato segue [Keep a Changelog 1.0.0](https://keepachangelog.com/pt-BR/1.0.0/
 
 ## [Não lançado]
 
+## [0.13.0] - 2026-07-28
+
 ### Adicionado
 - **Figma/FigJam como camada de apresentação a cliente** (delta-018, R1 — ADR-0015): categoria `apresentacao` no doc-profile; fluxo unidirecional Mermaid fonte → `generate_diagram` → retoque (o `.mmd` governa); tipo não suportado → render CLI + imagem no FigJam.
 - **Figma MCP nos adapters** (delta-018, R2): linha de contrato com ponto sensível (beta → pago), seção com fallback (RNF2) e política sem pin ("n/a — serviço remoto", verificação datada); entregável congelado permanece exclusivo do pipeline CLI, documentado também na `doc-entregavel`.
