@@ -19,7 +19,7 @@ Alternativas consideradas:
 
 Adotamos a alternativa 3, decidida com o usuário em 2026-07-28: **o pin `max@max4c-skills` 0.8.0 passa a ser fork deliberado.** A tabela de política de dependência dos adapters ganha verificação **datada** por motor e a nota de divergência do max, com **gatilho de reavaliação na delta-017 (Fase 4 — plano→ticket)**: é quando `to-tickets`/`wayfinder` passam a ter consumidor no ciclo e a migração ganha valor real. Breaking do fork (plugin distribuído removendo as skills contratadas) antecipa o gatilho — a detecção vigente de skill ausente/renomeada já degrada com aviso (ADR-0004).
 
-Renunciamos a (1) porque pagar MUDA R30 + retrabalho da descoberta agora compraria alinhamento sem função — e a semântica do `to-spec` (sem entrevista) conflita com o clarify entrevistado que o ciclo exige. Renunciamos a (2) porque contrato sem consumidor é a definição de flexibilidade morta.
+Renunciamos a (1) porque compraria alinhamento sem função imediata, com a semântica do `to-spec` conflitando com o clarify entrevistado; a (2) porque contrato sem consumidor é flexibilidade morta.
 
 ## Consequences
 

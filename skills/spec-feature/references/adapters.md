@@ -23,7 +23,7 @@ Princípio: acoplamento = (i) **contrato na invocação** (instrução de format
 
 - **Invocação (clarify):** passe a delta spec rascunho como objeto da entrevista. Gatilhos para `grill-with-docs` (senão `grill-me`): contrato externo · modelo de dados persistente · dependência nova · segurança. Reporte a escolha ao usuário.
 - **Contrato ADR (grill-with-docs):** instrua na invocação — *"registre decisões como ADR usando o template `docs/adrs/ADR-TEMPLATE.md` deste projeto (PT-BR, imutável), na numeração existente"*. **Verificação pós-fase:** ADRs novos conformes ao template; não conformes → reformatar antes de prosseguir.
-- **Consolidação:** passo nativo (cycle.md) — `to-spec` não está no plugin instalado. Se for instalado no futuro, mesmo contrato: *"emita no formato delta-spec do sdd-iuri"*. (No upstream, grill-me/grill-with-docs viraram orquestradores finos sobre a skill-motor `grilling` — mesma fatoração motor+orquestrador deste repo; o contrato aqui permanece nas skills do plugin 0.8.0, ADR-0012.)
+- **Consolidação:** passo nativo (cycle.md) — `to-spec` não está no plugin instalado. Se for instalado no futuro, mesmo contrato: *"emita no formato delta-spec do sdd-iuri"* (fatoração upstream: ADR-0012).
 - **Fallback (max ausente):** clarify próprio simplificado — cheque uma a uma as ambiguidades de **permissões, estados de erro, persistência, limites, concorrência** — com o aviso *"clarify degradado: max/grill-me não instalado"*.
 
 ## Superpowers
@@ -41,10 +41,7 @@ Princípio: acoplamento = (i) **contrato na invocação** (instrução de format
 
 ## Review em dois eixos (delta-014)
 
-O review executa como **dois eixos independentes**, cada um cego ao contexto do outro (o achado de um não contamina a leitura do outro):
-
-- **Eixo Spec** (conformidade) — motor `superpowers:requesting-code-review`: cada Rn/RNFn da spec confrontado com o diff da delta, veredito por requisito + caça a scope creep.
-- **Eixo Qualidade** (over-engineering) — motor `ponytail:ponytail-review`: delete-list ranqueada do que cortar.
+O review executa como **dois eixos independentes**, cada um cego ao contexto do outro (o achado de um não contamina a leitura do outro): **eixo Spec** (conformidade — motor `superpowers:requesting-code-review`, conteúdo na seção Superpowers acima) e **eixo Qualidade** (over-engineering — motor `ponytail:ponytail-review`, seção ponytail acima).
 
 **Execução:** harness com subagentes → despache os dois eixos em **subagentes paralelos** (um por eixo, prompts independentes); harness sem subagentes ou motor ausente → inline, em sequência, com os fallbacks e avisos acima (RNF2). Achado apontado pelos **dois** eixos é convergente — trate antes do PR, sempre. Os demais achados seguem a régua vigente (crítico bloqueia; o resto é decisão registrada).
 
@@ -52,10 +49,10 @@ O review executa como **dois eixos independentes**, cada um cego ao contexto do 
 
 | Plugin | Versão testada | Faixa aceita | Verificado em | Substituibilidade / divergência upstream |
 |---|---|---|---|---|
-| `max@max4c-skills` | 0.8.0 | **fork deliberado** — pin na testada ([ADR-0012](../../../docs/adrs/ADR-0012-recontratacao-motores.md)) | 2026-07-28 | Upstream (mattpocock/skills) **divergiu**: `write-prd` removido (virou `to-spec`/`to-tickets`), entrevista fatorada na skill-motor `grilling`; o plugin distribuído mantém a API contratada. **Reavaliar na delta-017** (tickets) ou em breaking do fork |
+| `max@max4c-skills` | 0.8.0 | **fork deliberado** — pin na testada ([ADR-0012](../../../docs/adrs/ADR-0012-recontratacao-motores.md)) | 2026-07-28 | Upstream divergiu (detalhe: ADR-0012); o plugin distribuído mantém a API contratada. **Reavaliar na delta-017** ou em breaking do fork. Forkável: em último caso copiar a SKILL.md para o diretório de skills pessoais do usuário e apontar este adapter |
 | `superpowers@claude-plugins-official` | 6.1.1 | faixa 6.x | 2026-07-28 (upstream 6.2.0 de 2026-07-24 — dentro da faixa, não testada) | **não forkável** — dependência real; mitigação = fallbacks acima |
 | `ponytail@ponytail` | 4.8.4 | faixa 4.x | 2026-07-28 | forkável (ruleset markdown + hook simples) |
 
-Re-verificação: toda delta que tocar este arquivo atualiza a coluna "Verificado em" dos motores que conferir — a data existe para denunciar staleness (repos fast-moving).
+Re-verificação: toda delta que tocar este arquivo atualiza a coluna "Verificado em" dos motores que conferir.
 
 O `projeto-init` (passo de verificação de plugins) confere nomes e versões contra a tabela de contrato acima na inicialização de cada projeto.
