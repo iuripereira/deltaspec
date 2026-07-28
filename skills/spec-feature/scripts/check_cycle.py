@@ -18,6 +18,7 @@ continuam com o modelo — são juízo, não regex.
   C7  split de PR — artefatos da delta acima do limiar de PR recomendam split (BAIXO)
   C8  cobertura do plano de testes — Rn/RNFn sem caso; ausência sem dispensa (delta-015)
   C9  grafo de tasks — `(dep: Tn)` inexistente ou ciclo entre tasks (delta-016)
+  C10 convergência mínima — task '- [ ]' remanescente em delta arquivada (delta-016)
 
 Uso: check_cycle.py [DELTA_DIR]   (default: a única delta não arquivada em ./specs)
      check_cycle.py --selftest
@@ -45,6 +46,7 @@ CASO = re.compile(r"^\s*-\s*\[[ xX]\]\s*(CT\d+)")  # caso de teste do test-plan.
 DEP = re.compile(r"\(dep:\s*([^)]*)\)")  # arestas de bloqueio do tasks.md (delta-016)
 SECAO_RISCOS = re.compile(r"^##\s+Depend[êe]ncias e riscos\s*$(.*?)(?=^##\s|\Z)", re.M | re.S)
 PENDENCIA_ABERTA = re.compile(r"^\s*-\s*\[ \]", re.M)
+TAREFA_ABERTA = re.compile(r"^\s*-\s*\[ \]\s*T\d+", re.M)  # task não concluída (C10, delta-016)
 # ponytail: um requisito por bloco ###; spec que fuja do template não é parseada
 
 
@@ -314,6 +316,18 @@ def c9_grafo(tasks_txt: str, v: list) -> None:
         v.append(("ALTO", "tasks.md", f"ciclo de dependências envolvendo {', '.join(ciclo)}", "remover a aresta que fecha o ciclo (C9)"))
 
 
+def c10_convergencia(root: Path, v: list) -> None:
+    """Convergência mínima no archive (delta-016): delta arquivada com task '- [ ]'
+    remanescente no tasks.md → ALTO. A auditoria semântica codebase×spec segue
+    juízo humano do review (renúncia por design, ADR-0014)."""
+    for p in sorted((root / "specs" / "_archive").glob("*/tasks.md")):
+        n = len(TAREFA_ABERTA.findall(p.read_text(encoding="utf-8")))
+        if n:
+            v.append(("ALTO", str(p.relative_to(root)),
+                      f"{n} task(s) '- [ ]' em delta arquivada",
+                      "concluir ou marcar '- [x]' — archive não fecha com trabalho aberto (C10)"))
+
+
 def checar(root: Path, delta: Path) -> list:
     spec, tasks = delta / "spec.md", delta / "tasks.md"
     if not spec.is_file():
@@ -342,6 +356,7 @@ def checar(root: Path, delta: Path) -> list:
     c4_archive(root, bs, v)
     c5_tamanho(root, v)
     c6_pendencias(root, v)
+    c10_convergencia(root, v)
     c7_split(root, delta, v)
     c8_testplan(delta, bs, spec_txt, v)
     return v
@@ -376,7 +391,7 @@ def main() -> None:
     print("|---|---|---|---|---|")
     for i, (sev, onde, o_que, acao) in enumerate(v, 1):
         print(f"| {i} | {sev} | {onde} | {o_que} | {acao} |")
-    print("\nParcial: cobre C1–C8; os checks 3 e 5 do analyze.md (scope creep, regra canônica) são juízo humano e não rodaram.")
+    print("\nParcial: cobre C1–C10; os checks 3 e 5 do analyze.md (scope creep, regra canônica) são juízo humano e não rodaram.")
     sevs = {f[0] for f in v}
     veredito = "BLOQUEADO" if "CRÍTICO" in sevs else "LIBERADO COM RESSALVAS" if v else "LIBERADO"
     print(f"\n**Veredito:** {veredito}")
@@ -495,6 +510,22 @@ Estado: arquivada · Data: 2026-01-01 · Branch: feat/001-x
                    "- [ ] T2 (dep: T1) — cache · arquivos: b.py · cobre: RNF1 · verificação: k6\n")
     com_ciclo = rodar(limpa_spec, ciclo_tasks, limpa_testplan)
     assert any(s == "ALTO" and "ciclo" in q for s, _, q, _ in com_ciclo), f"C9 ciclo: {com_ciclo}"
+
+    # C10 — convergência mínima no archive (delta-016)
+    with tempfile.TemporaryDirectory() as d:
+        root = Path(d)
+        arq = root / "specs" / "_archive" / "001-x"
+        arq.mkdir(parents=True)
+        (arq / "spec.md").write_text(limpa_spec.replace("Estado: proposta", "Estado: arquivada"), encoding="utf-8")
+        (arq / "tasks.md").write_text("- [x] T1 — feito · cobre: R1 · verificação: ok\n"
+                                      "- [ ] T2 — esquecida · cobre: RNF1 · verificação: k6\n", encoding="utf-8")
+        v10: list = []
+        c10_convergencia(root, v10)
+        assert len(v10) == 1 and v10[0][0] == "ALTO" and "1 task" in v10[0][2], f"C10 task aberta: {v10}"
+        (arq / "tasks.md").write_text("- [x] T1 — feito · cobre: R1 · verificação: ok\n", encoding="utf-8")
+        v10 = []
+        c10_convergencia(root, v10)
+        assert v10 == [], f"C10 falso positivo com tudo concluído: {v10}"
 
     # bugfix (delta-015): sem bloco Rn é válido; repro e teste de regressão são obrigatórios
     bugfix_ok = """# delta-002 — fix parse
