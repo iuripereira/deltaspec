@@ -16,8 +16,10 @@ Escreva uma ADR quando a **renúncia de uma alternativa** precisa registrar o *p
 | [0006](ADR-0006-perimetro-dos-gates.md) | Perímetro dos gates determinísticos — o papel, não o implement/review | Accepted | 2026-07-18 |
 | [0007](ADR-0007-registros-com-dono.md) | Registros com dono — DEBT.md file-first; Issues não são registro | Accepted | 2026-07-19 |
 | [0008](ADR-0008-skill-handoff-propria.md) | Skill handoff própria — nem vendorizada, nem delegada | Accepted | 2026-07-20 |
-| [0009](ADR-0009-documentacao-visual-gate-configuravel.md) | Documentação visual como gate configurável — a decisão é obrigatória, os diagramas não | Proposed (experimental — piloto imex-travelplanner) | 2026-07-20 |
+| [0009](ADR-0009-documentacao-visual-gate-configuravel.md) | Documentação visual como gate configurável — a decisão é obrigatória, os diagramas não | Accepted (2026-07-28, delta-013) | 2026-07-20 |
 | [0010](ADR-0010-handoff-renomeia-state.md) | HANDOFF.md renomeia STATE.md — o diário de bordo é o ponto de entrada da retomada | Accepted | 2026-07-24 |
+| [0011](ADR-0011-descoberta-skill-propria.md) | A fase de descoberta é uma skill própria pré-specify, com modelo de confiança explícito | Accepted | 2026-07-27 |
+| [0012](ADR-0012-recontratacao-motores.md) | Pin do max é fork deliberado — divergência upstream documentada, migração com gatilho | Accepted | 2026-07-28 |
 
 > ADR-0002 a 0006 são **backfill** (2026-07-19): decisões que já vigiam, registradas retroativamente na varredura de registros do repo. A data de cada uma aproxima a decisão real pelo histórico disponível — o histórico pré-plugin foi reescrito (`filter-repo`), então decisões anteriores podem ser mais antigas do que a data registrada.
 

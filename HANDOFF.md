@@ -5,7 +5,7 @@
 **Atualizado em:** 2026-07-28
 
 ## Agora
-- Nada em curso — delta-013 arquivada e `v0.9.0` cortada. Fase 0 do plano de upgrade concluída (`~/.claude/plans/esse-framework-sdd-iuri-sleepy-raccoon.md`); próxima é a Fase 1 (delta-014, recontratação dos motores).
+- **delta-014 (motores) em review** — Fase 1 do plano de upgrade: pin do max mantido como fork deliberado (decisão do usuário, ADR-0012), política de pins com verificação datada, review em dois eixos paralelos formalizado. Analyze LIBERADO; falta review → PR → archive.
 
 ## Feito recentemente
 - 2026-07-28 — **delta-013 (higiene) implementada e arquivada** (#53 + PR de archive): Fase 0 do plano de upgrade — manifestos com as 9 skills + check de inventário no CI, hook pré-commit versionado (DT-005 quitado; cobre deleção de `.md`), ADR-0009 `Accepted` com MUDA RNF1 (exceção de doc cliente), R31–R33 no TRUTH, DT-013 roteado (check do doc-profile), `v0.9.0`. Review em 2 eixos com subagentes paralelos (padrão que a Fase 1 formaliza nos adapters).

@@ -20,7 +20,7 @@ proposta ──(analyze LIBERADO + implement + review + merge)──▶ aplicada
 | tasks | plan.md | `tasks.md`: cada task com arquivos, `cobre: Rn`/`RNFn` (ou `cobre: infra`, para task sem requisito) e verificação, ordenada por dependência | nativo (template) |
 | analyze | spec + plan + tasks | `analyze.md` com veredito LIBERADO (ou ressalvas aceitas pelo usuário) | nativo (analyze.md) |
 | implement | analyze liberado | todas as tasks concluídas com as verificações rodadas; TDD conforme coluna `tdd` do tipo | superpowers:executing-plans ou subagent-driven-development |
-| review | implementação completa | estágio 1 (conformidade com a spec) ok; estágio 2 (qualidade) ok com delete-list do /ponytail-review tratada | superpowers + ponytail:ponytail-review |
+| review | implementação completa | eixo Spec ok; eixo Qualidade ok com delete-list tratada; convergentes tratados (contrato: adapters.md, "Review em dois eixos") | superpowers + ponytail:ponytail-review |
 | archive | PR mergeado | Estado: arquivada; TRUTH.md consolidado; diretório em `_archive/` | nativo (regras abaixo) |
 
 Fim de cada fase = **commit dos artefatos na branch da delta** (regra canônica: fim de etapa = commit). Não acumule o ciclo inteiro num commit só.
