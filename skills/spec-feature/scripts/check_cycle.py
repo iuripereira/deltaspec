@@ -16,6 +16,7 @@ continuam com o modelo — são juízo, não regex.
   C5  tamanho do TRUTH.md — acima de 800 linhas, particionar em truth/<dominio>.md
   C6  pendência roteada — '- [ ]' em "Dependências e riscos" de delta arquivada
   C7  split de PR — artefatos da delta acima do limiar de PR recomendam split (BAIXO)
+  C8  cobertura do plano de testes — Rn/RNFn sem caso; ausência sem dispensa (delta-015)
 
 Uso: check_cycle.py [DELTA_DIR]   (default: a única delta não arquivada em ./specs)
      check_cycle.py --selftest
@@ -39,6 +40,7 @@ REQ_ID = r"R(?:NF|F)?-?\d+(?:\.\d+)*"
 CABECALHO = re.compile(rf"^###\s+({REQ_ID})\s*[—-]\s*(ADICIONA|MUDA|REMOVE)\b(.*)$")
 ALVO = re.compile(rf"\b({REQ_ID})\s*\((?:Δ\s*|delta-)\d+\)")  # aceita (ΔNNN) legado e (delta-NNN)
 TAREFA = re.compile(r"^\s*-\s*\[[ xX]\]\s*(T\d+)")
+CASO = re.compile(r"^\s*-\s*\[[ xX]\]\s*(CT\d+)")  # caso de teste do test-plan.md (delta-015)
 SECAO_RISCOS = re.compile(r"^##\s+Depend[êe]ncias e riscos\s*$(.*?)(?=^##\s|\Z)", re.M | re.S)
 PENDENCIA_ABERTA = re.compile(r"^\s*-\s*\[ \]", re.M)
 # ponytail: um requisito por bloco ###; spec que fuja do template não é parseada
@@ -229,11 +231,48 @@ def c7_split(root: Path, delta: Path, v: list) -> None:
                   "abrir primeiro o PR só dos artefatos — split condicional (cycle.md)"))
 
 
+def c8_testplan(delta: Path, bs, spec_txt: str, v: list) -> None:
+    """Cobertura Rn/RNFn → caso de teste (espelho do C2). Ausência: ALTO no perfil
+    completo (default sem campo Perfil — retrocompat); BAIXO com dispensa declarada
+    (perfil enxuto) ou em bugfix sem tasks (delta-015)."""
+    cabecalho = spec_txt.split("\n## ", 1)[0]
+    tp = delta / "test-plan.md"
+    if not tp.is_file():
+        dispensa = campo(cabecalho, "Test-plan")
+        bugfix = (campo(cabecalho, "Tipo") or "").lower() == "bugfix" and not (delta / "tasks.md").is_file()
+        if dispensa and "dispensado" in dispensa.lower():
+            v.append(("BAIXO", "test-plan.md", f"dispensado no cabeçalho: {dispensa}", "ok se o perfil enxuto foi aprovado (R1, delta-015)"))
+        elif bugfix:
+            v.append(("BAIXO", "test-plan.md", "bugfix sem tasks — test-plan sob demanda", "teste de regressão obrigatório cobre (delta-015)"))
+        else:
+            v.append(("ALTO", "test-plan.md", "test-plan.md ausente sem dispensa declarada", "gerar do template ou declarar 'Test-plan: dispensado — <motivo>' (perfil enxuto)"))
+        return
+    ids_spec = {rid for rid, _, _, _ in bs}
+    cobertos: set[str] = set()
+    for line in tp.read_text(encoding="utf-8").splitlines():
+        m = CASO.match(line)
+        if not m:
+            continue
+        cid = m.group(1)
+        cobre = campo(line, "cobre")
+        if not cobre or not campo(line, "tipo") or not campo(line, r"verifica[çc][ãa]o"):
+            v.append(("MÉDIO", f"test-plan.md {cid}", "caso sem 'cobre:'/'tipo:'/'verificação:' completos", "cobre: Rn · tipo: auto|manual · verificação: comando ou passos"))
+        if cobre:
+            for alvo in re.split(r"[,/]", cobre):
+                alvo = alvo.strip()
+                cobertos.add(alvo)
+                if alvo not in ids_spec:
+                    v.append(("ALTO", f"test-plan.md {cid}", f"cobre '{alvo}', que não existe no spec.md", "corrigir a referência ou adicionar o requisito"))
+    for rid in sorted(ids_spec - cobertos):
+        v.append(("ALTO", f"spec.md {rid}", "requisito sem caso no test-plan.md", f"adicionar caso com 'cobre: {rid}' (manual roteirizado conta)"))
+
+
 def checar(root: Path, delta: Path) -> list:
     spec, tasks = delta / "spec.md", delta / "tasks.md"
     if not spec.is_file():
         die(f"spec.md não encontrado em {delta}")
-    bs = blocos(spec.read_text(encoding="utf-8"))
+    spec_txt = spec.read_text(encoding="utf-8")
+    bs = blocos(spec_txt)
     v: list = []
     if not bs:
         v.append(("ALTO", "spec.md", "nenhum bloco '### Rn — ADICIONA|MUDA|REMOVE'", "usar templates/delta-spec.md"))
@@ -244,6 +283,7 @@ def checar(root: Path, delta: Path) -> list:
     c5_tamanho(root, v)
     c6_pendencias(root, v)
     c7_split(root, delta, v)
+    c8_testplan(delta, bs, spec_txt, v)
     return v
 
 
@@ -276,7 +316,7 @@ def main() -> None:
     print("|---|---|---|---|---|")
     for i, (sev, onde, o_que, acao) in enumerate(v, 1):
         print(f"| {i} | {sev} | {onde} | {o_que} | {acao} |")
-    print("\nParcial: cobre C1–C7; os checks 3 e 5 do analyze.md (scope creep, regra canônica) são juízo humano e não rodaram.")
+    print("\nParcial: cobre C1–C8; os checks 3 e 5 do analyze.md (scope creep, regra canônica) são juízo humano e não rodaram.")
     sevs = {f[0] for f in v}
     veredito = "BLOQUEADO" if "CRÍTICO" in sevs else "LIBERADO COM RESSALVAS" if v else "LIBERADO"
     print(f"\n**Veredito:** {veredito}")
@@ -307,21 +347,27 @@ Estado: proposta · Data: 2026-01-01 · Branch: feat/001-x
     suja_tasks = "- [ ] T1 — form · arquivos: a.py · cobre: R9 · verificação: pytest\n" \
                  "- [ ] T2 — cache · arquivos: b.py · cobre: RNF1\n"
 
-    def rodar(spec_txt, tasks_txt):
+    limpa_testplan = "- [ ] CT1 — login ok · cobre: R1 · tipo: auto · verificação: pytest -k login\n" \
+                     "- [ ] CT2 — latência · cobre: RNF1 · tipo: manual · verificação: roteiro k6 em docs\n"
+
+    def rodar(spec_txt, tasks_txt, testplan_txt=None):
         with tempfile.TemporaryDirectory() as d:
             root = Path(d)
             delta = root / "specs" / "001-x"
             delta.mkdir(parents=True)
             (delta / "spec.md").write_text(spec_txt, encoding="utf-8")
             (delta / "tasks.md").write_text(tasks_txt, encoding="utf-8")
+            if testplan_txt is not None:
+                (delta / "test-plan.md").write_text(testplan_txt, encoding="utf-8")
             return checar(root, delta)
 
-    assert rodar(limpa_spec, limpa_tasks) == [], "delta limpa deveria passar sem achados"
+    assert rodar(limpa_spec, limpa_tasks, limpa_testplan) == [], "delta limpa deveria passar sem achados"
 
     # mesma delta na notação RF-NN/RNF-NN (corpus legado, numeração hierárquica)
     limpa_spec_rf = limpa_spec.replace("### R1 —", "### RF-01.1 —").replace("### RNF1 —", "### RNF-01 —")
     limpa_tasks_rf = limpa_tasks.replace("cobre: R1", "cobre: RF-01.1").replace("cobre: RNF1", "cobre: RNF-01")
-    assert rodar(limpa_spec_rf, limpa_tasks_rf) == [], "delta limpa em notação RF-NN deveria passar sem achados"
+    limpa_testplan_rf = limpa_testplan.replace("cobre: R1", "cobre: RF-01.1").replace("cobre: RNF1", "cobre: RNF-01")
+    assert rodar(limpa_spec_rf, limpa_tasks_rf, limpa_testplan_rf) == [], "delta limpa em notação RF-NN deveria passar sem achados"
 
     achados = " · ".join(f"{o} {q}" for _, o, q, _ in rodar(suja_spec, suja_tasks))
     for esperado in (
@@ -355,7 +401,35 @@ Estado: arquivada · Data: 2026-01-01 · Branch: feat/001-x
         assert len(v) == 1 and v[0][0] == "ALTO" and "1 pendência" in v[0][2], f"C6: {v}"
         assert "DEBT.md" in v[0][3], f"C6 deve rotear para o DEBT.md (delta-007): {v}"
 
-    print("selftest: OK (3 fixtures, 6 defeitos detectados)")
+    # C8 — plano de testes (delta-015)
+    def rodar_c8(spec_txt, testplan_txt=None):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            delta = root / "specs" / "001-x"
+            delta.mkdir(parents=True)
+            (delta / "spec.md").write_text(spec_txt, encoding="utf-8")
+            if testplan_txt is not None:
+                (delta / "test-plan.md").write_text(testplan_txt, encoding="utf-8")
+            v: list = []
+            c8_testplan(delta, blocos(spec_txt), spec_txt, v)
+            return v
+
+    assert rodar_c8(limpa_spec, limpa_testplan) == [], "C8: delta com plano completo deveria passar"
+    ausente = rodar_c8(limpa_spec)  # sem test-plan.md, perfil completo (default)
+    assert any(s == "ALTO" and "test-plan.md ausente" in q for s, o, q, _ in ausente), f"C8 ausente: {ausente}"
+    spec_dispensa = limpa_spec.replace(
+        "Estado: proposta · Data: 2026-01-01 · Branch: feat/001-x",
+        "Estado: proposta · Data: 2026-01-01 · Branch: feat/001-x · Perfil: enxuto (aprovado: 2026-01-01) · Test-plan: dispensado — delta só de prosa")
+    dispensada = rodar_c8(spec_dispensa)
+    assert len(dispensada) == 1 and dispensada[0][0] == "BAIXO", f"C8 dispensa: {dispensada}"
+    orfao = rodar_c8(limpa_spec, "- [ ] CT1 — login ok · cobre: R1 · tipo: auto · verificação: pytest\n")
+    assert any(s == "ALTO" and o == "spec.md RNF1" and "sem caso" in q for s, o, q, _ in orfao), f"C8 órfão: {orfao}"
+    morta = rodar_c8(limpa_spec, limpa_testplan + "- [ ] CT3 — x · cobre: R9 · tipo: auto · verificação: pytest\n")
+    assert any(s == "ALTO" and "R9" in q for s, _, q, _ in morta), f"C8 referência morta: {morta}"
+    caso_sem_campos = rodar_c8(limpa_spec, "- [ ] CT1 — login ok · cobre: R1\n- [ ] CT2 — lat · cobre: RNF1 · tipo: auto · verificação: k6\n")
+    assert any(s == "MÉDIO" and "CT1" in o for s, o, q, _ in caso_sem_campos), f"C8 caso incompleto: {caso_sem_campos}"
+
+    print("selftest: OK (3 fixtures + C8, defeitos detectados nos dois lados da cobertura)")
     selftest_c4()
     selftest_c7()
 
