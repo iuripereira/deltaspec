@@ -8,6 +8,8 @@ O formato segue [Keep a Changelog 1.0.0](https://keepachangelog.com/pt-BR/1.0.0/
 
 ## [Não lançado]
 
+## [0.11.0] - 2026-07-28
+
 ### Adicionado
 - **Perfil de execução por delta** (delta-015, R1 — ADR-0013): `Perfil: completo|enxuto` no cabeçalho da spec, proposto pela IA e válido só com aprovação do usuário; enxuto = clarify sob demanda, test-plan dispensável, review com eixos fundidos. Sem o campo → completo (retrocompatível).
 - **Prototipação opcional** (delta-015, R2): estágio CONDITIONAL proposto no specify; forma decidida pela categoria `prototipo` do `doc-profile.yaml`, default HTML estático em `docs/prototypes/NNN-nome/`.
