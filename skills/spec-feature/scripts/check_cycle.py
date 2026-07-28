@@ -273,11 +273,23 @@ def checar(root: Path, delta: Path) -> list:
         die(f"spec.md não encontrado em {delta}")
     spec_txt = spec.read_text(encoding="utf-8")
     bs = blocos(spec_txt)
+    cabecalho = spec_txt.split("\n## ", 1)[0]
+    bugfix = (campo(cabecalho, "Tipo") or "").lower() == "bugfix"
     v: list = []
-    if not bs:
+    if not bs and not bugfix:
         v.append(("ALTO", "spec.md", "nenhum bloco '### Rn — ADICIONA|MUDA|REMOVE'", "usar templates/delta-spec.md"))
+    if bugfix:
+        # bugfix (delta-015): repro e teste de regressão são o aceite; bloco Rn só quando muda requisito
+        repro = re.search(r"^##\s+Reprodu[çc][ãa]o\s*$(.*?)(?=^##\s|\Z)", spec_txt, re.M | re.S)
+        alto = repro.group(1).upper() if repro else ""
+        if not repro or any(k not in alto for k in ("DADO", "QUANDO", "ENTÃO")):
+            v.append(("ALTO", "spec.md", "bugfix sem Reprodução DADO/QUANDO/ENTÃO", "usar templates/bugfix-spec.md"))
+        regressao = re.search(r"^##\s+Teste de regress[ãa]o\s*$(.*?)(?=^##\s|\Z)", spec_txt, re.M | re.S)
+        if not regressao or not re.search(r"^\s*-\s*\S", regressao.group(1), re.M) or "{{" in regressao.group(1):
+            v.append(("ALTO", "spec.md", "bugfix sem teste de regressão declarado", "apontar o teste que falha antes e passa depois do fix (delta-015)"))
     c1_aceite(bs, v)
-    c2_cobertura(bs, tasks.read_text(encoding="utf-8") if tasks.is_file() else "", v)
+    if not (bugfix and not tasks.is_file()):  # bugfix sem tasks.md é válido — tasks é sob demanda (delta-015)
+        c2_cobertura(bs, tasks.read_text(encoding="utf-8") if tasks.is_file() else "", v)
     c3_estado(root, v)
     c4_archive(root, bs, v)
     c5_tamanho(root, v)
@@ -429,7 +441,42 @@ Estado: arquivada · Data: 2026-01-01 · Branch: feat/001-x
     caso_sem_campos = rodar_c8(limpa_spec, "- [ ] CT1 — login ok · cobre: R1\n- [ ] CT2 — lat · cobre: RNF1 · tipo: auto · verificação: k6\n")
     assert any(s == "MÉDIO" and "CT1" in o for s, o, q, _ in caso_sem_campos), f"C8 caso incompleto: {caso_sem_campos}"
 
-    print("selftest: OK (3 fixtures + C8, defeitos detectados nos dois lados da cobertura)")
+    # bugfix (delta-015): sem bloco Rn é válido; repro e teste de regressão são obrigatórios.
+    # Runner próprio: NÃO grava tasks.md (o rodar() comum grava, e o C2 acusaria "nenhuma task").
+    def rodar_bugfix(spec_txt):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            delta = root / "specs" / "002-parse"
+            delta.mkdir(parents=True)
+            (delta / "spec.md").write_text(spec_txt, encoding="utf-8")
+            return checar(root, delta)
+
+    bugfix_ok = """# delta-002 — fix parse
+Estado: proposta · Data: 2026-01-01 · Branch: fix/002-parse · Tipo: bugfix
+
+## Sintoma (≤3 linhas)
+gate aceita spec vazia
+
+## Reprodução
+- DADO spec sem blocos QUANDO o gate roda ENTÃO passa — esperado: acusar
+
+## Causa-raiz
+regex não cobre o caso
+
+## Teste de regressão
+- fixture bugfix_ok no selftest
+
+## Mudanças
+- nenhuma (correção sem mudança de requisito)
+"""
+    v_bugfix = rodar_bugfix(bugfix_ok)
+    assert not any("nenhum bloco" in q for _, _, q, _ in v_bugfix), f"bugfix não exige bloco Rn: {v_bugfix}"
+    assert not any(s == "ALTO" for s, _, _, _ in v_bugfix), f"bugfix sem tasks/test-plan é válido (só BAIXO do C8): {v_bugfix}"
+    sem_regressao = bugfix_ok.replace("## Teste de regressão\n- fixture bugfix_ok no selftest\n\n", "")
+    v_sem = rodar_bugfix(sem_regressao)
+    assert any(s == "ALTO" and "regressão" in q for s, _, q, _ in v_sem), f"bugfix sem teste de regressão: {v_sem}"
+
+    print("selftest: OK (3 fixtures + C8 + bugfix, defeitos detectados nos dois lados da cobertura)")
     selftest_c4()
     selftest_c7()
 
