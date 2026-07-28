@@ -15,3 +15,5 @@ node_modules/
 dist/
 .next/
 __pycache__/
+# Planos de sessão (locais, por máquina — o plano vive fora do git; specs/NNN-nome/ é o versionado)
+.claude/plans/
