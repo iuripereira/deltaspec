@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Gate pré-commit do sdd-iuri (R2 da delta-013, quita DT-005): valida a integridade
+# documental (deps.toml) quando o commit toca .md ou o próprio deps.toml.
+# Ativação (1x por clone, não se propaga): git config core.hooksPath .githooks
+set -u
+
+# manter em sincronia com skills/guarding-doc-integrity/templates/pre-commit
+# (duplicação deliberada: o gate do próprio framework não pode depender de config)
+staged=$(git diff --cached --name-only)
+echo "$staged" | grep -qE '\.md$|(^|/)deps\.toml$' || exit 0
+
+if python3 skills/guarding-doc-integrity/scripts/validate_integrity.py .; then
+  exit 0
+fi
+echo "pre-commit: integridade documental FALHOU — corrija antes de commitar." >&2
+echo "pre-commit: bypass consciente (registre o porquê): git commit --no-verify" >&2
+exit 1

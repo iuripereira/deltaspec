@@ -2,10 +2,10 @@
 
 > Andamento contínuo do trabalho: o que está em curso **agora**, o que acabou de ser feito, os problemas do momento e os próximos passos imediatos. Atualize com frequência dentro da própria sessão. **Janela rolante:** entrada antiga sai — histórico permanente é [CHANGELOG](CHANGELOG.md) + git; débito/pendência/lição é [DEBT.md](DEBT.md); decisão com renúncia é [docs/adrs/](docs/adrs/); o que vige é [specs/TRUTH.md](specs/TRUTH.md). Em conflito de merge, mantenha a **união das verdades** — nunca sobrescreva o progresso de outra sessão.
 
-**Atualizado em:** 2026-07-27
+**Atualizado em:** 2026-07-28
 
 ## Agora
-- Nada em curso — delta-012 arquivada, `v0.8.0` cortada e DT-012 quitado no mesmo dia (primeira execução externa da `descoberta` no imex-estoque-inteligente, PR #14 de lá).
+- **delta-013 (higiene) em implement** — Fase 0 do plano de upgrade aprovado em 2026-07-28 (`~/.claude/plans/esse-framework-sdd-iuri-sleepy-raccoon.md`): inventário de skills sincronizado + check no CI, hook pré-commit real (DT-005), ADR-0009 Accepted, `eu-tenho-tdah` a consolidar no TRUTH. Analyze LIBERADO; falta review + PR + archive.
 
 ## Feito recentemente
 - 2026-07-27 — **delta-012 implementada e arquivada** (#50 + PR de archive): skill `descoberta` (fase pré-specify — insumos brutos → dossiê com claims `confirmado`/`inferido`/`lacuna`, GLOSSARY/DATA_DICTIONARY, divergências, pauta de Mob Elaboration), R24–R30 no TRUTH.md, ADR-0011, adapters com contrato descoberta/write-prd, `v0.8.0`. Motivada pelo gap real do imex-estoque-inteligente (PRD contratualizado sem validação da stakeholder, contradito pelo kickoff). Pendência DT-012 (execução externa) roteada.
@@ -33,7 +33,8 @@
 - Nenhum bloqueio. Débito durável: [DEBT.md](DEBT.md) (DT-001, DT-004..DT-007, DT-009..DT-011 abertos; DT-002/DT-003/DT-008 quitados).
 
 ## Próximos passos imediatos
-- Rodar `/plugin update sdd-iuri` no Claude Code local (cache anterior às deltas 007–008).
-- Rodar uma delta real com o gate do specify no imex-travelplanner (fecha o piloto ADR-0009 e o gatilho do DT-004).
-- Promover a ADR-0009 quando o piloto fechar: `Accepted` + MUDA RNF1 no TRUTH.md + avaliar check mecânico do doc-profile.
-- Próxima delta livre: 012. Débito aberto: DT-001, DT-004, DT-005, DT-006 (guarda), DT-007, DT-009, DT-010 (guarda), DT-011.
+- Fechar a delta-013: review em 2 estágios → PR → archive (consolida R31–R33 + MUDA RNF1, quita DT-005, roteia pendência do check do doc-profile) → tag `v0.9.0`.
+- Fases 1–5 do plano de upgrade (deltas 014–018): recontratação dos motores → fluxo completo → harness+graphify → Jira → visual híbrido.
+- Rodar uma delta real com o gate do specify no imex-travelplanner (gatilho do DT-004 — não foi quitado pela promoção da ADR-0009).
+- Rodar `/plugin update sdd-iuri` no Claude Code local (cache anterior à delta-013).
+- Próxima delta livre: 014. Débito aberto: DT-001, DT-004, DT-006 (guarda), DT-007, DT-009, DT-010 (guarda), DT-011 (DT-005 quita no archive da 013).

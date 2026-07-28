@@ -1,6 +1,6 @@
 # ADR-0009: Documentação visual como gate configurável — a decisão é obrigatória, os diagramas não
 
-- **Status:** Proposed <!-- experimental — em validação no piloto imex-travelplanner -->
+- **Status:** Accepted (2026-07-28, delta-013 — evidência e o que segue adiado: seção "Promoção" nas Consequences)
 - **Data:** 2026-07-20
 - **Supersedes:** —
 - **Superseded by:** —
@@ -49,4 +49,4 @@ Renunciamos a (1) porque obrigatoriedade uniforme gera diagrama-cerimônia que n
 
 **Fica mais difícil:** mais um arquivo no scaffold (`doc-profile.yaml`) e mais uma skill para manter; o perfil pode divergir da prática (declarar obrigatório e não manter) — o gate cobre a geração na spec, não a manutenção contínua; a stack de CLIs opcionais (plantuml/java, d2, structurizr/docker) adiciona dependências de host para quem optar por elas.
 
-**Status experimental:** em validação no piloto **imex-travelplanner**. Reabre/consolida quando o piloto fechar: formato do perfil estabilizado → avaliar check mecânico (presença + schema) no `check_cycle.py`; exceção do RNF1 consolidada via MUDA no TRUTH.md; a skill `doc-entregavel` promovida de experimental no manifesto.
+**Promoção (2026-07-28, delta-013):** o piloto doc-profile+doc-entregavel fechou nos 4 repos IMEX (8 exports em 2 rodadas, 2026-07-20) e a exceção do RNF1 consolidou via MUDA no TRUTH.md; a `doc-entregavel` saiu de experimental no README. O check mecânico do doc-profile (presença + schema) permanece adiado pelo perímetro do ADR-0006 — pendência roteada na delta-013. A delta externa com gate do specify (travelplanner) não condicionava esta promoção e segue como gatilho do DT-004.

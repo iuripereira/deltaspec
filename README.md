@@ -32,7 +32,7 @@ flowchart LR
     archive --> PR
 ```
 
-Os gates determinísticos rodam **local**, na fase analyze/archive e no pré-commit: `skills/spec-feature/scripts/check_cycle.py` (ciclo, checks C1–C7) e `skills/guarding-doc-integrity/scripts/validate_integrity.py` (espelhos de valores canônicos). Ambos têm `--selftest` validado no CI deste repo.
+Os gates determinísticos rodam **local**, na fase analyze/archive e no pré-commit: `skills/spec-feature/scripts/check_cycle.py` (ciclo, checks C1–C7) e `skills/guarding-doc-integrity/scripts/validate_integrity.py` (espelhos de valores canônicos). Ambos têm `--selftest` validado no CI deste repo. O pré-commit é o hook versionado em `.githooks/` — ative uma vez por clone com `git config core.hooksPath .githooks`; projetos de usuário recebem a oferta equivalente no bootstrap da `guarding-doc-integrity`.
 
 ## Instalação
 
@@ -90,9 +90,9 @@ O bloco de entregável só é necessário em projeto com `publico.cliente: true`
 | `/sdd-iuri:descoberta` | antes do specify, quando não há PRD validado ou há insumos brutos (transcrição de reunião, planilha legada, vídeo, processo na cabeça de funcionários) | Descoberta pré-specify: inventaria insumos, minera o as-is em dossiê com claims `confirmado`/`inferido`/`lacuna` (fonte rastreável), popula GLOSSARY/DATA_DICTIONARY, aponta divergências contra a baseline e gera a pauta de validação (Mob Elaboration); saída via `max:write-prd` com `[PRESUNÇÃO]` obrigatória |
 | `/sdd-iuri:spec-feature` | a cada incremento de feature | Orquestra o ciclo: specify → clarify → plan → tasks → analyze → implement → review → archive → PR. Cria `specs/NNN-nome/`, numeração global, branch semântica; no archive consolida o `TRUTH.md` |
 | `/sdd-iuri:spec-review` | opcional, antes do implement | Revisão adversarial da spec/plan via grill-me — recomendada quando a spec toca segurança, dados persistentes, contrato externo ou dependência nova |
-| `/sdd-iuri:guarding-doc-integrity` | quando um valor de negócio vive em mais de um arquivo | Governança de fontes de verdade: manifesto `deps.toml` (dono → espelhos sancionados) + validador determinístico como gate pré-commit. É o executor da "regra de propagação" do `CLAUDE.md` |
+| `/sdd-iuri:guarding-doc-integrity` | quando um valor de negócio vive em mais de um arquivo | Governança de fontes de verdade: manifesto `deps.toml` (dono → espelhos sancionados) + validador determinístico como gate pré-commit (hook opt-in) e de sessão. É o executor da "regra de propagação" do `CLAUDE.md` |
 | `/sdd-iuri:handoff` | ao encerrar a sessão de trabalho (argumento opcional: foco da próxima) | Fecha a sessão nos registros com dono: atualiza o `HANDOFF.md` (diário de bordo), roteia débito/lição novo para o `DEBT.md` (DT-NNN), cita a delta em curso com fase e gate e imprime o prompt de retomada da próxima sessão |
-| `/sdd-iuri:doc-entregavel` | no `momento` declarado no `doc-profile.yaml` (`entrega-prd`, `fechamento-fase`) — projeto com `publico.cliente: true` | Congela o entregável cliente: renderiza os diagramas do perfil (mmdc/dbml-renderer), monta o documento com capa de assinatura parametrizada e exporta PDF/DOCX versionado em `docs/entregaveis/`. **Experimental** (ADR-0009, piloto imex-travelplanner) |
+| `/sdd-iuri:doc-entregavel` | no `momento` declarado no `doc-profile.yaml` (`entrega-prd`, `fechamento-fase`) — projeto com `publico.cliente: true` | Congela o entregável cliente: renderiza os diagramas do perfil (mmdc/dbml-renderer), monta o documento com capa de assinatura parametrizada e exporta PDF/DOCX versionado em `docs/entregaveis/` (ADR-0009) |
 
 ### Skill de estilo (fora do ciclo)
 
