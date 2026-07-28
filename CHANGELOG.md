@@ -8,6 +8,12 @@ O formato segue [Keep a Changelog 1.0.0](https://keepachangelog.com/pt-BR/1.0.0/
 
 ## [Não lançado]
 
+### Adicionado
+- **Figma/FigJam como camada de apresentação a cliente** (delta-018, R1 — ADR-0015): categoria `apresentacao` no doc-profile; fluxo unidirecional Mermaid fonte → `generate_diagram` → retoque (o `.mmd` governa); tipo não suportado → render CLI + imagem no FigJam.
+- **Figma MCP nos adapters** (delta-018, R2): linha de contrato com ponto sensível (beta → pago), seção com fallback (RNF2) e política sem pin ("n/a — serviço remoto", verificação datada); entregável congelado permanece exclusivo do pipeline CLI, documentado também na `doc-entregavel`.
+- **Reserva explícita de número de delta** (delta-018, R3 — MUDA R5 no archive): o usuário pode reservar/saltar um número, com a reserva citada nos specs (caso real: 017 reservada para a Fase 4/Jira, preservando o gatilho da ADR-0012).
+- **ADR-0015**: veredito híbrido com renúncias (Figma como fonte; round-trip) e limitações registradas (beta/preço → DT; export FigJam **não verificado**).
+
 ## [0.12.0] - 2026-07-28
 
 ### Adicionado

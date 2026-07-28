@@ -5,7 +5,7 @@
 **Atualizado em:** 2026-07-28
 
 ## Agora
-- **delta-016 (harness) arquivada** — Fases 0–3 do plano de upgrade concluídas. Próxima: Fase 4 (delta-017, Jira/tickets.md — inclui o gatilho de reavaliação do fork do max, ADR-0012) ou Fase 5 (delta-018, visual), independentes entre si.
+- **delta-018 (visual, Fase 5) implementada** na `feat/018-visual` — perfil `enxuto` (1º dogfood real do R36, aprovado 2026-07-28; test-plan dispensado; clarify omitido sem ambiguidade). Próxima: review fundido num único subagente → PR único → archive (R45–R46 + MUDA R5, DT novo do preço do generate_diagram, tag `v0.13.0`). A delta-017 fica **reservada** para a Fase 4 (Jira) — decisão do usuário, mecanismo no MUDA R5.
 
 ## Feito recentemente
 - 2026-07-28 — **delta-016 (harness) arquivada** (#60 artefatos + #61 implementação + PR de archive): R40–R44 no TRUTH (arestas `dep:` no tasks.md, execução paralela por worktree, vocabulário harness.md, trilha de auditoria, graphify opcional), MUDA R12 (gate C1–C10: C9 grafo via graphlib + C10 archive sem task aberta), ADR-0014, `v0.12.0`. Implement subagent-driven (7 tasks, review por task); dogfood pegou **2 falsos negativos reais do C9** (aresta em prosa; ID duplicado engolindo ciclo) — corrigidos com TDD; review 2 eixos (R35): Spec 20/20, delete-list com 2 refactors aplicados e 2 recusas justificadas no analyze.md; higiene de checkbox nos tasks.md de 6 deltas arquivadas (exigência do C10).
