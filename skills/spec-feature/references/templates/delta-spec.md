@@ -1,5 +1,6 @@
 # delta-{{NNN}} — {{nome-da-feature}}
-Estado: proposta | aplicada | arquivada · Data: {{AAAA-MM-DD}} · Branch: {{tipo}}/{{NNN}}-{{nome}}
+Estado: proposta | aplicada | arquivada · Data: {{AAAA-MM-DD}} · Branch: {{tipo}}/{{NNN}}-{{nome}} · Perfil: {{completo|enxuto}} ({{aprovado: AAAA-MM-DD}})
+<!-- Perfil enxuto (R1, delta-015): clarify sob demanda; test-plan dispensável com "Test-plan: dispensado — <motivo>" no cabeçalho; review com eixos fundidos. Sem campo Perfil = completo. O perfil é proposta da IA — só vale com a aprovação do usuário registrada. -->
 
 ## Contexto (≤3 linhas)
 {{por que esta mudança, agora}}
