@@ -64,3 +64,21 @@ jobs:
               || { echo "frontmatter inválido: $f"; exit 1; }
           done
           echo "frontmatter OK em ${#arquivos[@]} skills"
+      - name: Inventário de skills nos manifestos
+        run: |
+          python3 - <<'EOF'
+          # toda skill de skills/ deve ser citada na description dos DOIS manifestos
+          # (case-insensitive — lição do grep case-sensitive, DEBT.md 2026-07-20)
+          import json, pathlib, sys
+          skills = sorted(p.name for p in pathlib.Path('skills').iterdir() if (p / 'SKILL.md').is_file())
+          manifestos = {
+              '.claude-plugin/plugin.json': json.load(open('.claude-plugin/plugin.json'))['description'],
+              '.claude-plugin/marketplace.json': json.load(open('.claude-plugin/marketplace.json'))['plugins'][0]['description'],
+          }
+          falhas = [f"{caminho}: não cita a skill '{s}'"
+                    for caminho, descricao in manifestos.items()
+                    for s in skills if s.lower() not in descricao.lower()]
+          if falhas:
+              print('\n'.join(falhas)); sys.exit(1)
+          print(f"inventário OK: {len(skills)} skills citadas nos 2 manifestos")
+          EOF
