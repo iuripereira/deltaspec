@@ -11,6 +11,7 @@ Princípio: acoplamento = (i) **contrato na invocação** (instrução de format
 | plan | `superpowers:writing-plans` | local default de planos (`docs/superpowers/plans/`) e a frase "User preferences for plan location override this default" |
 | implement | `superpowers:executing-plans` · `superpowers:subagent-driven-development` · `superpowers:test-driven-development` · `superpowers:using-git-worktrees` | nomes das skills; obrigatoriedade de TDD |
 | review | `superpowers:requesting-code-review` (eixo Spec) · `ponytail:ponytail-review` (eixo Qualidade) — paralelos | nomes; formato da delete-list |
+| contexto de codebase (descoberta · specify/plan · review) — opcional | `graphify` (CLI/MCP externo, não é plugin Claude) | nomes dos comandos `query`/`path`/`explain`; formato das tags de confiança; instalador (escreve hook/CLAUDE.md — nunca usar) |
 | transversal | `ponytail:ponytail` (hook always-on) | nível default; `PONYTAIL_SUBAGENT_MATCHER` |
 
 ## descoberta / write-prd (pré-specify — delta-012)
@@ -29,7 +30,7 @@ Princípio: acoplamento = (i) **contrato na invocação** (instrução de format
 ## Superpowers
 
 - **plan:** input = delta spec pós-clarify (**a spec do sdd-iuri é a fonte da verdade; o brainstorming/spec do Superpowers não é**). Local: a preferência no CLAUDE.md (módulo sdd-ciclo) redireciona para `specs/NNN-nome/plan.md`; reforce na invocação. Formato: o dele, **sem pós-processamento**. **Pós-fase:** (1) plano no local certo — se foi para `docs/superpowers/plans/`, mova; (2) prependa o cabeçalho de `templates/resumo-plan.md`.
-- **implement:** TDD conforme a coluna `tdd` do tipo. `recomendado`/`off` → instrua na invocação a dispensa permitida, com justificativa registrada no plan.md por task dispensada.
+- **implement:** TDD conforme a coluna `tdd` do tipo. `recomendado`/`off` → instrua na invocação a dispensa permitida, com justificativa registrada no plan.md por task dispensada. Unidades paralelizáveis (cycle.md, "Execução paralela por unidades") → um subagente com worktree por unidade (superpowers:using-git-worktrees); sem subagentes/worktree → sequencial topológico com aviso.
 - **Fallback (superpowers ausente):** gere `plan.md` próprio (cabeçalho-resumo + plano detalhado com caminhos e verificação por passo) e rode o implement inline, com o aviso *"plan degradado: superpowers/writing-plans não instalado"*. O fallback **não substitui a fase tasks**: `tasks.md` continua sendo gerado dele (o analyze depende do tasks.md).
 - **Fallback do review eixo Spec (superpowers ausente):** conduza a conferência inline — cada Rn/RNFn da spec confrontado com o diff da delta, com veredito por requisito — e registre o aviso *"review eixo Spec degradado: superpowers/requesting-code-review não instalado"*. O eixo Qualidade segue o fallback do ponytail abaixo.
 
@@ -45,6 +46,26 @@ O review executa como **dois eixos independentes**, cada um cego ao contexto do 
 
 **Execução:** harness com subagentes → despache os dois eixos em **subagentes paralelos** (um por eixo, prompts independentes); harness sem subagentes ou motor ausente → inline, em sequência, com os fallbacks e avisos acima (RNF2). Perfil `enxuto` aprovado (R1, delta-015): os dois eixos podem rodar **fundidos num único subagente**, achados ainda classificados por eixo, mesma regra de convergência. Achado apontado pelos **dois** eixos é convergente — trate antes do PR, sempre. Os demais achados seguem a régua vigente (crítico bloqueia; o resto é decisão registrada).
 
+## graphify (contexto de codebase — delta-016, opcional)
+
+Camada de contexto para as fases que leem código em projeto-alvo grande/brownfield:
+`descoberta`, `specify`/`plan` e o eixo Spec do `review` (impacto do diff da delta).
+**Não** é motor de grafo de tarefas — o `tasks.md` continua dono das arestas (ADR-0014).
+
+- **Habilitação dupla e manual:** binário instalado **e** `motores.graphify: true` no
+  `doc-profile.yaml` do projeto-alvo. **Nunca rode `graphify install`** — o instalador
+  escreve hook `PreToolUse` e CLAUDE.md do projeto, interferindo no harness (renúncia:
+  ADR-0014). Instalação manual consciente; preferir `--code-only` (AST local
+  determinístico, zero LLM).
+- **Invocação:** `graphify query`/`path`/`explain` como insumo fundamentado — toda
+  aresta citada entra com `arquivo:linha`. Tags de confiança mapeiam no modelo da
+  descoberta (R25): `EXTRACTED` → `confirmado` · `INFERRED` → `inferido` ·
+  `AMBIGUOUS` → `lacuna` (requer validação humana).
+- **Verificação pós-fase:** claim vindo do graphify sem fonte `arquivo:linha` + tag
+  mapeada não entra no artefato (mesma regra do R25).
+- **Fallback (ausente ou desabilitado):** fluxo atual (grep/Explore) com no máximo
+  1 linha de aviso — degradação graciosa (RNF2).
+
 ## Política de dependência (versões)
 
 | Plugin | Versão testada | Faixa aceita | Verificado em | Substituibilidade / divergência upstream |
@@ -52,6 +73,7 @@ O review executa como **dois eixos independentes**, cada um cego ao contexto do 
 | `max@max4c-skills` | 0.8.0 | **fork deliberado** — pin na testada ([ADR-0012](../../../docs/adrs/ADR-0012-recontratacao-motores.md)) | 2026-07-28 | Upstream divergiu (detalhe: ADR-0012); o plugin distribuído mantém a API contratada. **Reavaliar na delta-017** ou em breaking do fork. Forkável: em último caso copiar a SKILL.md para o diretório de skills pessoais do usuário e apontar este adapter |
 | `superpowers@claude-plugins-official` | 6.1.1 | faixa 6.x | 2026-07-28 (upstream 6.2.0 de 2026-07-24 — dentro da faixa, não testada) | **não forkável** — dependência real; mitigação = fallbacks acima |
 | `ponytail@ponytail` | 4.8.4 | faixa 4.x | 2026-07-28 | forkável (ruleset markdown + hook simples) |
+| `graphify` (CLI externo) | — (não testada — contrato definido pela doc upstream) | pin por tag na primeira adoção real | 2026-07-28 (release quase diária, bus factor = 1) | opcional com degradação total: ausente, nada do ciclo quebra; a primeira adoção real define o pin e valida o contrato |
 
 Re-verificação: toda delta que tocar este arquivo atualiza a coluna "Verificado em" dos motores que conferir.
 

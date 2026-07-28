@@ -17,11 +17,14 @@ continuam com o modelo — são juízo, não regex.
   C6  pendência roteada — '- [ ]' em "Dependências e riscos" de delta arquivada
   C7  split de PR — artefatos da delta acima do limiar de PR recomendam split (BAIXO)
   C8  cobertura do plano de testes — Rn/RNFn sem caso; ausência sem dispensa (delta-015)
+  C9  grafo de tasks — `(dep: Tn)` inexistente ou ciclo entre tasks (delta-016)
+  C10 convergência mínima — task '- [ ]' remanescente em delta arquivada (delta-016)
 
 Uso: check_cycle.py [DELTA_DIR]   (default: a única delta não arquivada em ./specs)
      check_cycle.py --selftest
 Exit 0 = sem ALTO/CRÍTICO · 1 = corrigir antes de seguir · 2 = erro de uso.
 """
+import graphlib
 import re
 import subprocess
 import sys
@@ -41,8 +44,10 @@ CABECALHO = re.compile(rf"^###\s+({REQ_ID})\s*[—-]\s*(ADICIONA|MUDA|REMOVE)\b(
 ALVO = re.compile(rf"\b({REQ_ID})\s*\((?:Δ\s*|delta-)\d+\)")  # aceita (ΔNNN) legado e (delta-NNN)
 TAREFA = re.compile(r"^\s*-\s*\[[ xX]\]\s*(T\d+)")
 CASO = re.compile(r"^\s*-\s*\[[ xX]\]\s*(CT\d+)")  # caso de teste do test-plan.md (delta-015)
+DEP = re.compile(r"\(dep:\s*([^)]*)\)")  # arestas de bloqueio do tasks.md (delta-016)
 SECAO_RISCOS = re.compile(r"^##\s+Depend[êe]ncias e riscos\s*$(.*?)(?=^##\s|\Z)", re.M | re.S)
 PENDENCIA_ABERTA = re.compile(r"^\s*-\s*\[ \]", re.M)
+TAREFA_ABERTA = re.compile(r"^\s*-\s*\[ \]\s*T\d+", re.M)  # task não concluída (C10, delta-016)
 # ponytail: um requisito por bloco ###; spec que fuja do template não é parseada
 
 
@@ -276,6 +281,48 @@ def c8_testplan(delta: Path, bs, spec_txt: str, v: list) -> None:
         v.append(("ALTO", f"spec.md {rid}", "requisito sem caso no test-plan.md", f"adicionar caso com 'cobre: {rid}' (manual roteirizado conta)"))
 
 
+def c9_grafo(tasks_txt: str, v: list) -> None:
+    """Arestas de bloqueio (delta-016): `(dep: Tn[, Tm])` por task; task sem `dep:` é
+    livre. Dep inexistente ou ciclo → ALTO. Arquivo sem nenhum `dep:` → cadeia linear
+    implícita pela ordem (retrocompatível, R1)."""
+    arestas: dict[str, list[str]] = {}
+    for line in tasks_txt.splitlines():
+        m = TAREFA.match(line)
+        if not m:
+            continue
+        resto = line[m.end():].lstrip()
+        if m.group(1) in arestas:
+            v.append(("ALTO", f"tasks.md {m.group(1)}", "ID de task duplicado no arquivo", "renumerar — ID duplicado engole aresta do grafo (C9)"))
+            continue
+        d = DEP.match(resto)  # só a aresta colada ao ID é aresta — "(dep: Tn)" em prosa não conta (achado do dogfood da delta-016)
+        arestas[m.group(1)] = [a.strip() for a in d.group(1).split(",") if a.strip()] if d else []
+    if not any(arestas.values()):
+        return  # nenhum dep: no arquivo — cadeia linear implícita
+    for tid, deps in arestas.items():
+        for dep in deps:
+            if dep not in arestas:
+                v.append(("ALTO", f"tasks.md {tid}", f"dep '{dep}' cita task inexistente", "corrigir a aresta ou criar a task (C9)"))
+    # ciclo via graphlib (stdlib) — delete-list do review da delta-016
+    ts = graphlib.TopologicalSorter(arestas)
+    try:
+        ts.prepare()
+    except graphlib.CycleError as e:
+        ciclo = sorted(set(e.args[1]))
+        v.append(("ALTO", "tasks.md", f"ciclo de dependências envolvendo {', '.join(ciclo)}", "remover a aresta que fecha o ciclo (C9)"))
+
+
+def c10_convergencia(root: Path, v: list) -> None:
+    """Convergência mínima no archive (delta-016): delta arquivada com task '- [ ]'
+    remanescente no tasks.md → ALTO. A auditoria semântica codebase×spec segue
+    juízo humano do review (renúncia por design, ADR-0014)."""
+    for p in sorted((root / "specs" / "_archive").glob("*/tasks.md")):
+        n = len(TAREFA_ABERTA.findall(p.read_text(encoding="utf-8")))
+        if n:
+            v.append(("ALTO", str(p.relative_to(root)),
+                      f"{n} task(s) '- [ ]' em delta arquivada",
+                      "concluir ou marcar '- [x]' — archive não fecha com trabalho aberto (C10)"))
+
+
 def checar(root: Path, delta: Path) -> list:
     spec, tasks = delta / "spec.md", delta / "tasks.md"
     if not spec.is_file():
@@ -297,11 +344,14 @@ def checar(root: Path, delta: Path) -> list:
             v.append(("ALTO", "spec.md", "bugfix sem teste de regressão declarado", "apontar o teste que falha antes e passa depois do fix (delta-015)"))
     c1_aceite(bs, v)
     if not (bugfix and not tasks.is_file()):  # bugfix sem tasks.md é válido — tasks é sob demanda (delta-015)
-        c2_cobertura(bs, tasks.read_text(encoding="utf-8") if tasks.is_file() else "", v)
+        tasks_txt = tasks.read_text(encoding="utf-8") if tasks.is_file() else ""
+        c2_cobertura(bs, tasks_txt, v)
+        c9_grafo(tasks_txt, v)
     c3_estado(root, v)
     c4_archive(root, bs, v)
     c5_tamanho(root, v)
     c6_pendencias(root, v)
+    c10_convergencia(root, v)
     c7_split(root, delta, v)
     c8_testplan(delta, bs, spec_txt, v)
     return v
@@ -336,7 +386,7 @@ def main() -> None:
     print("|---|---|---|---|---|")
     for i, (sev, onde, o_que, acao) in enumerate(v, 1):
         print(f"| {i} | {sev} | {onde} | {o_que} | {acao} |")
-    print("\nParcial: cobre C1–C8; os checks 3 e 5 do analyze.md (scope creep, regra canônica) são juízo humano e não rodaram.")
+    print("\nParcial: cobre C1–C10; os checks 3 e 5 do analyze.md (scope creep, regra canônica) são juízo humano e não rodaram.")
     sevs = {f[0] for f in v}
     veredito = "BLOQUEADO" if "CRÍTICO" in sevs else "LIBERADO COM RESSALVAS" if v else "LIBERADO"
     print(f"\n**Veredito:** {veredito}")
@@ -446,6 +496,42 @@ Estado: arquivada · Data: 2026-01-01 · Branch: feat/001-x
     assert any(s == "ALTO" and "test-plan.md ausente" in q for s, _, q, _ in comentado), \
         f"C8 enganado por comentário de template: {comentado}"
 
+    # C9 — grafo de tasks (delta-016): dep válido passa; dep morta e ciclo acusam ALTO
+    dep_ok = limpa_tasks.replace("- [ ] T2 — cache", "- [ ] T2 (dep: T1) — cache")
+    assert rodar(limpa_spec, dep_ok, limpa_testplan) == [], "C9: dep válido deveria passar sem achados"
+    dep_morta = rodar(limpa_spec, limpa_tasks.replace("- [ ] T2 — cache", "- [ ] T2 (dep: T9) — cache"), limpa_testplan)
+    assert any(s == "ALTO" and "T9" in q for s, _, q, _ in dep_morta), f"C9 dep inexistente: {dep_morta}"
+    ciclo_tasks = ("- [ ] T1 (dep: T2) — form · arquivos: a.py · cobre: R1 · verificação: pytest\n"
+                   "- [ ] T2 (dep: T1) — cache · arquivos: b.py · cobre: RNF1 · verificação: k6\n")
+    com_ciclo = rodar(limpa_spec, ciclo_tasks, limpa_testplan)
+    assert any(s == "ALTO" and "ciclo" in q for s, _, q, _ in com_ciclo), f"C9 ciclo: {com_ciclo}"
+    # prosa com (dep: ...) não é aresta — dep: só conta colado ao ID (dogfood delta-016)
+    prosa_dep = limpa_tasks + "- [ ] T3 — documenta a sintaxe `(dep: T1)` no template · arquivos: c.py · cobre: R1 · verificação: leitura\n"
+    v_prosa = rodar(limpa_spec, prosa_dep, limpa_testplan)
+    assert not any("dep" in q for _, _, q, _ in v_prosa), f"C9 falso positivo em prosa: {v_prosa}"
+    # ID de task duplicado sobrescreve arestas[id] e engole aresta/ciclo — falso negativo (review delta-016)
+    dup_id = ("- [ ] T1 (dep: T2) — a · arquivos: a.py · cobre: R1 · verificação: pytest\n"
+              "- [ ] T1 — b · arquivos: b.py · cobre: R1 · verificação: pytest\n"
+              "- [ ] T2 (dep: T1) — cache · arquivos: c.py · cobre: RNF1 · verificação: k6\n")
+    v_dup = rodar(limpa_spec, dup_id, limpa_testplan)
+    assert any(s == "ALTO" and "duplicad" in q for s, _, q, _ in v_dup), f"C9 ID duplicado: {v_dup}"
+
+    # C10 — convergência mínima no archive (delta-016)
+    with tempfile.TemporaryDirectory() as d:
+        root = Path(d)
+        arq = root / "specs" / "_archive" / "001-x"
+        arq.mkdir(parents=True)
+        (arq / "spec.md").write_text(limpa_spec.replace("Estado: proposta", "Estado: arquivada"), encoding="utf-8")
+        (arq / "tasks.md").write_text("- [x] T1 — feito · cobre: R1 · verificação: ok\n"
+                                      "- [ ] T2 — esquecida · cobre: RNF1 · verificação: k6\n", encoding="utf-8")
+        v10: list = []
+        c10_convergencia(root, v10)
+        assert len(v10) == 1 and v10[0][0] == "ALTO" and "1 task" in v10[0][2], f"C10 task aberta: {v10}"
+        (arq / "tasks.md").write_text("- [x] T1 — feito · cobre: R1 · verificação: ok\n", encoding="utf-8")
+        v10 = []
+        c10_convergencia(root, v10)
+        assert v10 == [], f"C10 falso positivo com tudo concluído: {v10}"
+
     # bugfix (delta-015): sem bloco Rn é válido; repro e teste de regressão são obrigatórios
     bugfix_ok = """# delta-002 — fix parse
 Estado: proposta · Data: 2026-01-01 · Branch: fix/002-parse · Tipo: bugfix
@@ -472,7 +558,7 @@ regex não cobre o caso
     v_sem = rodar(sem_regressao)
     assert any(s == "ALTO" and "regressão" in q for s, _, q, _ in v_sem), f"bugfix sem teste de regressão: {v_sem}"
 
-    print("selftest: OK (3 fixtures + C8 + bugfix, defeitos detectados nos dois lados da cobertura)")
+    print("selftest: OK (3 fixtures + C8 + C9 + bugfix, defeitos detectados nos dois lados da cobertura)")
     selftest_c4()
     selftest_c7()
 

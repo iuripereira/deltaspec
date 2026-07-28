@@ -8,6 +8,20 @@ O formato segue [Keep a Changelog 1.0.0](https://keepachangelog.com/pt-BR/1.0.0/
 
 ## [Não lançado]
 
+### Adicionado
+
+- **Arestas de bloqueio no tasks.md** (delta-016, R1): sintaxe `(dep: Tn[, Tm])` no template; unidades paralelizáveis derivadas do grafo; **C9** valida existência e aciclicidade. Sem `dep:` → cadeia linear implícita (retrocompatível).
+- **C10 — convergência mínima no archive** (delta-016, R2): delta arquivada com task `- [ ]` remanescente → ALTO; auditoria semântica codebase×spec segue humana (ADR-0014).
+- **Execução paralela por worktree** (delta-016, R3): unidades sem caminho entre si rodam em subagentes com worktree isolada (`superpowers:using-git-worktrees`); degradação sequencial topológica.
+- **`references/harness.md`** (delta-016, R4): vocabulário canônico de harness — initializer, agente incremental, gate determinístico, degradação graciosa, human-in-the-loop, trilha de auditoria, unidade paralelizável.
+- **Trilha de auditoria de aprovação** (delta-016, R5): toda aprovação humana registrada como linha citável no artefato da própria fase; sem audit.md separado (ADR-0014).
+- **graphify como 4º motor externo opcional** (delta-016, R6): contrato nos adapters (instalação manual consciente, `--code-only`, tags → `confirmado`/`inferido`/`lacuna`), toggle `motores.graphify` no doc-profile, fallback grep/Explore.
+- **ADR-0014**: renúncias das quatro decisões (audit.md, converge semântico, grafo de tarefas no graphify, auto-install).
+
+### Mudado
+
+- `check_cycle.py` passa a C1–C10 (MUDA R12 no archive) com fixtures novas no selftest; templates `tasks.md` com `dep:`; `cycle.md`/`adapters.md`/`SKILL.md`/README refletem grafo, worktrees, trilha e graphify; `tasks.md` de 6 deltas arquivadas receberam a higiene de checkbox exigida pelo C10 (trabalho já concluído nos merges).
+
 ## [0.11.0] - 2026-07-28
 
 ### Adicionado

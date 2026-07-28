@@ -27,6 +27,8 @@ descoberta → (write-prd) → specify → clarify → plan → ...
 
 Fim de fase relevante = commit (regra canônica). A sessão de validação executada atualiza o dossiê: claim validado muda para `confirmado` com fonte "sessão AAAA-MM-DD".
 
+Projeto com graphify habilitado (doc-profile `motores.graphify: true`): as consultas ao grafo de codebase entram como insumo da mineração com fonte `arquivo:linha` e tag mapeada no modelo de confiança — contrato, avisos de instalação e fallback na seção graphify de `spec-feature/references/adapters.md`. Ausente → mineração atual, com 1 linha de aviso.
+
 ## Erros comuns
 
 | Erro | Correto |

@@ -37,6 +37,11 @@ artefatos:
   explicativos: { obrigatorio: false }   # ferramenta: excalidraw — regras/conceitos que a prosa não sustenta
   prototipo:    { obrigatorio: false }   # ferramenta: html-estatico — estágio CONDITIONAL do ciclo (delta-015, ADR-0013); default: docs/prototypes/NNN-nome/
 
+# Motores externos opcionais que o ciclo consulta neste projeto (contrato e avisos:
+# spec-feature/references/adapters.md, seção graphify — instalação manual, ADR-0014).
+motores:
+  graphify: false   # true = descoberta/specify/plan/review consultam o grafo de codebase (requer binário instalado; NUNCA use `graphify install`)
+
 # Lido só quando publico.cliente: true — insumo da skill doc-entregavel.
 entregaveis:
   formato: [pdf, docx]
