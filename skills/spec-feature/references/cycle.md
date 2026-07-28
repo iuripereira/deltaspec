@@ -37,7 +37,7 @@ Na fase **specify**, leia o `doc-profile.yaml` da raiz do projeto — a decisão
 
 Documentação **cliente** é isenta da economia de tokens (exceção registrada na ADR-0009); a **interna** segue o RNF1 — Mermaid inline enxuto, mantido junto do código a cada mudança relevante.
 
-**A ferramenta segue a categoria do diagrama** (tabela normativa no ADR-0009): fluxo/sequência/ERD rápido → Mermaid; modelo de dados canônico → DBML; arquitetura de alto nível/C4 → Structurizr DSL; UML/casos de uso → PlantUML; explicativos → Excalidraw. Não reaproveite diagrama pronto de outra categoria.
+**A ferramenta segue a categoria do diagrama** (tabela normativa no ADR-0009): fluxo/sequência/ERD rápido → Mermaid; modelo de dados canônico → DBML; arquitetura de alto nível/C4 → Structurizr DSL; UML/casos de uso → PlantUML; explicativos → Excalidraw; apresentação a cliente → Figma/FigJam materializado do Mermaid fonte (ADR-0015, unidirecional). Não reaproveite diagrama pronto de outra categoria.
 
 **Prosa de regras e processos** (spec, PRD, entregável): siga [references/prosa.md](prosa.md) — uma regra por frase, DEVE/NÃO DEVE/PODE, regra combinatória vira tabela de decisão, fluxo > 3 passos vira diagrama + passos numerados. O checklist do guia roda antes de congelar qualquer baseline.
 
