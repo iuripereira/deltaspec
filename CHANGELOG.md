@@ -8,6 +8,10 @@ O formato segue [Keep a Changelog 1.0.0](https://keepachangelog.com/pt-BR/1.0.0/
 
 ## [Não lançado]
 
+### Mudado
+
+- **README reescrito em chave didática**: nova estrutura em 8 seções (por que delta spec · instalação e configuração · como funciona · fluxo sugerido · skills uma a uma · gates · onde cada informação mora · convenções), com a analogia "delta spec = commit de requisito, TRUTH.md = working tree", 6 diagramas Mermaid (consolidação das deltas, estados, ciclo completo, orquestra×motores, greenfield, sessão), tabela dos checks C1–C10 e objetivo declarado de cada uma das 9 skills. Os limiares canônicos (particionamento do TRUTH, tamanho de PR) passaram a ser **referenciados** em vez de materializados — o `validate_integrity.py` acusou a duplicação (C2) e a correção mantém a regra de ouro. Diagramas em Mermaid por decisão da ADR-0015 (Figma é camada de apresentação a cliente, não fonte; FigJam não embeda em README).
+
 ## [0.13.0] - 2026-07-28
 
 ### Adicionado
