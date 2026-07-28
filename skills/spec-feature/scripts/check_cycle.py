@@ -17,6 +17,7 @@ continuam com o modelo — são juízo, não regex.
   C6  pendência roteada — '- [ ]' em "Dependências e riscos" de delta arquivada
   C7  split de PR — artefatos da delta acima do limiar de PR recomendam split (BAIXO)
   C8  cobertura do plano de testes — Rn/RNFn sem caso; ausência sem dispensa (delta-015)
+  C9  grafo de tasks — `(dep: Tn)` inexistente ou ciclo entre tasks (delta-016)
 
 Uso: check_cycle.py [DELTA_DIR]   (default: a única delta não arquivada em ./specs)
      check_cycle.py --selftest
@@ -41,6 +42,7 @@ CABECALHO = re.compile(rf"^###\s+({REQ_ID})\s*[—-]\s*(ADICIONA|MUDA|REMOVE)\b(
 ALVO = re.compile(rf"\b({REQ_ID})\s*\((?:Δ\s*|delta-)\d+\)")  # aceita (ΔNNN) legado e (delta-NNN)
 TAREFA = re.compile(r"^\s*-\s*\[[ xX]\]\s*(T\d+)")
 CASO = re.compile(r"^\s*-\s*\[[ xX]\]\s*(CT\d+)")  # caso de teste do test-plan.md (delta-015)
+DEP = re.compile(r"\(dep:\s*([^)]*)\)")  # arestas de bloqueio do tasks.md (delta-016)
 SECAO_RISCOS = re.compile(r"^##\s+Depend[êe]ncias e riscos\s*$(.*?)(?=^##\s|\Z)", re.M | re.S)
 PENDENCIA_ABERTA = re.compile(r"^\s*-\s*\[ \]", re.M)
 # ponytail: um requisito por bloco ###; spec que fuja do template não é parseada
@@ -276,6 +278,42 @@ def c8_testplan(delta: Path, bs, spec_txt: str, v: list) -> None:
         v.append(("ALTO", f"spec.md {rid}", "requisito sem caso no test-plan.md", f"adicionar caso com 'cobre: {rid}' (manual roteirizado conta)"))
 
 
+def c9_grafo(tasks_txt: str, v: list) -> None:
+    """Arestas de bloqueio (delta-016): `(dep: Tn[, Tm])` por task; task sem `dep:` é
+    livre. Dep inexistente ou ciclo → ALTO. Arquivo sem nenhum `dep:` → cadeia linear
+    implícita pela ordem (retrocompatível, R1)."""
+    arestas: dict[str, list[str]] = {}
+    for line in tasks_txt.splitlines():
+        m = TAREFA.match(line)
+        if not m:
+            continue
+        d = DEP.search(line)
+        arestas[m.group(1)] = [a.strip() for a in d.group(1).split(",") if a.strip()] if d else []
+    if not any(arestas.values()):
+        return  # nenhum dep: no arquivo — cadeia linear implícita
+    for tid, deps in arestas.items():
+        for dep in deps:
+            if dep not in arestas:
+                v.append(("ALTO", f"tasks.md {tid}", f"dep '{dep}' cita task inexistente", "corrigir a aresta ou criar a task (C9)"))
+    # Kahn: task que sobra com grau > 0 está num ciclo (dep morta já acusada não conta)
+    grau = {t: sum(1 for d in deps if d in arestas) for t, deps in arestas.items()}
+    dependentes: dict[str, list[str]] = {t: [] for t in arestas}
+    for tid, deps in arestas.items():
+        for dep in deps:
+            if dep in dependentes:
+                dependentes[dep].append(tid)
+    fila = [t for t, g in grau.items() if g == 0]
+    while fila:
+        t = fila.pop()
+        for depte in dependentes[t]:
+            grau[depte] -= 1
+            if grau[depte] == 0:
+                fila.append(depte)
+    ciclo = sorted(t for t, g in grau.items() if g > 0)
+    if ciclo:
+        v.append(("ALTO", "tasks.md", f"ciclo de dependências envolvendo {', '.join(ciclo)}", "remover a aresta que fecha o ciclo (C9)"))
+
+
 def checar(root: Path, delta: Path) -> list:
     spec, tasks = delta / "spec.md", delta / "tasks.md"
     if not spec.is_file():
@@ -297,7 +335,9 @@ def checar(root: Path, delta: Path) -> list:
             v.append(("ALTO", "spec.md", "bugfix sem teste de regressão declarado", "apontar o teste que falha antes e passa depois do fix (delta-015)"))
     c1_aceite(bs, v)
     if not (bugfix and not tasks.is_file()):  # bugfix sem tasks.md é válido — tasks é sob demanda (delta-015)
-        c2_cobertura(bs, tasks.read_text(encoding="utf-8") if tasks.is_file() else "", v)
+        tasks_txt = tasks.read_text(encoding="utf-8") if tasks.is_file() else ""
+        c2_cobertura(bs, tasks_txt, v)
+        c9_grafo(tasks_txt, v)
     c3_estado(root, v)
     c4_archive(root, bs, v)
     c5_tamanho(root, v)
@@ -446,6 +486,16 @@ Estado: arquivada · Data: 2026-01-01 · Branch: feat/001-x
     assert any(s == "ALTO" and "test-plan.md ausente" in q for s, _, q, _ in comentado), \
         f"C8 enganado por comentário de template: {comentado}"
 
+    # C9 — grafo de tasks (delta-016): dep válido passa; dep morta e ciclo acusam ALTO
+    dep_ok = limpa_tasks.replace("- [ ] T2 — cache", "- [ ] T2 (dep: T1) — cache")
+    assert rodar(limpa_spec, dep_ok, limpa_testplan) == [], "C9: dep válido deveria passar sem achados"
+    dep_morta = rodar(limpa_spec, limpa_tasks.replace("- [ ] T2 — cache", "- [ ] T2 (dep: T9) — cache"), limpa_testplan)
+    assert any(s == "ALTO" and "T9" in q for s, _, q, _ in dep_morta), f"C9 dep inexistente: {dep_morta}"
+    ciclo_tasks = ("- [ ] T1 (dep: T2) — form · arquivos: a.py · cobre: R1 · verificação: pytest\n"
+                   "- [ ] T2 (dep: T1) — cache · arquivos: b.py · cobre: RNF1 · verificação: k6\n")
+    com_ciclo = rodar(limpa_spec, ciclo_tasks, limpa_testplan)
+    assert any(s == "ALTO" and "ciclo" in q for s, _, q, _ in com_ciclo), f"C9 ciclo: {com_ciclo}"
+
     # bugfix (delta-015): sem bloco Rn é válido; repro e teste de regressão são obrigatórios
     bugfix_ok = """# delta-002 — fix parse
 Estado: proposta · Data: 2026-01-01 · Branch: fix/002-parse · Tipo: bugfix
@@ -472,7 +522,7 @@ regex não cobre o caso
     v_sem = rodar(sem_regressao)
     assert any(s == "ALTO" and "regressão" in q for s, _, q, _ in v_sem), f"bugfix sem teste de regressão: {v_sem}"
 
-    print("selftest: OK (3 fixtures + C8 + bugfix, defeitos detectados nos dois lados da cobertura)")
+    print("selftest: OK (3 fixtures + C8 + C9 + bugfix, defeitos detectados nos dois lados da cobertura)")
     selftest_c4()
     selftest_c7()
 
