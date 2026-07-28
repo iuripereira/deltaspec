@@ -5,7 +5,8 @@
 **Atualizado em:** 2026-07-28
 
 ## Agora
-- **delta-015 (fluxo, Fase 2) arquivada** — Fases 0–2 do plano de upgrade concluídas. Próxima: Fase 3 (delta-016, harness + execução paralela + graphify opcional).
+- **delta-016 (harness, Fase 3) em curso** na `feat/016-harness` — specify e clarify concluídos (perfil `completo` aprovado 2026-07-28; 4 decisões consolidadas; ADR-0014; verificação adversarial em 3 lentes aplicada ao rascunho). Próxima fase: **plan** (`superpowers:writing-plans` → `specs/016-harness/plan.md`), depois tasks (com `dep:` novo) → test-plan → analyze.
+- Plugin local atualizado: revisão `d6b9814` (v0.11.0) ativa no `installed_plugins.json`.
 
 ## Feito recentemente
 - 2026-07-28 — **delta-015 (fluxo) arquivada** (#57 artefatos + #58 implementação + PR de archive): R36–R39 no TRUTH (perfil `completo|enxuto`, prototipação CONDITIONAL, `test-plan.md`, tipo `bugfix`), MUDA R12 (C8 no gate) e MUDA R35 (fusão de eixos no enxuto), ADR-0013, `v0.11.0`.
