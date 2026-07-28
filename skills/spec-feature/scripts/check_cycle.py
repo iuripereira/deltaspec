@@ -290,6 +290,9 @@ def c9_grafo(tasks_txt: str, v: list) -> None:
         if not m:
             continue
         resto = line[m.end():].lstrip()
+        if m.group(1) in arestas:
+            v.append(("ALTO", f"tasks.md {m.group(1)}", "ID de task duplicado no arquivo", "renumerar — ID duplicado engole aresta do grafo (C9)"))
+            continue
         d = DEP.match(resto)  # só a aresta colada ao ID é aresta — "(dep: Tn)" em prosa não conta (achado do dogfood da delta-016)
         arestas[m.group(1)] = [a.strip() for a in d.group(1).split(",") if a.strip()] if d else []
     if not any(arestas.values()):
@@ -515,6 +518,12 @@ Estado: arquivada · Data: 2026-01-01 · Branch: feat/001-x
     prosa_dep = limpa_tasks + "- [ ] T3 — documenta a sintaxe `(dep: T1)` no template · arquivos: c.py · cobre: R1 · verificação: leitura\n"
     v_prosa = rodar(limpa_spec, prosa_dep, limpa_testplan)
     assert not any("dep" in q for _, _, q, _ in v_prosa), f"C9 falso positivo em prosa: {v_prosa}"
+    # ID de task duplicado sobrescreve arestas[id] e engole aresta/ciclo — falso negativo (review delta-016)
+    dup_id = ("- [ ] T1 (dep: T2) — a · arquivos: a.py · cobre: R1 · verificação: pytest\n"
+              "- [ ] T1 — b · arquivos: b.py · cobre: R1 · verificação: pytest\n"
+              "- [ ] T2 (dep: T1) — cache · arquivos: c.py · cobre: RNF1 · verificação: k6\n")
+    v_dup = rodar(limpa_spec, dup_id, limpa_testplan)
+    assert any(s == "ALTO" and "duplicad" in q for s, _, q, _ in v_dup), f"C9 ID duplicado: {v_dup}"
 
     # C10 — convergência mínima no archive (delta-016)
     with tempfile.TemporaryDirectory() as d:
