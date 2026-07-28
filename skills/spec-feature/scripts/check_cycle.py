@@ -24,6 +24,7 @@ Uso: check_cycle.py [DELTA_DIR]   (default: a única delta não arquivada em ./s
      check_cycle.py --selftest
 Exit 0 = sem ALTO/CRÍTICO · 1 = corrigir antes de seguir · 2 = erro de uso.
 """
+import graphlib
 import re
 import subprocess
 import sys
@@ -301,22 +302,12 @@ def c9_grafo(tasks_txt: str, v: list) -> None:
         for dep in deps:
             if dep not in arestas:
                 v.append(("ALTO", f"tasks.md {tid}", f"dep '{dep}' cita task inexistente", "corrigir a aresta ou criar a task (C9)"))
-    # Kahn: task que sobra com grau > 0 está num ciclo (dep morta já acusada não conta)
-    grau = {t: sum(1 for d in deps if d in arestas) for t, deps in arestas.items()}
-    dependentes: dict[str, list[str]] = {t: [] for t in arestas}
-    for tid, deps in arestas.items():
-        for dep in deps:
-            if dep in dependentes:
-                dependentes[dep].append(tid)
-    fila = [t for t, g in grau.items() if g == 0]
-    while fila:
-        t = fila.pop()
-        for depte in dependentes[t]:
-            grau[depte] -= 1
-            if grau[depte] == 0:
-                fila.append(depte)
-    ciclo = sorted(t for t, g in grau.items() if g > 0)
-    if ciclo:
+    # ciclo via graphlib (stdlib) — delete-list do review da delta-016
+    ts = graphlib.TopologicalSorter(arestas)
+    try:
+        ts.prepare()
+    except graphlib.CycleError as e:
+        ciclo = sorted(set(e.args[1]))
         v.append(("ALTO", "tasks.md", f"ciclo de dependências envolvendo {', '.join(ciclo)}", "remover a aresta que fecha o ciclo (C9)"))
 
 

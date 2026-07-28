@@ -10,4 +10,4 @@ Ressalvas aceitas: 2026-07-28 — achado 1 — a ação sugerida é executada ne
 
 **Veredito:** LIBERADO COM RESSALVAS
 
-Review: convergentes tratados / recusas justificadas — 2026-07-28
+Review (2 eixos, R35): eixo Spec sem lacuna (20/20 cenários); delete-list do eixo Qualidade — 2 tratados (Kahn→graphlib; bullet da trilha no harness.md vira link), 2 recusados com justificativa: reusar PENDENCIA_ABERTA no C10 (a restrição `T\d+` é a precisão que o cenário exige — checkbox de prosa não é task) e cortar o footprint do graphify (mandado pela spec R6/ADR-0014, decisão de clarify) — 2026-07-28

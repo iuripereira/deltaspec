@@ -19,7 +19,7 @@ retomável entre sessões. Termos canônicos:
 - **Human-in-the-loop** — a IA propõe, o humano aprova; toda aprovação exigida pelo
   ciclo tem registro citável (trilha de auditoria, cycle.md).
 - **Trilha de auditoria** — o conjunto das aprovações registradas nos artefatos das
-  próprias fases; sobrevive ao archive em `specs/_archive/` (ADR-0014).
+  próprias fases (regras e sintaxes: cycle.md, "Trilha de auditoria de aprovação"; ADR-0014).
 - **Unidade paralelizável** — subconjunto de tasks sem caminho entre si no grafo do
   `tasks.md`; pode executar em subagente com worktree isolada (cycle.md,
   "Execução paralela por unidades").
