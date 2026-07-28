@@ -8,6 +8,8 @@ O formato segue [Keep a Changelog 1.0.0](https://keepachangelog.com/pt-BR/1.0.0/
 
 ## [Não lançado]
 
+## [0.12.0] - 2026-07-28
+
 ### Adicionado
 
 - **Arestas de bloqueio no tasks.md** (delta-016, R1): sintaxe `(dep: Tn[, Tm])` no template; unidades paralelizáveis derivadas do grafo; **C9** valida existência e aciclicidade. Sem `dep:` → cadeia linear implícita (retrocompatível).
