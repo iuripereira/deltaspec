@@ -20,6 +20,7 @@ Escreva uma ADR quando a **renúncia de uma alternativa** precisa registrar o *p
 | [0010](ADR-0010-handoff-renomeia-state.md) | HANDOFF.md renomeia STATE.md — o diário de bordo é o ponto de entrada da retomada | Accepted | 2026-07-24 |
 | [0011](ADR-0011-descoberta-skill-propria.md) | A fase de descoberta é uma skill própria pré-specify, com modelo de confiança explícito | Accepted | 2026-07-27 |
 | [0012](ADR-0012-recontratacao-motores.md) | Pin do max é fork deliberado — divergência upstream documentada, migração com gatilho | Accepted | 2026-07-28 |
+| [0013](ADR-0013-selecao-adaptativa-e-bugfix.md) | Seleção adaptativa por perfil da delta, prototipação opt-in e bugfix de pipeline curto | Accepted | 2026-07-28 |
 
 > ADR-0002 a 0006 são **backfill** (2026-07-19): decisões que já vigiam, registradas retroativamente na varredura de registros do repo. A data de cada uma aproxima a decisão real pelo histórico disponível — o histórico pré-plugin foi reescrito (`filter-repo`), então decisões anteriores podem ser mais antigas do que a data registrada.
 
