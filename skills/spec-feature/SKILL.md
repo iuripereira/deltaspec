@@ -11,8 +11,10 @@ Orquestra o ciclo por incremento do sdd-iuri: **delta specs** (só o que muda em
 
 Pipeline completo:
 ```
-specify → clarify → plan → tasks → analyze → implement → review → archive → PR
+specify → clarify → [prototipação?] → plan → tasks → test-plan → analyze → implement → review → archive → PR
 ```
+
+Estágios entre colchetes são CONDITIONAL (propostos pela IA, aprovados pelo usuário). O **perfil da delta** (`completo|enxuto`, proposto no specify e aprovado pelo usuário) liga/desliga clarify, test-plan e a forma do review — tabela "Perfil de execução" em `references/cycle.md`. Correção de defeito pode abrir como **`Tipo: bugfix`** (template próprio, pipeline curto — seção "Delta bugfix" do cycle.md).
 Detalhe das fases (critérios de entrada/saída, máquina de estados, consolidação da entrevista): `references/cycle.md`. Gate analyze: `references/analyze.md`.
 
 Pré-fase opcional: projeto sem PRD validado ou com insumos brutos de descoberta (transcrição de reunião, planilha legada) → rode `sdd-iuri:descoberta` antes do specify (contrato em `references/adapters.md`).
@@ -51,11 +53,12 @@ delta-001 **não** é "o sistema inteiro": é o walking skeleton — a menor fat
 | Reiniciar numeração NNN por versão maior | Numeração global; reiniciar quebra referências |
 | Aplicar o ciclo em workspace-dados | Recusar e apontar o scaffold estático do projeto-init |
 | Gerar diagrama não declarado no doc-profile | Só os `obrigatorio: true` do perfil; extra exige pergunta antes (ADR-0009) |
+| Perfil enxuto sem aprovação registrada | O perfil é proposta da IA — só vale com `aprovado: AAAA-MM-DD` do usuário no cabeçalho |
 
 ## Arquivos da skill
 
 - `references/cycle.md` — máquina de estados, critérios de entrada/saída por fase, consolidação entrevista→spec, regras de archive/TRUTH.md.
 - `references/analyze.md` — roteiro do gate de verificação cruzada + formato do relatório.
 - `references/adapters.md` — contratos de integração (max, superpowers, ponytail), fallbacks, política de versões e detecção de breaking change.
-- `references/templates/` — `delta-spec.md`, `tasks.md`, `TRUTH.md`, `resumo-plan.md`.
-- `scripts/check_cycle.py` — gate determinístico (C1 aceite · C2 cobertura · C3 estado · C4 archive sem perda · C5 tamanho do TRUTH · C6 pendência roteada · C7 split de PR). `--selftest` valida o próprio script.
+- `references/templates/` — `delta-spec.md`, `bugfix-spec.md`, `tasks.md`, `test-plan.md`, `TRUTH.md`, `resumo-plan.md`.
+- `scripts/check_cycle.py` — gate determinístico (C1 aceite · C2 cobertura · C3 estado · C4 archive sem perda · C5 tamanho do TRUTH · C6 pendência roteada · C7 split de PR · C8 plano de testes). `--selftest` valida o próprio script.
