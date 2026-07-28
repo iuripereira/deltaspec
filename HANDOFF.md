@@ -5,9 +5,10 @@
 **Atualizado em:** 2026-07-28
 
 ## Agora
-- **delta-015 (fluxo, Fase 2) implementada e revisada** na `feat/015-fluxo` — aguardando: (1) merge do PR #57 (artefatos, split R17, checks verdes — o classificador de permissões bloqueou o merge pela sessão); (2) depois, rebase da `feat/015-fluxo` na main e abertura do PR da implementação; (3) merge → archive (consolidar R1–R6 no TRUTH: 2 MUDA em R12/R35, 4 ADICIONA) e tag `v0.11.0`.
+- **delta-015 (fluxo, Fase 2) arquivada** — Fases 0–2 do plano de upgrade concluídas. Próxima: Fase 3 (delta-016, harness + execução paralela + graphify opcional).
 
 ## Feito recentemente
+- 2026-07-28 — **delta-015 (fluxo) arquivada** (#57 artefatos + #58 implementação + PR de archive): R36–R39 no TRUTH (perfil `completo|enxuto`, prototipação CONDITIONAL, `test-plan.md`, tipo `bugfix`), MUDA R12 (C8 no gate) e MUDA R35 (fusão de eixos no enxuto), ADR-0013, `v0.11.0`.
 - 2026-07-28 — **delta-015 (fluxo) ciclo completo até o review**: perfil `completo|enxuto` (ADR-0013), prototipação CONDITIONAL (categoria `prototipo` no doc-profile), `test-plan.md` + C8 no gate (TDD), tipo `bugfix` reconhecido pelo gate, MUDA R12/R35. Clarify via grill-me (aggregate 0.06, 4 decisões do usuário); split R17 executado (PR #57 só de artefatos). O review em 2 eixos paralelos (dogfood do R35) pegou **falso negativo real do C8** (comentário de template enganava o `campo()`) — corrigido com TDD + 2 refactors da delete-list; recusas justificadas no analyze.md.
 - 2026-07-28 — **delta-014 (motores) implementada e arquivada** (#55 + PR de archive): Fase 1 do upgrade — pin do max mantido como **fork deliberado** (ADR-0012, decisão do usuário; gatilho de migração na delta-017), política de pins com verificação datada, **review em dois eixos paralelos** formalizado em adapters/cycle, R34–R35 no TRUTH, `v0.10.0`. O review da própria delta (dogfooding) pegou o índice de ADRs 3× defasado (0009/0011/0012) — quitado.
 - 2026-07-28 — **delta-013 (higiene) implementada e arquivada** (#53 + PR de archive): Fase 0 do plano de upgrade — manifestos com as 9 skills + check de inventário no CI, hook pré-commit versionado (DT-005 quitado; cobre deleção de `.md`), ADR-0009 `Accepted` com MUDA RNF1 (exceção de doc cliente), R31–R33 no TRUTH, DT-013 roteado (check do doc-profile), `v0.9.0`. Review em 2 eixos com subagentes paralelos (padrão que a Fase 1 formaliza nos adapters).
@@ -37,7 +38,7 @@
 - Nenhum bloqueio. Débito durável: [DEBT.md](DEBT.md) (DT-001, DT-004..DT-007, DT-009..DT-011 abertos; DT-002/DT-003/DT-008 quitados).
 
 ## Próximos passos imediatos
-- Fase 2 do plano de upgrade (delta-015, candidata a split R17): prototipação opcional, plano de testes como artefato + check, seleção adaptativa de estágios (perfil `completo|enxuto`), spec tipo `bugfix`.
-- Rodar uma delta real com o gate do specify no imex-travelplanner (gatilho do DT-004 e do DT-013).
-- Rodar `/plugin update sdd-iuri` no Claude Code local (cache anterior às deltas 013–014).
-- Próxima delta livre: 015. Débito aberto: DT-001, DT-004, DT-006 (guarda), DT-007, DT-009, DT-010 (guarda), DT-011, DT-013.
+- Fase 3 do plano de upgrade (delta-016): vocabulário de harness, arestas de bloqueio no tasks.md (grafo → execução paralela por worktree), trilha de auditoria de aprovação, avaliar check tipo `/converge`; graphify como 4º motor opcional (adapter ADR-0004, instalação manual consciente).
+- Rodar uma delta real com o gate do specify no imex-travelplanner (gatilho do DT-004 e do DT-013) — agora com perfil e test-plan disponíveis.
+- Rodar `/plugin update sdd-iuri` no Claude Code local (cache anterior às deltas 013–015).
+- Próxima delta livre: 016. Débito aberto: DT-001, DT-004, DT-006 (guarda), DT-007, DT-009, DT-010 (guarda), DT-011, DT-013.

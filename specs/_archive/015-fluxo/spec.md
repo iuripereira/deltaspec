@@ -1,5 +1,5 @@
 # delta-015 — fluxo
-Estado: proposta · Data: 2026-07-28 · Branch: feat/015-fluxo
+Estado: arquivada · Data: 2026-07-28 · Branch: feat/015-fluxo
 
 ## Contexto (≤3 linhas)
 Fase 2 do plano de upgrade: o ciclo cobre specify→archive, mas não tem prototipação, plano de testes nem liga/desliga de estágios — a economia de tokens hoje é só limite de linhas (RNF1). AI-DLC (workflow adaptativo), Kiro (spec `bugfix`) e BMAD (profundidade pela complexidade) validam o desenho; renúncias em [ADR-0013](../../docs/adrs/ADR-0013-selecao-adaptativa-e-bugfix.md).
