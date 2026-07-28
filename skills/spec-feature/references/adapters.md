@@ -12,6 +12,7 @@ Princípio: acoplamento = (i) **contrato na invocação** (instrução de format
 | implement | `superpowers:executing-plans` · `superpowers:subagent-driven-development` · `superpowers:test-driven-development` · `superpowers:using-git-worktrees` | nomes das skills; obrigatoriedade de TDD |
 | review | `superpowers:requesting-code-review` (eixo Spec) · `ponytail:ponytail-review` (eixo Qualidade) — paralelos | nomes; formato da delete-list |
 | contexto de codebase (descoberta · specify/plan · review) — opcional | `graphify` (CLI/MCP externo, não é plugin Claude) | nomes dos comandos `query`/`path`/`explain`; formato das tags de confiança; instalador (escreve hook/CLAUDE.md — nunca usar) |
+| apresentação a cliente (categoria `apresentacao`) — opcional | Figma MCP (`generate_diagram`, serviço remoto) | `generate_diagram` é beta e "will eventually be a usage-based paid feature"; só FigJam, ~6 tipos de `.mmd` |
 | transversal | `ponytail:ponytail` (hook always-on) | nível default; `PONYTAIL_SUBAGENT_MATCHER` |
 
 ## descoberta / write-prd (pré-specify — delta-012)
@@ -66,6 +67,14 @@ Camada de contexto para as fases que leem código em projeto-alvo grande/brownfi
 - **Fallback (ausente ou desabilitado):** fluxo atual (grep/Explore) com no máximo
   1 linha de aviso — degradação graciosa (RNF2).
 
+## Figma MCP (apresentação a cliente — delta-018, opcional)
+
+Materializa o `.mmd` fonte no FigJam para acabamento de apresentação (categoria `apresentacao` do doc-profile — ADR-0015). **Unidirecional por design:** o `.mmd` em git é a única fonte; edição no Figma nunca retorna; em divergência, o `.mmd` governa e re-materializa.
+
+- **Invocação:** `generate_diagram` com o conteúdo do `.mmd` versionado; retoque manual depois, só na cópia de apresentação. Tipo de `.mmd` não suportado (~6 aceitos) → render CLI + imagem colada no FigJam.
+- **Fora do caminho crítico:** o entregável congelado (doc-entregavel) segue exclusivamente no pipeline CLI — a camada Figma nunca entra no export assinável.
+- **Fallback (MCP ausente/não autenticado ou categoria não declarada):** fluxo atual com no máximo 1 linha de aviso (RNF2).
+
 ## Política de dependência (versões)
 
 | Plugin | Versão testada | Faixa aceita | Verificado em | Substituibilidade / divergência upstream |
@@ -74,6 +83,7 @@ Camada de contexto para as fases que leem código em projeto-alvo grande/brownfi
 | `superpowers@claude-plugins-official` | 6.1.1 | faixa 6.x | 2026-07-28 (upstream 6.2.0 de 2026-07-24 — dentro da faixa, não testada) | **não forkável** — dependência real; mitigação = fallbacks acima |
 | `ponytail@ponytail` | 4.8.4 | faixa 4.x | 2026-07-28 | forkável (ruleset markdown + hook simples) |
 | `graphify` (CLI externo) | — (não testada — contrato definido pela doc upstream) | pin por tag na primeira adoção real | 2026-07-28 (release quase diária, bus factor = 1) | opcional com degradação total: ausente, nada do ciclo quebra; a primeira adoção real define o pin e valida o contrato |
+| Figma MCP (`generate_diagram`) | n/a — serviço remoto (beta, sem versão pinável) | acompanhar anúncio de preço (gatilho no DT roteado pela delta-018) | 2026-07-28 (contrato pela doc primária do MCP) | opcional com degradação total: ausente, o pipeline CLI cobre; breaking/preço → reavaliar a categoria |
 
 Re-verificação: toda delta que tocar este arquivo atualiza a coluna "Verificado em" dos motores que conferir.
 

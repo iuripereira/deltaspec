@@ -12,6 +12,7 @@
 #   d2          arquitetura visual moderna (alternativa: excalidraw)                   [opcional]
 #   plantuml    UML formal e casos de uso                                              [opcional]
 #   excalidraw  diagramas explicativos (regras, conceitos) e arquitetura visual        [opcional]
+#   figma-figjam materializa .mmd para apresentação a cliente via generate_diagram (MCP) [opcional]
 #
 # A ferramenta segue a CATEGORIA do diagrama (tabela do ADR-0009) — não reaproveite
 # um diagrama pronto de outra categoria/ferramenta: arquitetura C4 em Mermaid, por
@@ -36,6 +37,7 @@ artefatos:
   casos-de-uso: { obrigatorio: false }   # ferramenta: plantuml
   explicativos: { obrigatorio: false }   # ferramenta: excalidraw — regras/conceitos que a prosa não sustenta
   prototipo:    { obrigatorio: false }   # ferramenta: html-estatico — estágio CONDITIONAL do ciclo (delta-015, ADR-0013); default: docs/prototypes/NNN-nome/
+  apresentacao: { obrigatorio: false }   # ferramenta: figma-figjam — camada de APRESENTAÇÃO a cliente (delta-018, ADR-0015): materializa o .mmd fonte via generate_diagram + retoque; unidirecional, o .mmd governa; nunca entra no caminho do entregável congelado
 
 # Motores externos opcionais que o ciclo consulta neste projeto (contrato e avisos:
 # spec-feature/references/adapters.md, seção graphify — instalação manual, ADR-0014).
