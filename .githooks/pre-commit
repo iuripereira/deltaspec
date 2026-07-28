@@ -4,7 +4,9 @@
 # Ativação (1x por clone, não se propaga): git config core.hooksPath .githooks
 set -u
 
-staged=$(git diff --cached --name-only --diff-filter=ACMR)
+# manter em sincronia com skills/guarding-doc-integrity/templates/pre-commit
+# (duplicação deliberada: o gate do próprio framework não pode depender de config)
+staged=$(git diff --cached --name-only)
 echo "$staged" | grep -qE '\.md$|(^|/)deps\.toml$' || exit 0
 
 if python3 skills/guarding-doc-integrity/scripts/validate_integrity.py .; then

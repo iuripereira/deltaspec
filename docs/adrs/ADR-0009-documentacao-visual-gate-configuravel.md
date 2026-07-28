@@ -1,6 +1,6 @@
 # ADR-0009: Documentação visual como gate configurável — a decisão é obrigatória, os diagramas não
 
-- **Status:** Accepted (2026-07-28, delta-013) <!-- promovida com a evidência do piloto doc-profile+doc-entregavel nos 4 repos IMEX (8 exports, 2026-07-20); o check mecânico do doc-profile permanece adiado — pendência roteada na delta-013; a delta externa com gate do specify segue como gatilho do DT-004 -->
+- **Status:** Accepted (2026-07-28, delta-013 — evidência e o que segue adiado: seção "Promoção" nas Consequences)
 - **Data:** 2026-07-20
 - **Supersedes:** —
 - **Superseded by:** —

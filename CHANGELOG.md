@@ -10,12 +10,12 @@ O formato segue [Keep a Changelog 1.0.0](https://keepachangelog.com/pt-BR/1.0.0/
 
 ### Adicionado
 - **Check de inventário de skills no CI** (delta-013): novo step do job `ci` compara cada diretório `skills/<nome>/` com as descrições dos dois manifestos (`plugin.json` e `marketplace.json`), case-insensitive, e falha nomeando a skill ausente e o manifesto omisso — mecaniza a classe de drift registrada nas Lições (7 vs 8 vs 9 skills).
-- **Hook pré-commit versionado** (delta-013, quita DT-005): `.githooks/pre-commit` roda o `validate_integrity.py` quando o commit toca `.md`/`deps.toml` (ativação por clone: `git config core.hooksPath .githooks`); a `guarding-doc-integrity` ganhou `templates/pre-commit` (caminho do validador via `git config sdd-iuri.validator` — sem caminho de máquina, RNF5) e o passo 5 do bootstrap que **oferece** a instalação (opt-in, nunca sobrescreve hook existente).
+- **Hook pré-commit versionado** (delta-013, quita DT-005): `.githooks/pre-commit` roda o `validate_integrity.py` quando o commit toca `.md`/`deps.toml`; template + oferta opt-in no bootstrap da `guarding-doc-integrity`. Mecanismo e ativação: README e SKILL.md da skill.
 
 ### Mudado
 - Manifestos citam as **9 skills** (entram `descoberta` e `eu-tenho-tdah` onde faltavam); `eu-tenho-tdah` reconhecida como skill do plugin (R3 da delta-013, consolida no TRUTH no archive).
 - **ADR-0009 promovida a Accepted** (evidência: piloto doc-profile+doc-entregavel nos 4 repos IMEX, 8 exports); `doc-entregavel` sai de experimental no README; a exceção de documentação cliente entra no RNF1 via MUDA no archive. Check mecânico do doc-profile permanece adiado (pendência roteada).
-- Promessas do DT-005 alinhadas ao mecanismo real em `deps.toml`, `guarding-doc-integrity/SKILL.md`, `canonical-rules.md` e `README.md` — nenhuma menção a pré-commit promete validação inexistente.
+- Promessas do DT-005 alinhadas ao mecanismo real em `deps.toml`, `guarding-doc-integrity/SKILL.md`, `canonical-rules.md` e `README.md`.
 
 ## [0.8.0] - 2026-07-27
 

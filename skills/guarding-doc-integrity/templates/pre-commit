@@ -5,11 +5,13 @@
 # (não versionada — portabilidade RNF5): git config sdd-iuri.validator <caminho>
 set -u
 
-staged=$(git diff --cached --name-only --diff-filter=ACMR)
+# manter em sincronia com o .githooks/pre-commit do repo sdd-iuri
+# (duplicação deliberada: lá o validador é in-repo; aqui vem da config local)
+staged=$(git diff --cached --name-only)
 echo "$staged" | grep -qE '\.md$|(^|/)deps\.toml$' || exit 0
 
 validador=$(git config --get sdd-iuri.validator || true)
-if [ -z "$validador" ] || [ ! -f "$validador" ]; then
+if [ ! -f "$validador" ]; then
   echo "pre-commit (sdd-iuri): validador não configurado ou ausente — pulando (configure: git config sdd-iuri.validator <caminho de validate_integrity.py>)" >&2
   exit 0
 fi
