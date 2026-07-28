@@ -24,15 +24,17 @@ flowchart LR
     descoberta["descoberta<br>(pré-specify, opcional<br>+ write-prd)"] -.-> specify
     specify --> clarify["clarify<br>(grill-me)"]
     clarify --> plan["plan<br>(superpowers)"]
+    clarify -.-> prototipo["prototipação<br>(CONDITIONAL — aprovação<br>do usuário, delta-015)"] -.-> plan
     plan --> tasks
-    tasks --> analyze["analyze<br>(gate read-only)"]
+    tasks --> testplan["test-plan<br>(C8; dispensável<br>no perfil enxuto)"]
+    testplan --> analyze["analyze<br>(gate read-only)"]
     analyze --> implement["implement<br>(superpowers + TDD<br>+ ponytail full)"]
     implement --> review["review<br>(superpowers)"]
     review --> archive["archive<br>(TRUTH.md)"]
     archive --> PR
 ```
 
-Os gates determinísticos rodam **local**, na fase analyze/archive e no pré-commit: `skills/spec-feature/scripts/check_cycle.py` (ciclo, checks C1–C7) e `skills/guarding-doc-integrity/scripts/validate_integrity.py` (espelhos de valores canônicos). Ambos têm `--selftest` validado no CI deste repo. O pré-commit é o hook versionado em `.githooks/` — ative uma vez por clone com `git config core.hooksPath .githooks`; projetos de usuário recebem a oferta equivalente no bootstrap da `guarding-doc-integrity`.
+Os gates determinísticos rodam **local**, na fase analyze/archive e no pré-commit: `skills/spec-feature/scripts/check_cycle.py` (ciclo, checks C1–C8) e `skills/guarding-doc-integrity/scripts/validate_integrity.py` (espelhos de valores canônicos). Ambos têm `--selftest` validado no CI deste repo. O pré-commit é o hook versionado em `.githooks/` — ative uma vez por clone com `git config core.hooksPath .githooks`; projetos de usuário recebem a oferta equivalente no bootstrap da `guarding-doc-integrity`.
 
 ## Instalação
 

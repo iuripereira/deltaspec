@@ -10,7 +10,7 @@ Insumos: `spec.md`, `tasks.md`, **só o cabeçalho-resumo** do `plan.md` (o bloc
 python3 ${CLAUDE_PLUGIN_ROOT}/skills/spec-feature/scripts/check_cycle.py specs/NNN-nome
 ```
 
-Cobre os checks **1 e 2** abaixo, a verificação de archive (cycle.md, regra 6), o limiar do TRUTH.md, a pendência roteada do archive (cycle.md, regra 7 — C6) e a medição do split de PR (C7, ver abaixo) — emite as linhas da tabela já no formato do relatório. Exit 1 = há ALTO/CRÍTICO. Os checks **3 e 5** são juízo (scope creep, regra canônica): continuam com o modelo, sempre. Diligência não substitui o script; o script não substitui a leitura.
+Cobre os checks **1 e 2** abaixo, a verificação de archive (cycle.md, regra 6), o limiar do TRUTH.md, a pendência roteada do archive (cycle.md, regra 7 — C6), a medição do split de PR (C7, ver abaixo) e a cobertura do plano de testes (C8, delta-015) — emite as linhas da tabela já no formato do relatório. Exit 1 = há ALTO/CRÍTICO. Os checks **3 e 5** são juízo (scope creep, regra canônica): continuam com o modelo, sempre. Diligência não substitui o script; o script não substitui a leitura.
 
 ## Ordem de checagem (do barato ao caro)
 

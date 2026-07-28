@@ -43,7 +43,7 @@ Princípio: acoplamento = (i) **contrato na invocação** (instrução de format
 
 O review executa como **dois eixos independentes**, cada um cego ao contexto do outro (o achado de um não contamina a leitura do outro): **eixo Spec** (conformidade — motor `superpowers:requesting-code-review`, conteúdo na seção Superpowers acima) e **eixo Qualidade** (over-engineering — motor `ponytail:ponytail-review`, seção ponytail acima).
 
-**Execução:** harness com subagentes → despache os dois eixos em **subagentes paralelos** (um por eixo, prompts independentes); harness sem subagentes ou motor ausente → inline, em sequência, com os fallbacks e avisos acima (RNF2). Achado apontado pelos **dois** eixos é convergente — trate antes do PR, sempre. Os demais achados seguem a régua vigente (crítico bloqueia; o resto é decisão registrada).
+**Execução:** harness com subagentes → despache os dois eixos em **subagentes paralelos** (um por eixo, prompts independentes); harness sem subagentes ou motor ausente → inline, em sequência, com os fallbacks e avisos acima (RNF2). Perfil `enxuto` aprovado (R1, delta-015): os dois eixos podem rodar **fundidos num único subagente**, achados ainda classificados por eixo, mesma regra de convergência. Achado apontado pelos **dois** eixos é convergente — trate antes do PR, sempre. Os demais achados seguem a régua vigente (crítico bloqueia; o resto é decisão registrada).
 
 ## Política de dependência (versões)
 

@@ -35,6 +35,7 @@ artefatos:
   fluxos:       { obrigatorio: false }   # ferramenta: mermaid
   casos-de-uso: { obrigatorio: false }   # ferramenta: plantuml
   explicativos: { obrigatorio: false }   # ferramenta: excalidraw — regras/conceitos que a prosa não sustenta
+  prototipo:    { obrigatorio: false }   # ferramenta: html-estatico — estágio CONDITIONAL do ciclo (delta-015, ADR-0013); default: docs/prototypes/NNN-nome/
 
 # Lido só quando publico.cliente: true — insumo da skill doc-entregavel.
 entregaveis:
