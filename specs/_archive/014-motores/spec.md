@@ -1,5 +1,5 @@
 # delta-014 — motores
-Estado: proposta · Data: 2026-07-28 · Branch: feat/014-motores
+Estado: arquivada · Data: 2026-07-28 · Branch: feat/014-motores
 
 ## Contexto (≤3 linhas)
 Fase 1 do plano de upgrade: o upstream do max (mattpocock/skills) removeu `write-prd` e fatorou o loop de entrevista na skill-motor `grilling` — o contrato dos adapters está ancorado numa API que só sobrevive no plugin distribuído (0.8.0). Decisão com o usuário (2026-07-28): **manter o pin como fork deliberado** e registrar divergência + gatilho de migração. Aproveita para formalizar o review em dois eixos paralelos (padrão Pocock/superpowers, já exercitado na delta-013).
