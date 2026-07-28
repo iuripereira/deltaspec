@@ -5,7 +5,8 @@
 **Atualizado em:** 2026-07-28
 
 ## Agora
-- **delta-016 (harness, Fase 3) em curso** na `feat/016-harness` — specify e clarify concluídos (perfil `completo` aprovado 2026-07-28; 4 decisões consolidadas; ADR-0014; verificação adversarial em 3 lentes aplicada ao rascunho). Próxima fase: **plan** (`superpowers:writing-plans` → `specs/016-harness/plan.md`), depois tasks (com `dep:` novo) → test-plan → analyze.
+
+- **delta-016 (harness) implementada** na `feat/016-harness` — Tasks 1–7 completas, review por task limpo. Próxima: review em 2 eixos paralelos (R35) → PR da implementação → archive (consolida R40–R44, MUDA R12 no TRUTH, tag v0.12.0).
 - Plugin local atualizado: revisão `d6b9814` (v0.11.0) ativa no `installed_plugins.json`.
 
 ## Feito recentemente
