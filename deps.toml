@@ -1,7 +1,8 @@
 # deps.toml — mapa de dependências documentais deste repositório (skill: guarding-doc-integrity)
 # Um assunto tem um arquivo DONO; valor concreto só existe no dono + espelhos
 # sancionados; todo o resto do repo LINKA para o dono.
-# Validado por validate_integrity.py no job `ci` e antes de todo commit que toque .md.
+# Validado por validate_integrity.py no job `ci` e no hook pré-commit versionado
+# (.githooks/pre-commit; ativação por clone: git config core.hooksPath .githooks).
 
 # C2 (materialização fora dos sancionados) e C3 (links) varrem estes arquivos.
 # As deltas abertas (specs/NNN-*/) ficam fora: valor proposto só é governado

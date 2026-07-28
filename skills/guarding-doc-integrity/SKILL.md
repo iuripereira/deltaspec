@@ -7,7 +7,7 @@ description: Use when editing docs in a repo that has a deps.toml manifest; when
 
 ## Visão geral
 
-Governança de fontes de verdade: **um assunto tem um arquivo dono; valor concreto só existe no dono + espelhos sancionados; todo o resto do repo linka.** O mapa dono→espelhos vive num manifesto `deps.toml` versionado no repo, e um validador roda como **gate determinístico antes de todo commit**. A integridade não pode depender da diligência de uma sessão — greps ad-hoc não são garantia; o script é.
+Governança de fontes de verdade: **um assunto tem um arquivo dono; valor concreto só existe no dono + espelhos sancionados; todo o resto do repo linka.** O mapa dono→espelhos vive num manifesto `deps.toml` versionado no repo, e um validador roda como gate determinístico em duas camadas: **hook pré-commit versionado (opt-in, instalado no bootstrap)** e **gate de sessão** (o comando manual abaixo, para quem não instalou o hook). A integridade não pode depender da diligência de uma sessão — greps ad-hoc não são garantia; o script é.
 
 ## Quando usar
 
@@ -25,6 +25,7 @@ Quando NÃO usar: repo sem docs canônicos, ou mudança que não toca arquivo ma
 2. Proponha ao usuário: dono de cada assunto, espelhos sancionados (máx. 2–3 por dono), valores a rastrear.
 3. Crie `deps.toml` na raiz a partir de `templates/deps.toml` (desta skill).
 4. Rode o validador e corrija as violações do estado atual (duplicata fora dos sancionados vira **link** para o dono) até PASS. Esse é o baseline do repo.
+5. **Ofereça o hook pré-commit** (opt-in — recusa segue sem hook, sem insistir): copie `templates/pre-commit` (desta skill) para `.githooks/pre-commit` do projeto, `chmod +x`, e configure `git config core.hooksPath .githooks` + `git config sdd-iuri.validator ${CLAUDE_PLUGIN_ROOT}/skills/guarding-doc-integrity/scripts/validate_integrity.py` (config local do git, não versionada — o template não carrega caminho de máquina). **Nunca sobrescreva** `.githooks/pre-commit` nem `core.hooksPath` já existentes — hook próprio do projeto vence; nesse caso apenas informe o comando manual. Avise que a ativação é por clone (`core.hooksPath` não se propaga).
 
 ### 2. Mudança de valor canônico (cascata)
 
@@ -34,9 +35,9 @@ Quando NÃO usar: repo sem docs canônicos, ou mudança que não toca arquivo ma
 4. `grep -rn '<valor antigo>' .` — zero ocorrências fora de históricos/changelogs (`exclude_globs`).
 5. Rode o validador → só commite com PASS.
 
-### 3. Gate pré-commit (sempre)
+### 3. Gate pré-commit (hook opt-in + gate de sessão)
 
-Antes de QUALQUER commit que toque `.md` num repo com `deps.toml`:
+Com o hook do passo 5 do bootstrap instalado, o commit que toca `.md`/`deps.toml` valida sozinho. Sem o hook, o gate é de sessão — antes de QUALQUER commit que toque `.md` num repo com `deps.toml`:
 
 ```bash
 python3 ${CLAUDE_PLUGIN_ROOT}/skills/guarding-doc-integrity/scripts/validate_integrity.py <repo>
