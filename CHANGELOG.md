@@ -8,6 +8,8 @@ O formato segue [Keep a Changelog 1.0.0](https://keepachangelog.com/pt-BR/1.0.0/
 
 ## [Não lançado]
 
+## [0.9.0] - 2026-07-28
+
 ### Adicionado
 - **Check de inventário de skills no CI** (delta-013): novo step do job `ci` compara cada diretório `skills/<nome>/` com as descrições dos dois manifestos (`plugin.json` e `marketplace.json`), case-insensitive, e falha nomeando a skill ausente e o manifesto omisso — mecaniza a classe de drift registrada nas Lições (7 vs 8 vs 9 skills).
 - **Hook pré-commit versionado** (delta-013, quita DT-005): `.githooks/pre-commit` roda o `validate_integrity.py` quando o commit toca `.md`/`deps.toml`; template + oferta opt-in no bootstrap da `guarding-doc-integrity`. Mecanismo e ativação: README e SKILL.md da skill.

@@ -85,6 +85,10 @@
   - DADO uma delta cujo diff acumulado de `specs/NNN-nome/` contra o merge-base excede o limiar de PR da regra canônica QUANDO o C7 roda ENTÃO reporta BAIXO recomendando o split dos artefatos (regra em `cycle.md`), sem alterar o código de saída — a medição informa, o split é decisão do ciclo; sem git ou sem merge-base o C7 se omite, como o C4
   - DADO a saída do script QUANDO impressa ENTÃO se declara parcial — nomeia os checks mecânicos cobertos e avisa que os checks 3 e 5 do `analyze.md` (scope creep, regra canônica) são humanos e não rodaram
   - DADO um `TRUTH.md` com sufixos na notação legada `(ΔNNN)` ou na nova `(delta-NNN)` QUANDO o gate lê os alvos ENTÃO reconhece as duas formas, sem exigir migração dos projetos existentes
+- R32 (delta-013) — gate pré-commit real por hooks versionados.
+  - DADO este repositório com `core.hooksPath` configurado para `.githooks/` QUANDO um commit toca arquivo `.md` ou o `deps.toml` ENTÃO o hook `pre-commit` roda `validate_integrity.py .` e bloqueia o commit quando o validador sai com código ≠ 0
+  - DADO um projeto de usuário com `deps.toml` QUANDO a `guarding-doc-integrity` faz o bootstrap ENTÃO ela oferece a instalação do hook (template versionado + `git config core.hooksPath`), sem sobrescrever hook existente (RNF3) e sem quebrar quando o usuário recusa
+  - DADO os cinco arquivos promissores do DT-005 (`deps.toml`, SKILL da `guarding-doc-integrity`, `canonical-rules.md`, `README.md`, TRUTH.md) QUANDO a delta consolida ENTÃO a promessa descrita bate com o mecanismo real (hook versionado opt-in + CI), sem prometer validação que não existe
 - R13 (delta-005) — valor de negócio duplicado entre arquivos é governado por manifesto e validado por script.
   - DADO um repo com `deps.toml` QUANDO `validate_integrity.py` roda ENTÃO verifica espelhos em sincronia (C1), materialização fora dos sancionados (C2) e links relativos vivos (C3), saindo 1 em qualquer violação
   - DADO uma delta ainda aberta propondo valor novo QUANDO o validador roda ENTÃO ela não é acusada — as deltas abertas (`specs/NNN-*/`) ficam fora dos `scan_globs`; dentro de `specs/`, só o `TRUTH.md` consolidado (e `truth/`) entra na varredura
@@ -100,6 +104,11 @@
 - R15 (delta-008) — o framework é distribuído e instalado como plugin do Claude Code.
   - DADO um usuário sem o framework QUANDO ele roda `/plugin marketplace add iuripereira/sdd-iuri` seguido de `/plugin install sdd-iuri@sdd-iuri` ENTÃO as skills do plugin ficam disponíveis sob o namespace `sdd-iuri:`, sem cópia manual de arquivos e sem que o repositório precise viver dentro de `~/.claude/skills/`
   - DADO o repositório do framework QUANDO o Claude Code registra o marketplace ENTÃO encontra `.claude-plugin/marketplace.json` **e** `.claude-plugin/plugin.json` na raiz, com as skills em `skills/<nome>/SKILL.md`
+- R31 (delta-013) — inventário de skills validado mecanicamente no CI.
+  - DADO os manifestos `.claude-plugin/plugin.json` e `.claude-plugin/marketplace.json` QUANDO o job `ci` roda ENTÃO um step compara cada diretório `skills/<nome>/` com as descrições dos dois manifestos (case-insensitive, conforme lição de 2026-07-20) e falha nomeando a skill ausente e o manifesto omisso
+  - DADO os dois manifestos citando as 9 skills atuais QUANDO o check roda ENTÃO passa sem achado
+- R33 (delta-013) — perfil de escrita `eu-tenho-tdah` reconhecido como skill do plugin.
+  - DADO o plugin instalado QUANDO as skills são listadas ENTÃO `eu-tenho-tdah` está disponível sob o namespace `sdd-iuri:` como perfil de escrita always-on, fora do ciclo de features, e o README e os manifestos a documentam como tal
 
 ## Handoff de sessão
 
@@ -130,9 +139,10 @@
 
 ## Não funcionais
 
-- RNF1 (delta-000) — economia de tokens é requisito, não consequência.
+- RNF1 (delta-013) — economia de tokens é requisito, não consequência.
   - Métrica: `TRUTH.md` ≤ 800 linhas (acima disso, particiona); o analyze lê só o cabeçalho-resumo do plan (≤15 linhas), nunca o plano inteiro
   - Verificação: `check_cycle.py` C5; contrato de insumos em `analyze.md`
+  - Exceção (ADR-0009): documentação **cliente** é entregável jurídico — completude e fidelidade dominam e a economia de tokens não se aplica; documentação **interna** segue o RNF integralmente
 - RNF2 (delta-005) — o ciclo degrada com aviso em vez de abortar.
   - Métrica: toda fase com motor de terceiro tem fallback nativo declarado
   - Verificação: tabela de contrato em `adapters.md` — uma linha por fase, com o ponto sensível a breaking change **e uma seção de fallback correspondente para cada motor da linha**
