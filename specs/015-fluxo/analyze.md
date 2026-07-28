@@ -10,3 +10,9 @@ Clarify (grill-me) encerrou com aggregate 0.06 (threshold 0.2): Goals 0.0 · Acc
 **Decisão sobre a ressalva:** split R17 aceito — artefatos seguem em PR próprio (`docs/015-fluxo`); implementação continua em `feat/015-fluxo`.
 
 **Veredito:** LIBERADO COM RESSALVAS
+
+## Review (2 eixos paralelos, R35) · 2026-07-28
+
+Convergente (tratado): comentário do `delta-spec.md` com o literal da dispensa enganava o `campo()` — falso negativo do C8 reproduzido pelo eixo Spec (ALTO) e apontado como texto com 3 donos pelo eixo Qualidade. Fix: `cabecalho()` remove comentários HTML antes do parse (+ fixture de regressão) e o comentário do template virou referência de 1 linha ao cycle.md.
+
+Eixo Spec: R1–R4/R6 ATENDIDOS, R5 PARCIAL→corrigido (acima); tratados também o flowchart do README sem `test-plan` (MÉDIO) e o placeholder de justificativa do Perfil (BAIXO). Eixo Qualidade (delete-list): tratados os runners duplicados do selftest (fundidos em `rodar()` com arquivos opcionais), o parse de `cobre:` duplicado entre C2/C8 (helper `cobre_alvos`) e a célula da tabela de perfil que reenunciava a regra do adapters. Recusados com justificativa: helper `secao()` (ganho marginal), cache do cabeçalho entre `checar()` e C8 (C8 continua chamável isolado) e o corte do campo `tipo:` do test-plan (a spec R3 o exige — spec é soberana).

@@ -60,6 +60,30 @@ def campo(texto: str, nome: str):
     return None if not v or "{{" in v else v
 
 
+def cabecalho(spec_txt: str) -> str:
+    """Cabeçalho da spec (antes da primeira seção ##), sem comentários HTML —
+    comentário de template citando 'Test-plan:'/'Tipo:' não pode enganar o campo()
+    (falso negativo pego no review da delta-015)."""
+    return re.sub(r"<!--.*?-->", "", spec_txt, flags=re.S).split("\n## ", 1)[0]
+
+
+def cobre_alvos(linha: str, ids_spec: set, onde: str, cobertos: set, v: list, ignora: tuple = ()):
+    """Núcleo comum do C2 (tasks) e do C8 (test-plan): parseia 'cobre:', acumula os
+    alvos em `cobertos` e acusa referência morta (ALTO). Retorna o valor bruto de
+    'cobre:' (None se ausente) para o check de completude de cada chamador."""
+    cobre = campo(linha, "cobre")
+    if not cobre:
+        return None
+    for alvo in re.split(r"[,/]", cobre):
+        alvo = alvo.strip()
+        if alvo.lower() in ignora:
+            continue
+        cobertos.add(alvo)
+        if alvo not in ids_spec:
+            v.append(("ALTO", onde, f"cobre '{alvo}', que não existe no spec.md", "corrigir a referência ou adicionar o requisito"))
+    return cobre
+
+
 def blocos(spec_txt: str) -> list[tuple[str, str, str, str]]:
     """[(id, verbo, resto-do-cabeçalho, corpo)] dos ### Rn/RNFn do spec.md."""
     out: list[tuple[str, str, str, str]] = []
@@ -108,17 +132,8 @@ def c2_cobertura(bs, tasks_txt: str, v: list) -> None:
         if not m:
             continue
         achou_task, tid = True, m.group(1)
-        cobre = campo(line, "cobre")
-        if not cobre:
+        if cobre_alvos(line, ids_spec, f"tasks.md {tid}", cobertos, v, ignora=("infra",)) is None:
             v.append(("MÉDIO", f"tasks.md {tid}", "task sem 'cobre:'", "mapear a um Rn/RNFn ou declarar 'cobre: infra'"))
-        else:
-            for alvo in re.split(r"[,/]", cobre):
-                alvo = alvo.strip()
-                if alvo.lower() == "infra":
-                    continue
-                cobertos.add(alvo)
-                if alvo not in ids_spec:
-                    v.append(("ALTO", f"tasks.md {tid}", f"cobre '{alvo}', que não existe no spec.md", "corrigir a referência ou adicionar o requisito"))
         if not campo(line, r"verifica[çc][ãa]o"):
             v.append(("ALTO", f"tasks.md {tid}", "task sem 'verificação:'", "declarar comando ou critério de pronto"))
     if not achou_task:
@@ -235,11 +250,11 @@ def c8_testplan(delta: Path, bs, spec_txt: str, v: list) -> None:
     """Cobertura Rn/RNFn → caso de teste (espelho do C2). Ausência: ALTO no perfil
     completo (default sem campo Perfil — retrocompat); BAIXO com dispensa declarada
     (perfil enxuto) ou em bugfix sem tasks (delta-015)."""
-    cabecalho = spec_txt.split("\n## ", 1)[0]
+    cab = cabecalho(spec_txt)
     tp = delta / "test-plan.md"
     if not tp.is_file():
-        dispensa = campo(cabecalho, "Test-plan")
-        bugfix = (campo(cabecalho, "Tipo") or "").lower() == "bugfix" and not (delta / "tasks.md").is_file()
+        dispensa = campo(cab, "Test-plan")
+        bugfix = (campo(cab, "Tipo") or "").lower() == "bugfix" and not (delta / "tasks.md").is_file()
         if dispensa and "dispensado" in dispensa.lower():
             v.append(("BAIXO", "test-plan.md", f"dispensado no cabeçalho: {dispensa}", "ok se o perfil enxuto foi aprovado (R1, delta-015)"))
         elif bugfix:
@@ -254,15 +269,9 @@ def c8_testplan(delta: Path, bs, spec_txt: str, v: list) -> None:
         if not m:
             continue
         cid = m.group(1)
-        cobre = campo(line, "cobre")
+        cobre = cobre_alvos(line, ids_spec, f"test-plan.md {cid}", cobertos, v)
         if not cobre or not campo(line, "tipo") or not campo(line, r"verifica[çc][ãa]o"):
             v.append(("MÉDIO", f"test-plan.md {cid}", "caso sem 'cobre:'/'tipo:'/'verificação:' completos", "cobre: Rn · tipo: auto|manual · verificação: comando ou passos"))
-        if cobre:
-            for alvo in re.split(r"[,/]", cobre):
-                alvo = alvo.strip()
-                cobertos.add(alvo)
-                if alvo not in ids_spec:
-                    v.append(("ALTO", f"test-plan.md {cid}", f"cobre '{alvo}', que não existe no spec.md", "corrigir a referência ou adicionar o requisito"))
     for rid in sorted(ids_spec - cobertos):
         v.append(("ALTO", f"spec.md {rid}", "requisito sem caso no test-plan.md", f"adicionar caso com 'cobre: {rid}' (manual roteirizado conta)"))
 
@@ -273,8 +282,7 @@ def checar(root: Path, delta: Path) -> list:
         die(f"spec.md não encontrado em {delta}")
     spec_txt = spec.read_text(encoding="utf-8")
     bs = blocos(spec_txt)
-    cabecalho = spec_txt.split("\n## ", 1)[0]
-    bugfix = (campo(cabecalho, "Tipo") or "").lower() == "bugfix"
+    bugfix = (campo(cabecalho(spec_txt), "Tipo") or "").lower() == "bugfix"
     v: list = []
     if not bs and not bugfix:
         v.append(("ALTO", "spec.md", "nenhum bloco '### Rn — ADICIONA|MUDA|REMOVE'", "usar templates/delta-spec.md"))
@@ -362,13 +370,15 @@ Estado: proposta · Data: 2026-01-01 · Branch: feat/001-x
     limpa_testplan = "- [ ] CT1 — login ok · cobre: R1 · tipo: auto · verificação: pytest -k login\n" \
                      "- [ ] CT2 — latência · cobre: RNF1 · tipo: manual · verificação: roteiro k6 em docs\n"
 
-    def rodar(spec_txt, tasks_txt, testplan_txt=None):
+    def rodar(spec_txt, tasks_txt=None, testplan_txt=None):
+        """Runner único das fixtures: arquivo None não é gravado (bugfix roda sem tasks.md)."""
         with tempfile.TemporaryDirectory() as d:
             root = Path(d)
             delta = root / "specs" / "001-x"
             delta.mkdir(parents=True)
             (delta / "spec.md").write_text(spec_txt, encoding="utf-8")
-            (delta / "tasks.md").write_text(tasks_txt, encoding="utf-8")
+            if tasks_txt is not None:
+                (delta / "tasks.md").write_text(tasks_txt, encoding="utf-8")
             if testplan_txt is not None:
                 (delta / "test-plan.md").write_text(testplan_txt, encoding="utf-8")
             return checar(root, delta)
@@ -413,44 +423,30 @@ Estado: arquivada · Data: 2026-01-01 · Branch: feat/001-x
         assert len(v) == 1 and v[0][0] == "ALTO" and "1 pendência" in v[0][2], f"C6: {v}"
         assert "DEBT.md" in v[0][3], f"C6 deve rotear para o DEBT.md (delta-007): {v}"
 
-    # C8 — plano de testes (delta-015)
-    def rodar_c8(spec_txt, testplan_txt=None):
-        with tempfile.TemporaryDirectory() as d:
-            root = Path(d)
-            delta = root / "specs" / "001-x"
-            delta.mkdir(parents=True)
-            (delta / "spec.md").write_text(spec_txt, encoding="utf-8")
-            if testplan_txt is not None:
-                (delta / "test-plan.md").write_text(testplan_txt, encoding="utf-8")
-            v: list = []
-            c8_testplan(delta, blocos(spec_txt), spec_txt, v)
-            return v
-
-    assert rodar_c8(limpa_spec, limpa_testplan) == [], "C8: delta com plano completo deveria passar"
-    ausente = rodar_c8(limpa_spec)  # sem test-plan.md, perfil completo (default)
+    # C8 — plano de testes (delta-015); fixtures passam pelo checar() completo
+    ausente = rodar(limpa_spec, limpa_tasks)  # sem test-plan.md, perfil completo (default)
     assert any(s == "ALTO" and "test-plan.md ausente" in q for s, o, q, _ in ausente), f"C8 ausente: {ausente}"
     spec_dispensa = limpa_spec.replace(
         "Estado: proposta · Data: 2026-01-01 · Branch: feat/001-x",
         "Estado: proposta · Data: 2026-01-01 · Branch: feat/001-x · Perfil: enxuto (aprovado: 2026-01-01) · Test-plan: dispensado — delta só de prosa")
-    dispensada = rodar_c8(spec_dispensa)
+    dispensada = rodar(spec_dispensa, limpa_tasks)
     assert len(dispensada) == 1 and dispensada[0][0] == "BAIXO", f"C8 dispensa: {dispensada}"
-    orfao = rodar_c8(limpa_spec, "- [ ] CT1 — login ok · cobre: R1 · tipo: auto · verificação: pytest\n")
+    orfao = rodar(limpa_spec, limpa_tasks, "- [ ] CT1 — login ok · cobre: R1 · tipo: auto · verificação: pytest\n")
     assert any(s == "ALTO" and o == "spec.md RNF1" and "sem caso" in q for s, o, q, _ in orfao), f"C8 órfão: {orfao}"
-    morta = rodar_c8(limpa_spec, limpa_testplan + "- [ ] CT3 — x · cobre: R9 · tipo: auto · verificação: pytest\n")
+    morta = rodar(limpa_spec, limpa_tasks, limpa_testplan + "- [ ] CT3 — x · cobre: R9 · tipo: auto · verificação: pytest\n")
     assert any(s == "ALTO" and "R9" in q for s, _, q, _ in morta), f"C8 referência morta: {morta}"
-    caso_sem_campos = rodar_c8(limpa_spec, "- [ ] CT1 — login ok · cobre: R1\n- [ ] CT2 — lat · cobre: RNF1 · tipo: auto · verificação: k6\n")
+    caso_sem_campos = rodar(limpa_spec, limpa_tasks, "- [ ] CT1 — login ok · cobre: R1\n- [ ] CT2 — lat · cobre: RNF1 · tipo: auto · verificação: k6\n")
     assert any(s == "MÉDIO" and "CT1" in o for s, o, q, _ in caso_sem_campos), f"C8 caso incompleto: {caso_sem_campos}"
+    # comentário HTML de template citando as sintaxes não pode enganar o campo() (review delta-015)
+    spec_comentario = limpa_spec.replace(
+        "Estado: proposta · Data: 2026-01-01 · Branch: feat/001-x",
+        "Estado: proposta · Data: 2026-01-01 · Branch: feat/001-x\n"
+        "<!-- exemplo: dispensa é 'Test-plan: dispensado — <motivo>'; bugfix usa 'Tipo: bugfix' -->")
+    comentado = rodar(spec_comentario, limpa_tasks)
+    assert any(s == "ALTO" and "test-plan.md ausente" in q for s, _, q, _ in comentado), \
+        f"C8 enganado por comentário de template: {comentado}"
 
-    # bugfix (delta-015): sem bloco Rn é válido; repro e teste de regressão são obrigatórios.
-    # Runner próprio: NÃO grava tasks.md (o rodar() comum grava, e o C2 acusaria "nenhuma task").
-    def rodar_bugfix(spec_txt):
-        with tempfile.TemporaryDirectory() as d:
-            root = Path(d)
-            delta = root / "specs" / "002-parse"
-            delta.mkdir(parents=True)
-            (delta / "spec.md").write_text(spec_txt, encoding="utf-8")
-            return checar(root, delta)
-
+    # bugfix (delta-015): sem bloco Rn é válido; repro e teste de regressão são obrigatórios
     bugfix_ok = """# delta-002 — fix parse
 Estado: proposta · Data: 2026-01-01 · Branch: fix/002-parse · Tipo: bugfix
 
@@ -469,11 +465,11 @@ regex não cobre o caso
 ## Mudanças
 - nenhuma (correção sem mudança de requisito)
 """
-    v_bugfix = rodar_bugfix(bugfix_ok)
+    v_bugfix = rodar(bugfix_ok)
     assert not any("nenhum bloco" in q for _, _, q, _ in v_bugfix), f"bugfix não exige bloco Rn: {v_bugfix}"
     assert not any(s == "ALTO" for s, _, _, _ in v_bugfix), f"bugfix sem tasks/test-plan é válido (só BAIXO do C8): {v_bugfix}"
     sem_regressao = bugfix_ok.replace("## Teste de regressão\n- fixture bugfix_ok no selftest\n\n", "")
-    v_sem = rodar_bugfix(sem_regressao)
+    v_sem = rodar(sem_regressao)
     assert any(s == "ALTO" and "regressão" in q for s, _, q, _ in v_sem), f"bugfix sem teste de regressão: {v_sem}"
 
     print("selftest: OK (3 fixtures + C8 + bugfix, defeitos detectados nos dois lados da cobertura)")

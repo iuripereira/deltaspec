@@ -24,8 +24,10 @@ flowchart LR
     descoberta["descoberta<br>(pré-specify, opcional<br>+ write-prd)"] -.-> specify
     specify --> clarify["clarify<br>(grill-me)"]
     clarify --> plan["plan<br>(superpowers)"]
+    clarify -.-> prototipo["prototipação<br>(CONDITIONAL — aprovação<br>do usuário, delta-015)"] -.-> plan
     plan --> tasks
-    tasks --> analyze["analyze<br>(gate read-only)"]
+    tasks --> testplan["test-plan<br>(C8; dispensável<br>no perfil enxuto)"]
+    testplan --> analyze["analyze<br>(gate read-only)"]
     analyze --> implement["implement<br>(superpowers + TDD<br>+ ponytail full)"]
     implement --> review["review<br>(superpowers)"]
     review --> archive["archive<br>(TRUTH.md)"]

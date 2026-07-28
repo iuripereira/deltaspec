@@ -68,7 +68,7 @@ No specify, a IA propõe `Perfil: completo|enxuto` no cabeçalho com justificati
 |---|---|---|
 | clarify | roda | sob demanda (só com ambiguidade apontada) |
 | test-plan | obrigatório (C8: ALTO se ausente) | dispensável — `Test-plan: dispensado — <motivo>` no cabeçalho (C8: BAIXO) |
-| review | dois eixos em subagentes paralelos (R35) | eixos fundidos num único subagente, achados classificados por eixo |
+| review | dois eixos em subagentes paralelos (R35) | eixos fundidos num único subagente (regra: adapters.md, "Review em dois eixos") |
 | plan · tasks · analyze · archive | integrais | integrais |
 
 ## Prototipação opcional (R2, delta-015 — estágio CONDITIONAL)
