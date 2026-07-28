@@ -5,11 +5,10 @@
 **Atualizado em:** 2026-07-28
 
 ## Agora
-
-- **delta-016 (harness) implementada** na `feat/016-harness` — Tasks 1–7 completas, review por task limpo. Próxima: review em 2 eixos paralelos (R35) → PR da implementação → archive (consolida R40–R44, MUDA R12 no TRUTH, tag v0.12.0).
-- Plugin local atualizado: revisão `d6b9814` (v0.11.0) ativa no `installed_plugins.json`.
+- **delta-016 (harness) arquivada** — Fases 0–3 do plano de upgrade concluídas. Próxima: Fase 4 (delta-017, Jira/tickets.md — inclui o gatilho de reavaliação do fork do max, ADR-0012) ou Fase 5 (delta-018, visual), independentes entre si.
 
 ## Feito recentemente
+- 2026-07-28 — **delta-016 (harness) arquivada** (#60 artefatos + #61 implementação + PR de archive): R40–R44 no TRUTH (arestas `dep:` no tasks.md, execução paralela por worktree, vocabulário harness.md, trilha de auditoria, graphify opcional), MUDA R12 (gate C1–C10: C9 grafo via graphlib + C10 archive sem task aberta), ADR-0014, `v0.12.0`. Implement subagent-driven (7 tasks, review por task); dogfood pegou **2 falsos negativos reais do C9** (aresta em prosa; ID duplicado engolindo ciclo) — corrigidos com TDD; review 2 eixos (R35): Spec 20/20, delete-list com 2 refactors aplicados e 2 recusas justificadas no analyze.md; higiene de checkbox nos tasks.md de 6 deltas arquivadas (exigência do C10).
 - 2026-07-28 — **delta-015 (fluxo) arquivada** (#57 artefatos + #58 implementação + PR de archive): R36–R39 no TRUTH (perfil `completo|enxuto`, prototipação CONDITIONAL, `test-plan.md`, tipo `bugfix`), MUDA R12 (C8 no gate) e MUDA R35 (fusão de eixos no enxuto), ADR-0013, `v0.11.0`.
 - 2026-07-28 — **delta-015 (fluxo) ciclo completo até o review**: perfil `completo|enxuto` (ADR-0013), prototipação CONDITIONAL (categoria `prototipo` no doc-profile), `test-plan.md` + C8 no gate (TDD), tipo `bugfix` reconhecido pelo gate, MUDA R12/R35. Clarify via grill-me (aggregate 0.06, 4 decisões do usuário); split R17 executado (PR #57 só de artefatos). O review em 2 eixos paralelos (dogfood do R35) pegou **falso negativo real do C8** (comentário de template enganava o `campo()`) — corrigido com TDD + 2 refactors da delete-list; recusas justificadas no analyze.md.
 - 2026-07-28 — **delta-014 (motores) implementada e arquivada** (#55 + PR de archive): Fase 1 do upgrade — pin do max mantido como **fork deliberado** (ADR-0012, decisão do usuário; gatilho de migração na delta-017), política de pins com verificação datada, **review em dois eixos paralelos** formalizado em adapters/cycle, R34–R35 no TRUTH, `v0.10.0`. O review da própria delta (dogfooding) pegou o índice de ADRs 3× defasado (0009/0011/0012) — quitado.
@@ -40,7 +39,7 @@
 - Nenhum bloqueio. Débito durável: [DEBT.md](DEBT.md) (DT-001, DT-004..DT-007, DT-009..DT-011 abertos; DT-002/DT-003/DT-008 quitados).
 
 ## Próximos passos imediatos
-- Fase 3 do plano de upgrade (delta-016): vocabulário de harness, arestas de bloqueio no tasks.md (grafo → execução paralela por worktree), trilha de auditoria de aprovação, avaliar check tipo `/converge`; graphify como 4º motor opcional (adapter ADR-0004, instalação manual consciente).
-- Rodar uma delta real com o gate do specify no imex-travelplanner (gatilho do DT-004 e do DT-013) — agora com perfil e test-plan disponíveis.
-- Rodar `/plugin update sdd-iuri` no Claude Code local (cache anterior às deltas 013–015).
+- Fase 4 do plano de upgrade (delta-017): skill `spec-tickets` — `tickets.md` canônico no repo, Jira como projeção (escada acli → Rovo MCP → REST, ADR nova revisando ADR-0007); inclui o gatilho de reavaliação do fork do max (ADR-0012). Alternativa: Fase 5 (delta-018, Mermaid fonte + Figma apresentação) — independentes.
+- Rodar uma delta real com o gate do specify no imex-travelplanner (gatilho do DT-004 e do DT-013) — agora com perfil, test-plan e grafo `dep:` disponíveis.
+- Rodar `/plugin update sdd-iuri` no Claude Code local (cache na v0.11.0, anterior à delta-016).
 - Próxima delta livre: 016. Débito aberto: DT-001, DT-004, DT-006 (guarda), DT-007, DT-009, DT-010 (guarda), DT-011, DT-013.

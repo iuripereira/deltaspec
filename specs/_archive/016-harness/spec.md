@@ -1,5 +1,5 @@
 # delta-016 — harness
-Estado: proposta · Data: 2026-07-28 · Branch: feat/016-harness · Perfil: completo — mexe no contrato do ciclo (template de tasks, gate, adapters) e adota motor novo; risco estrutural (aprovado: 2026-07-28)
+Estado: arquivada · Data: 2026-07-28 · Branch: feat/016-harness · Perfil: completo — mexe no contrato do ciclo (template de tasks, gate, adapters) e adota motor novo; risco estrutural (aprovado: 2026-07-28)
 
 ## Contexto (≤3 linhas)
 Fase 3 do plano de upgrade: o `tasks.md` ordena por dependência mas não formaliza arestas de bloqueio nem paralelização; os conceitos de harness que o framework pratica não têm vocabulário canônico; aprovações humanas por fase ficam dispersas na conversa; e as fases que leem código não têm camada de contexto fundamentada. AI-DLC (units of work paralelas, trilha de auditoria), Anthropic (harness engineering) e graphify validam o desenho.

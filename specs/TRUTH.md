@@ -94,6 +94,23 @@
   - DADO uma delta `bugfix` QUANDO o ciclo roda ENTÃO o pipeline é specify → plan curto → implement (teste de regressão obrigatório) → review, com clarify, tasks e test-plan sob demanda e analyze mantido (read-only)
   - DADO uma delta `bugfix` sem mudança de requisito QUANDO o archive roda ENTÃO o diretório move para `_archive/` sem consolidar no TRUTH.md, e o gate não exige bloco Rn — a seção Mudanças declara "nenhuma (correção sem mudança de requisito)"
   - DADO um bugfix que altera requisito vigente QUANDO a delta consolida ENTÃO o bloco MUDA cita o alvo no TRUTH.md como qualquer delta (R6)
+- R40 (delta-016) — arestas de bloqueio explícitas no tasks.md.
+  - DADO a fase tasks QUANDO o `tasks.md` fecha ENTÃO toda dependência entre tasks está declarada na forma canônica `(dep: Tn[, Tm])` do template — task sem `dep:` é livre — e o conjunto forma um grafo dirigido acíclico
+  - DADO o grafo QUANDO duas tasks não têm caminho entre si ENTÃO são paralelizáveis, e as unidades de execução paralela são deriváveis mecanicamente do grafo, sem anotação manual extra
+  - DADO um `tasks.md` anterior à delta-016 (sem nenhum `dep:`) QUANDO o ciclo ou o gate o lê ENTÃO vale a ordem do arquivo como cadeia linear implícita — retrocompatível, sem migração
+- R41 (delta-016) — execução paralela por worktree das unidades independentes.
+  - DADO unidades paralelizáveis (R40) num harness com subagentes QUANDO o implement roda ENTÃO cada unidade pode executar num subagente com worktree isolada (motor: `superpowers:using-git-worktrees`, contrato em `adapters.md`), com convergência das worktrees antes do review
+  - DADO um harness sem subagentes ou sem worktree QUANDO o implement roda ENTÃO a execução é sequencial na ordem topológica do grafo, com aviso de degradação (RNF2)
+- R42 (delta-016) — vocabulário de harness canônico.
+  - DADO os conceitos de harness que o framework pratica (initializer, agente incremental, gate determinístico, degradação graciosa, human-in-the-loop, trilha de auditoria, unidade paralelizável) QUANDO citados em skills e docs ENTÃO o termo e a definição vivem num reference canônico único da `spec-feature` e os demais arquivos referenciam sem duplicar (regra de ouro)
+- R43 (delta-016) — trilha de auditoria de aprovação por fase.
+  - DADO uma aprovação humana que o ciclo exige e ainda não tem registro mandatório (prototipação R37, ressalvas aceitas no analyze, aceite do review) QUANDO concedida ENTÃO fica registrada de forma citável no artefato da própria fase, seguindo o padrão de formato do R36 (`aprovado: AAAA-MM-DD`), sem arquivo de auditoria separado e sem inchar tokens — a aprovação de perfil continua regida pelo R36, dono vigente
+  - DADO uma delta arquivada QUANDO auditada ENTÃO as aprovações são verificáveis nos artefatos em `_archive/` — a trilha sobrevive ao ciclo
+- R44 (delta-016) — graphify como 4º motor externo opcional.
+  - DADO um projeto-alvo com graphify instalado e habilitado no `doc-profile.yaml` QUANDO descoberta, specify/plan ou review rodam ENTÃO consultas `graphify query`/`path`/`explain` entram como insumo fundamentado com aresta citável `arquivo:linha`, e as tags `EXTRACTED`/`INFERRED`/`AMBIGUOUS` mapeiam no modelo `confirmado`/`inferido`/`lacuna` da descoberta (R25 — `AMBIGUOUS` → `lacuna`: requer validação humana)
+  - DADO o contrato do adapter QUANDO a delta consolida ENTÃO a tabela de `adapters.md` tem a linha do graphify com instalação manual consciente (nunca deixar o `graphify install` escrever hook `PreToolUse`/CLAUDE.md — conflita com o harness), pin na política de versões com verificação datada (R34) e preferência pelo modo `--code-only` (determinístico, zero LLM)
+  - DADO graphify presente e habilitado QUANDO o eixo Spec do review roda ENTÃO pode consultar o impacto do diff (`graphify query`) como insumo do confronto Rn×diff — mesmo contrato e mesma degradação dos demais cenários
+  - DADO graphify ausente ou desabilitado QUANDO as fases rodam ENTÃO o fluxo atual (grep/Explore) segue com no máximo 1 linha de aviso — degradação graciosa (RNF2)
 - R17 (delta-003) — o PR da delta faz split condicional pelo limiar canônico de PR.
   - DADO uma delta com analyze LIBERADO cujo diff acumulado de `specs/NNN-nome/` contra a main excede o limiar de PR da regra canônica QUANDO o ciclo segue para o implement ENTÃO os artefatos são mergeados antes, num PR próprio de documentação, e a implementação segue em PR separado
   - DADO uma delta cujos artefatos ficam dentro do limiar QUANDO o ciclo abre o PR ENTÃO um único PR carrega artefatos e implementação
@@ -104,11 +121,13 @@
 - R11 (delta-000) — o gate analyze roda sempre no ciclo completo e é read-only.
   - DADO uma delta com spec, plan e tasks QUANDO o analyze roda ENTÃO grava `specs/NNN-nome/analyze.md` com veredito, **inclusive quando não há achados** — o relatório é o registro de que o gate rodou
   - DADO um achado CRÍTICO QUANDO o veredito é emitido ENTÃO é BLOQUEADO e o implement não começa até correção
-- R12 (delta-015) — a metade mecânica do analyze é um script, não diligência.
-  - DADO uma delta QUANDO `check_cycle.py` roda ENTÃO ele verifica aceite (C1), cobertura spec↔tasks (C2), estado × localização (C3), archive sem perda (C4), tamanho do TRUTH (C5), pendência roteada (C6), medição do split de PR (C7) e cobertura do plano de testes (C8), e sai 1 se houver ALTO ou CRÍTICO
+- R12 (delta-016) — a metade mecânica do analyze é um script, não diligência.
+  - DADO uma delta QUANDO `check_cycle.py` roda ENTÃO ele verifica aceite (C1), cobertura spec↔tasks (C2), estado × localização (C3), archive sem perda (C4), tamanho do TRUTH (C5), pendência roteada (C6), medição do split de PR (C7), cobertura do plano de testes (C8), validade do grafo de tasks (C9) e convergência mínima no archive (C10), e sai 1 se houver ALTO ou CRÍTICO
   - DADO um requisito removido do `TRUTH.md` resultante sem MUDA/REMOVE que o declare QUANDO o gate roda ENTÃO acusa CRÍTICO e o veredito é BLOQUEADO — comparando o `TRUTH.md` contra o merge-base da branch com a main (fallback `HEAD`, com aviso, quando não há base), para que consolidação já commitada não crie janela cega; sufixo reescrito cujo ID permanece no arquivo não é perda
   - DADO uma delta cujo diff acumulado de `specs/NNN-nome/` contra o merge-base excede o limiar de PR da regra canônica QUANDO o C7 roda ENTÃO reporta BAIXO recomendando o split dos artefatos (regra em `cycle.md`), sem alterar o código de saída — a medição informa, o split é decisão do ciclo; sem git ou sem merge-base o C7 se omite, como o C4
   - DADO um `test-plan.md` presente QUANDO o C8 roda ENTÃO acusa ALTO para Rn/RNFn da spec sem caso que o cubra e para caso citando requisito inexistente (espelho do C2); `test-plan.md` ausente sem dispensa declarada → ALTO; ausente com dispensa (R38) ou delta `bugfix` sem tasks → BAIXO informativo
+  - DADO um `tasks.md` com `dep:` citando task inexistente ou formando ciclo QUANDO o C9 roda ENTÃO acusa ALTO (grafo inválido); nenhum `dep:` no arquivo → válido (cadeia linear implícita, R40)
+  - DADO uma delta arquivada (`Estado: arquivada` em `_archive/`) com task `- [ ]` remanescente no `tasks.md` QUANDO o C10 roda ENTÃO acusa ALTO — o archive não fecha com trabalho declarado e não concluído; a auditoria semântica codebase×spec permanece juízo humano do review (renúncia por design, ADR-0014)
   - DADO a saída do script QUANDO impressa ENTÃO se declara parcial — nomeia os checks mecânicos cobertos e avisa que os checks 3 e 5 do `analyze.md` (scope creep, regra canônica) são humanos e não rodaram
   - DADO um `TRUTH.md` com sufixos na notação legada `(ΔNNN)` ou na nova `(delta-NNN)` QUANDO o gate lê os alvos ENTÃO reconhece as duas formas, sem exigir migração dos projetos existentes
 - R32 (delta-013) — gate pré-commit real por hooks versionados.
