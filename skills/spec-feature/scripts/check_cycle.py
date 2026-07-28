@@ -289,7 +289,8 @@ def c9_grafo(tasks_txt: str, v: list) -> None:
         m = TAREFA.match(line)
         if not m:
             continue
-        d = DEP.search(line)
+        resto = line[m.end():].lstrip()
+        d = DEP.match(resto)  # só a aresta colada ao ID é aresta — "(dep: Tn)" em prosa não conta (achado do dogfood da delta-016)
         arestas[m.group(1)] = [a.strip() for a in d.group(1).split(",") if a.strip()] if d else []
     if not any(arestas.values()):
         return  # nenhum dep: no arquivo — cadeia linear implícita
@@ -510,6 +511,10 @@ Estado: arquivada · Data: 2026-01-01 · Branch: feat/001-x
                    "- [ ] T2 (dep: T1) — cache · arquivos: b.py · cobre: RNF1 · verificação: k6\n")
     com_ciclo = rodar(limpa_spec, ciclo_tasks, limpa_testplan)
     assert any(s == "ALTO" and "ciclo" in q for s, _, q, _ in com_ciclo), f"C9 ciclo: {com_ciclo}"
+    # prosa com (dep: ...) não é aresta — dep: só conta colado ao ID (dogfood delta-016)
+    prosa_dep = limpa_tasks + "- [ ] T3 — documenta a sintaxe `(dep: T1)` no template · arquivos: c.py · cobre: R1 · verificação: leitura\n"
+    v_prosa = rodar(limpa_spec, prosa_dep, limpa_testplan)
+    assert not any("dep" in q for _, _, q, _ in v_prosa), f"C9 falso positivo em prosa: {v_prosa}"
 
     # C10 — convergência mínima no archive (delta-016)
     with tempfile.TemporaryDirectory() as d:
