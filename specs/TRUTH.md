@@ -69,6 +69,12 @@
 - R16 (delta-007) — pendência de risco sobrevive ao archive — roteada para o DEBT.md.
   - DADO uma delta com pendência aberta (item `- [ ]` em "Dependências e riscos") QUANDO o archive roda ENTÃO a pendência é registrada no `DEBT.md` como item `DT-NNN` de natureza pendência, com origem `delta-NNN`, e o item do spec vira `- [x]`, no mesmo commit da consolidação
   - DADO uma delta arquivada QUANDO o C6 roda ENTÃO acusa ALTO por delta com item `- [ ]` remanescente na seção "Dependências e riscos" do `spec.md`, reportando a contagem de itens
+- R34 (delta-014) — política de pins com verificação datada e divergência upstream registrada.
+  - DADO a tabela de política de dependência em `adapters.md` QUANDO a delta consolida ENTÃO cada motor declara versão testada, faixa aceita, data da última verificação e, quando houver, nota de divergência upstream com gatilho de reavaliação — para o max: fork deliberado da 0.8.0 (upstream removeu `write-prd` e fatorou `grilling`), gatilho na delta-017 (ADR-0012)
+  - DADO o superpowers verificado em 2026-07-28 QUANDO a tabela é lida ENTÃO ela registra a última upstream verificada (6.2.0, dentro da faixa 6.x) sem alegar teste que não ocorreu (testada segue 6.1.1)
+- R35 (delta-014) — review em dois eixos independentes, paralelos quando houver subagentes.
+  - DADO uma delta na fase review num harness com subagentes QUANDO o review roda ENTÃO os dois estágios executam como eixos independentes em subagentes paralelos — eixo Spec (conformidade: cada Rn/RNFn confrontado com o diff) e eixo Qualidade (ponytail-review/delete-list) — cada um cego ao contexto do outro, e os achados convergentes dos dois eixos são tratados antes do PR
+  - DADO um harness sem subagentes ou motor ausente QUANDO o review roda ENTÃO os estágios rodam inline em sequência com os fallbacks e avisos vigentes dos adapters (RNF2 preservado)
 - R17 (delta-003) — o PR da delta faz split condicional pelo limiar canônico de PR.
   - DADO uma delta com analyze LIBERADO cujo diff acumulado de `specs/NNN-nome/` contra a main excede o limiar de PR da regra canônica QUANDO o ciclo segue para o implement ENTÃO os artefatos são mergeados antes, num PR próprio de documentação, e a implementação segue em PR separado
   - DADO uma delta cujos artefatos ficam dentro do limiar QUANDO o ciclo abre o PR ENTÃO um único PR carrega artefatos e implementação

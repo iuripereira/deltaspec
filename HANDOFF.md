@@ -5,9 +5,10 @@
 **Atualizado em:** 2026-07-28
 
 ## Agora
-- **delta-014 (motores) em review** — Fase 1 do plano de upgrade: pin do max mantido como fork deliberado (decisão do usuário, ADR-0012), política de pins com verificação datada, review em dois eixos paralelos formalizado. Analyze LIBERADO; falta review → PR → archive.
+- Nada em curso — delta-014 arquivada e `v0.10.0` cortada. Fases 0 e 1 do plano de upgrade concluídas; próxima é a Fase 2 (delta-015, cobertura do fluxo completo — prototipação opcional, plano de testes, seleção adaptativa de estágios).
 
 ## Feito recentemente
+- 2026-07-28 — **delta-014 (motores) implementada e arquivada** (#55 + PR de archive): Fase 1 do upgrade — pin do max mantido como **fork deliberado** (ADR-0012, decisão do usuário; gatilho de migração na delta-017), política de pins com verificação datada, **review em dois eixos paralelos** formalizado em adapters/cycle, R34–R35 no TRUTH, `v0.10.0`. O review da própria delta (dogfooding) pegou o índice de ADRs 3× defasado (0009/0011/0012) — quitado.
 - 2026-07-28 — **delta-013 (higiene) implementada e arquivada** (#53 + PR de archive): Fase 0 do plano de upgrade — manifestos com as 9 skills + check de inventário no CI, hook pré-commit versionado (DT-005 quitado; cobre deleção de `.md`), ADR-0009 `Accepted` com MUDA RNF1 (exceção de doc cliente), R31–R33 no TRUTH, DT-013 roteado (check do doc-profile), `v0.9.0`. Review em 2 eixos com subagentes paralelos (padrão que a Fase 1 formaliza nos adapters).
 - 2026-07-28 — **Plano de reavaliação/upgrade do framework aprovado**: pesquisa verificada (AI-DLC, Pocock atual, superpowers 6.2, harness Anthropic, Jira acli/Rovo MCP, Figma vs Mermaid, graphify) + 6 fases (deltas 013–018). Decisões-chave: tickets.md canônico no repo com Jira como projeção; Mermaid fonte + Figma apresentação; graphify como 4º motor opcional.
 - 2026-07-27 — **delta-012 implementada e arquivada** (#50 + PR de archive): skill `descoberta` (fase pré-specify — insumos brutos → dossiê com claims `confirmado`/`inferido`/`lacuna`, GLOSSARY/DATA_DICTIONARY, divergências, pauta de Mob Elaboration), R24–R30 no TRUTH.md, ADR-0011, adapters com contrato descoberta/write-prd, `v0.8.0`. Motivada pelo gap real do imex-estoque-inteligente (PRD contratualizado sem validação da stakeholder, contradito pelo kickoff). Pendência DT-012 (execução externa) roteada.
@@ -35,7 +36,7 @@
 - Nenhum bloqueio. Débito durável: [DEBT.md](DEBT.md) (DT-001, DT-004..DT-007, DT-009..DT-011 abertos; DT-002/DT-003/DT-008 quitados).
 
 ## Próximos passos imediatos
-- Fase 1 do plano de upgrade (delta-014): recontratação dos motores — decidir pin do max (upstream matou `write-prd` → `grilling`/`to-spec`/`to-tickets`), formalizar review em 2 eixos paralelos nos adapters.
+- Fase 2 do plano de upgrade (delta-015, candidata a split R17): prototipação opcional, plano de testes como artefato + check, seleção adaptativa de estágios (perfil `completo|enxuto`), spec tipo `bugfix`.
 - Rodar uma delta real com o gate do specify no imex-travelplanner (gatilho do DT-004 e do DT-013).
-- Rodar `/plugin update sdd-iuri` no Claude Code local (cache anterior à delta-013).
-- Próxima delta livre: 014. Débito aberto: DT-001, DT-004, DT-006 (guarda), DT-007, DT-009, DT-010 (guarda), DT-011, DT-013.
+- Rodar `/plugin update sdd-iuri` no Claude Code local (cache anterior às deltas 013–014).
+- Próxima delta livre: 015. Débito aberto: DT-001, DT-004, DT-006 (guarda), DT-007, DT-009, DT-010 (guarda), DT-011, DT-013.

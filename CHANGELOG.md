@@ -8,6 +8,8 @@ O formato segue [Keep a Changelog 1.0.0](https://keepachangelog.com/pt-BR/1.0.0/
 
 ## [Não lançado]
 
+## [0.10.0] - 2026-07-28
+
 ### Adicionado
 - **ADR-0012** (delta-014): pin do `max@0.8.0` vira **fork deliberado**, com gatilho de migração na delta-017 — divergência e renúncias registradas na própria ADR.
 - **Review em dois eixos paralelos** (delta-014): contrato em `adapters.md`, seção "Review em dois eixos"; fallback inline sequencial (RNF2).
