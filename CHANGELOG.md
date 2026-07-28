@@ -8,6 +8,16 @@ O formato segue [Keep a Changelog 1.0.0](https://keepachangelog.com/pt-BR/1.0.0/
 
 ## [Não lançado]
 
+### Adicionado
+- **Perfil de execução por delta** (delta-015, R1 — ADR-0013): `Perfil: completo|enxuto` no cabeçalho da spec, proposto pela IA e válido só com aprovação do usuário; enxuto = clarify sob demanda, test-plan dispensável, review com eixos fundidos. Sem o campo → completo (retrocompatível).
+- **Prototipação opcional** (delta-015, R2): estágio CONDITIONAL proposto no specify; forma decidida pela categoria `prototipo` do `doc-profile.yaml`, default HTML estático em `docs/prototypes/NNN-nome/`.
+- **Plano de testes como artefato** (delta-015, R3): `test-plan.md` derivado da spec + tasks (template novo), validado pelo **C8** do `check_cycle.py` — cobertura Rn/RNFn → caso, teste manual roteirizado conta.
+- **Tipo `bugfix`** (delta-015, R4): template próprio (sintoma, reprodução, causa-raiz, teste de regressão obrigatório), pipeline curto, TRUTH consolidado só quando muda requisito; gate reconhece `Tipo: bugfix`.
+- **ADR-0013**: renúncias das três decisões de desenho (composição do enxuto, forma do protótipo, pipeline do bugfix).
+
+### Mudado
+- `check_cycle.py` passa a C1–C8 (MUDA R12 no archive) com fixtures novas no selftest; R35 ganha exceção de fusão de eixos no perfil enxuto (MUDA R35 no archive); templates `delta-spec.md` com campo `Perfil`; `cycle.md`/`SKILL.md`/`adapters.md`/`analyze.md`/README refletem o pipeline novo.
+
 ## [0.10.0] - 2026-07-28
 
 ### Adicionado
