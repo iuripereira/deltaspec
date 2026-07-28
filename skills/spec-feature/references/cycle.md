@@ -82,6 +82,19 @@ sem worktree → execução sequencial na ordem topológica, com aviso de degrad
 (RNF2). O C9 valida o grafo — dep existente e aciclicidade; arquivo sem nenhum
 `dep:` vale como cadeia linear implícita pela ordem (retrocompatível).
 
+## Trilha de auditoria de aprovação (delta-016)
+
+Toda aprovação humana que o ciclo exige fica registrada como linha citável no
+artefato da própria fase — sem arquivo de auditoria separado (renúncia ao audit.md
+do AI-DLC: ADR-0014). A trilha sobrevive ao archive junto com os artefatos.
+
+| Aprovação | Artefato (dono) | Sintaxe |
+| --- | --- | --- |
+| Perfil da delta (R36) | cabeçalho do `spec.md` | `Perfil: <perfil> — <justificativa> (aprovado: AAAA-MM-DD)` |
+| Prototipação (R37) | seção Contexto do `spec.md` | `Protótipo: aprovado AAAA-MM-DD — <caminho>` |
+| Ressalvas do analyze | `analyze.md`, linha após o veredito | `Ressalvas aceitas: AAAA-MM-DD — <resumo>` |
+| Achados do review | `analyze.md`, apêndice do review | `Review: convergentes tratados / recusas justificadas — AAAA-MM-DD` |
+
 ## Prototipação opcional (R2, delta-015 — estágio CONDITIONAL)
 
 Delta cujo escopo toca interface ou fluxo que o stakeholder precisa ver → no specify a IA **propõe** o estágio com justificativa; executa só com aprovação do usuário (mesma regra do gate visual, ADR-0009). Forma: categoria `prototipo` do `doc-profile.yaml` (dono da decisão); perfil ausente ou sem a categoria → default HTML estático navegável em `docs/prototypes/NNN-nome/`, versionado e referenciado no Contexto da delta. Sem gatilho → o estágio se omite com no máximo 1 linha.
