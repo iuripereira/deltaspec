@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
-# Gate pré-commit do sdd-iuri: valida a integridade documental (deps.toml) quando o
+# Gate pré-commit do deltaspec: valida a integridade documental (deps.toml) quando o
 # commit toca .md ou o próprio deps.toml. Instalado pelo bootstrap da skill
 # guarding-doc-integrity (opt-in). O caminho do validador vem da config local do git
-# (não versionada — portabilidade RNF5): git config sdd-iuri.validator <caminho>
+# (não versionada — portabilidade RNF5): git config deltaspec.validator <caminho>
 set -u
 
-# manter em sincronia com o .githooks/pre-commit do repo sdd-iuri
+# manter em sincronia com o .githooks/pre-commit do repo deltaspec
 # (duplicação deliberada: lá o validador é in-repo; aqui vem da config local)
 staged=$(git diff --cached --name-only)
 echo "$staged" | grep -qE '\.md$|(^|/)deps\.toml$' || exit 0
 
-validador=$(git config --get sdd-iuri.validator || true)
+validador=$(git config --get deltaspec.validator || true)
 if [ ! -f "$validador" ]; then
-  echo "pre-commit (sdd-iuri): validador não configurado ou ausente — pulando (configure: git config sdd-iuri.validator <caminho de validate_integrity.py>)" >&2
+  echo "pre-commit (deltaspec): validador não configurado ou ausente — pulando (configure: git config deltaspec.validator <caminho de validate_integrity.py>)" >&2
   exit 0
 fi
 

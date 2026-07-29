@@ -1,4 +1,4 @@
-# CI do plugin sdd-iuri: valida JSON, TOML, YAML, frontmatter das SKILL.md,
+# CI do plugin deltaspec: valida JSON, TOML, YAML, frontmatter das SKILL.md,
 # portabilidade (RNF5), integridade documental (deps.toml) e os --selftest dos gates.
 # Os contextos "ci" e "commits" são exigidos pelo ruleset sdd-protect-main — não renomeie os jobs.
 name: CI

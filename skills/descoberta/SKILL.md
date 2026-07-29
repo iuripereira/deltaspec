@@ -1,13 +1,13 @@
 ---
 name: descoberta
-description: Use when a project needs discovery BEFORE any spec exists — mining raw inputs (meeting transcript/summary, video, legacy spreadsheet, scattered docs) into an as-is dossier with explicit confidence levels, populated glossary/data dictionary, divergences against an existing baseline and a stakeholder validation agenda. Triggers include "/sdd-iuri:descoberta", "processo de descoberta", "discovery", "minerar transcrição", "reunião de kickoff", "documentar processo legado", "as-is", "levantar requisitos com stakeholder", or entering the sdd-iuri cycle without a validated PRD.
+description: Use when a project needs discovery BEFORE any spec exists — mining raw inputs (meeting transcript/summary, video, legacy spreadsheet, scattered docs) into an as-is dossier with explicit confidence levels, populated glossary/data dictionary, divergences against an existing baseline and a stakeholder validation agenda. Triggers include "/deltaspec:descoberta", "processo de descoberta", "discovery", "minerar transcrição", "reunião de kickoff", "documentar processo legado", "as-is", "levantar requisitos com stakeholder", or entering the deltaspec cycle without a validated PRD.
 ---
 
 # descoberta
 
 ## Overview
 
-Fase **pré-specify** do ciclo sdd-iuri: transforma insumos brutos de descoberta em um **dossiê as-is com incerteza explícita**, pronto para virar PRD (via `max:write-prd`) ou alimentar o `specify`. Fundamentos: **AI-DLC/AWS** (Inception + ritual *Mob Elaboration*: a IA propõe, o stakeholder valida em sessão), **BMAD** (*document-project*: documentar o existente antes do PRD) e **Reversa** (claims com nível de confiança). Registro da decisão e renúncias: [ADR-0011](../../docs/adrs/ADR-0011-descoberta-skill-propria.md).
+Fase **pré-specify** do ciclo deltaspec: transforma insumos brutos de descoberta em um **dossiê as-is com incerteza explícita**, pronto para virar PRD (via `max:write-prd`) ou alimentar o `specify`. Fundamentos: **AI-DLC/AWS** (Inception + ritual *Mob Elaboration*: a IA propõe, o stakeholder valida em sessão), **BMAD** (*document-project*: documentar o existente antes do PRD) e **Reversa** (claims com nível de confiança). Registro da decisão e renúncias: [ADR-0011](../../docs/adrs/ADR-0011-descoberta-skill-propria.md).
 
 Regra de ouro da fase: **inferência nunca vira fato**. Todo claim carrega confiança e fonte; o que não foi confirmado sai como `[PRESUNÇÃO]`.
 

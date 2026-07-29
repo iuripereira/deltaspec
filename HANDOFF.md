@@ -5,7 +5,8 @@
 **Atualizado em:** 2026-07-28
 
 ## Agora
-- **delta-018 (visual, Fase 5) arquivada** — do plano de upgrade resta só a **Fase 4 (delta-017, Jira/tickets.md — número reservado, R5)**, adiada por decisão do usuário (2026-07-28: "não será necessária agora"). Inclui o gatilho de reavaliação do fork do max (ADR-0012).
+- **delta-019 (rename para `deltaspec`) em implementação** — repo já renomeado no GitHub (`iuripereira/deltaspec`, remote atualizado); artefatos, ADR-0016 e o rename dos arquivos vivos aplicados; gate `check_cycle.py` LIBERADO COM RESSALVAS (exit 0, só o C8 BAIXO do test-plan dispensado). Falta: PR da delta → archive + tag `v1.0.0` → reinstalar o plugin local → PR de migração no `imex-travelplanner`.
+- Do plano de upgrade resta só a **Fase 4 (delta-017, Jira/tickets.md — número reservado, R5)**, adiada por decisão do usuário (2026-07-28: "não será necessária agora"). Inclui o gatilho de reavaliação do fork do max (ADR-0012).
 
 ## Feito recentemente
 - 2026-07-28 — **delta-018 (visual, Fase 5) arquivada** (#63 PR único de 310 linhas + PR de archive): R45–R46 no TRUTH (Figma/FigJam camada de apresentação com Mermaid fonte, categoria `apresentacao`; entregável congelado exclusivo do pipeline CLI), MUDA R5 (reserva explícita de número — 017 reservada para a Fase 4), ADR-0015, DT-014 roteado (preço do `generate_diagram` + verificação do claim do export FigJam), `v0.13.0`. **1º dogfood real do perfil `enxuto`** (R36): clarify omitido, test-plan dispensado (C8 BAIXO sancionado), review fundido num subagente (Spec 12/12; delete-list vazia). Verificação adversarial do specify em 3 lentes pegou 9 achados (8 aplicados, 1 refutado) — destaque: a reserva do 017 precisava de mecanismo normativo (MUDA R5), senão a delta-017 nunca nasceria pela regra mecânica.
@@ -24,6 +25,6 @@
 
 ## Próximos passos imediatos
 - Fase 4 do plano de upgrade (**delta-017 — número reservado via R5**, adiada por decisão do usuário 2026-07-28): skill `spec-tickets` — `tickets.md` canônico no repo, Jira como projeção (escada acli → Rovo MCP → REST, ADR nova revisando ADR-0007); inclui o gatilho de reavaliação do fork do max (ADR-0012). Abrir só quando o Iuri pedir.
-- Rodar `/plugin update sdd-iuri` no Claude Code local (cache na v0.11.0 — anterior às deltas 016 e 018).
+- Reinstalar o plugin local sob o nome novo: `/plugin marketplace remove sdd-iuri` → `add iuripereira/deltaspec` → `install deltaspec@deltaspec` (o cache local está na v0.11.0, anterior às deltas 016, 018 e ao rename).
 - Rodar uma delta real com o gate do specify no imex-travelplanner (gatilho do DT-004 e do DT-013) — agora com perfil, test-plan e grafo `dep:` disponíveis.
 - DT-014 fica em observação: anúncio de preço do `generate_diagram` (ou primeira materialização real).

@@ -1,6 +1,6 @@
 ---
 name: projeto-infra
-description: Use when setting up or auditing repository infrastructure on GitHub — branch protection rulesets, CI workflows, Conventional Commits enforcement (husky/commitlint), release-please, CodeRabbit or claude-code-action review. Triggers include "/sdd-iuri:projeto-infra", "proteger a main", "configurar branch protection", "setup de CI", "automação de release", or the optional infra step offered by projeto-init. Requires gh CLI authenticated and a GitHub remote.
+description: Use when setting up or auditing repository infrastructure on GitHub — branch protection rulesets, CI workflows, Conventional Commits enforcement (husky/commitlint), release-please, CodeRabbit or claude-code-action review. Triggers include "/deltaspec:projeto-infra", "proteger a main", "configurar branch protection", "setup de CI", "automação de release", or the optional infra step offered by projeto-init. Requires gh CLI authenticated and a GitHub remote.
 ---
 
 # projeto-infra

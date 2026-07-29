@@ -5,7 +5,7 @@
 # qualquer artefato fora do perfil exige pergunta explícita ao usuário antes.
 # Arquivo ausente = comportamento sem gate, com warning sugerindo criá-lo.
 #
-# Ferramentas (diagram-as-code, CLIs — setup no README do sdd-iuri):
+# Ferramentas (diagram-as-code, CLIs — setup no README do deltaspec):
 #   mermaid     fluxogramas/sequência/ERD rápido; renderiza nativo no GitHub/Obsidian  [obrigatória]
 #   dbml        modelo de dados canônico (schema.dbml → dbml-renderer)                 [opcional]
 #   structurizr arquitetura de alto nível / C4 formal via DSL (docker)                 [opcional]

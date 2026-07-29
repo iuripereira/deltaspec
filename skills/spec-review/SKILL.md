@@ -1,13 +1,13 @@
 ---
 name: spec-review
-description: Use when a delta spec and plan (specs/NNN-name/) deserve adversarial review before implementation — especially when the spec touches security, persistent data, external contracts, or new dependencies. Triggers include "/sdd-iuri:spec-review", "revisão adversarial", "stress-test da spec", "essa spec aguenta", or a user asking for extra scrutiny on a spec/plan before implement.
+description: Use when a delta spec and plan (specs/NNN-name/) deserve adversarial review before implementation — especially when the spec touches security, persistent data, external contracts, or new dependencies. Triggers include "/deltaspec:spec-review", "revisão adversarial", "stress-test da spec", "essa spec aguenta", or a user asking for extra scrutiny on a spec/plan before implement.
 ---
 
 # spec-review
 
 ## Overview
 
-Revisão adversarial de spec + plan (toggle opcional do ciclo sdd-iuri, pré-implement). **Grilling É a revisão adversarial** — esta skill não reimplementa o mecanismo: invoca `max:grill-me` sobre os artefatos. Distinto do gate analyze (consistência mecânica entre artefatos); aqui o alvo é o **mérito**: premissas frágeis, buracos de requisito, riscos.
+Revisão adversarial de spec + plan (toggle opcional do ciclo deltaspec, pré-implement). **Grilling É a revisão adversarial** — esta skill não reimplementa o mecanismo: invoca `max:grill-me` sobre os artefatos. Distinto do gate analyze (consistência mecânica entre artefatos); aqui o alvo é o **mérito**: premissas frágeis, buracos de requisito, riscos.
 
 ## Processo
 

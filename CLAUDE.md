@@ -2,9 +2,9 @@
 
 > This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-**sdd-iuri** — plugin do Claude Code com as skills do framework: Spec-Driven Development por delta specs, com gates determinísticos. Stack: Markdown (skills) + Python 3.11+ (scripts de gate) + GitHub Actions. Idioma do projeto: **PT-BR**.
+**deltaspec** — plugin do Claude Code com as skills do framework: Spec-Driven Development por delta specs, com gates determinísticos. Stack: Markdown (skills) + Python 3.11+ (scripts de gate) + GitHub Actions. Idioma do projeto: **PT-BR**.
 
-> **Layout.** As skills vivem em `skills/<nome>/`, o manifesto em `.claude-plugin/plugin.json`, e elas são invocadas sob o namespace `sdd-iuri:`. Script do framework é referenciado por `${CLAUDE_PLUGIN_ROOT}`, nunca por caminho absoluto de máquina — o job `ci` reprova o PR que introduzir um.
+> **Layout.** As skills vivem em `skills/<nome>/`, o manifesto em `.claude-plugin/plugin.json`, e elas são invocadas sob o namespace `deltaspec:`. Script do framework é referenciado por `${CLAUDE_PLUGIN_ROOT}`, nunca por caminho absoluto de máquina — o job `ci` reprova o PR que introduzir um.
 
 ## Princípios inegociáveis
 
@@ -45,9 +45,9 @@
 - **`DEBT.md`** — registro canônico de débito, pendências e lições, com IDs `DT-NNN` estáveis: natureza, descrição, origem, data de abertura, gatilho de correção e status. Item quitado **muda de status para `quitado (data, ref)`, nunca some**. Issue/ticket referencia o DT, nunca o substitui. (ADR-0007)
 - **Documentação em camadas:** leia o `CLAUDE.md` mais próximo do que você toca; cada subpasta relevante tem o seu. Numa skill, a `SKILL.md` orquestra e o detalhe vive em `references/`.
 
-## Ciclo de features (sdd-iuri)
+## Ciclo de features (deltaspec)
 
-- **1 feature = 1 delta spec** em `specs/NNN-nome/` (`spec.md`, `plan.md`, `tasks.md`), conduzida pelo comando `/sdd-iuri:spec-feature`. Numeração `NNN` **global ao repositório, nunca reinicia** — é ID estável citado em ADRs, commits e TRUTH.md.
+- **1 feature = 1 delta spec** em `specs/NNN-nome/` (`spec.md`, `plan.md`, `tasks.md`), conduzida pelo comando `/deltaspec:spec-feature`. Numeração `NNN` **global ao repositório, nunca reinicia** — é ID estável citado em ADRs, commits e TRUTH.md.
 - **Estados: proposta → aplicada → arquivada.** Delta arquivada move para `specs/_archive/` e consolida no **`TRUTH.md`** — a fonte da verdade do que vige (deltas antigas são histórico, não verdade). Archive faz parte do "pronto".
 - **Só o que muda:** a delta declara ADICIONA/MUDA/REMOVE em relação ao TRUTH.md; todo requisito tem cenário DADO/QUANDO/ENTÃO verificável.
 - **Planos de implementação: salvar em `specs/NNN-nome/plan.md`** (nunca em `docs/superpowers/plans/` — esta linha é a preferência de local que o writing-plans honra).

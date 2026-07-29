@@ -1,4 +1,4 @@
-# sdd-iuri — Fonte da verdade
+# deltaspec — Fonte da verdade
 <!-- consolidado a cada archive; histórico das deltas em specs/_archive/ -->
 <!-- particionamento: >~800 linhas ou >~10 domínios → truth/<dominio>.md e este vira índice -->
 <!-- delta-000 = backfill do estado pré-ciclo (PRs #1–#3), consolidado no projeto-init deste repo. Deltas reais começam em delta-001. -->
@@ -31,7 +31,7 @@
 ## Descoberta (pré-specify)
 
 - R24 (delta-012) — a skill `descoberta` cobre a fase pré-specify, produzindo dossiê a partir de insumos brutos.
-  - DADO um projeto com insumos brutos de descoberta (transcrição/resumo de reunião, planilha, vídeo, docs legados) QUANDO `/sdd-iuri:descoberta` roda ENTÃO ela inventaria os insumos (o que existe, o que falta, pessoas-fonte, sistemas citados) e grava o dossiê em `docs/discovery/AAAA-MM-DD-<evento>.md` com o processo as-is, entidades, regras e dores minerados
+  - DADO um projeto com insumos brutos de descoberta (transcrição/resumo de reunião, planilha, vídeo, docs legados) QUANDO `/deltaspec:descoberta` roda ENTÃO ela inventaria os insumos (o que existe, o que falta, pessoas-fonte, sistemas citados) e grava o dossiê em `docs/discovery/AAAA-MM-DD-<evento>.md` com o processo as-is, entidades, regras e dores minerados
   - DADO um vídeo entre os insumos QUANDO `ffmpeg` está disponível ENTÃO frames amostrados (scene detection + intervalo fixo) dos trechos relevantes são fonte válida de mineração; `ffmpeg` ausente → o vídeo entra no inventário como lacuna, com aviso, sem quebrar a skill
 - R25 (delta-012) — todo claim do dossiê carrega nível de confiança e fonte rastreável.
   - DADO um claim extraído dos insumos QUANDO registrado no dossiê ENTÃO carrega uma tag `confirmado` (evidência direta), `inferido` (dedução/padrão) ou `lacuna` (requer validação humana) e a fonte rastreável (timestamp da transcrição, `arquivo:linha` ou frame); claim sem fonte não entra no dossiê
@@ -148,18 +148,18 @@
 ## Distribuição
 
 - R15 (delta-008) — o framework é distribuído e instalado como plugin do Claude Code.
-  - DADO um usuário sem o framework QUANDO ele roda `/plugin marketplace add iuripereira/sdd-iuri` seguido de `/plugin install sdd-iuri@sdd-iuri` ENTÃO as skills do plugin ficam disponíveis sob o namespace `sdd-iuri:`, sem cópia manual de arquivos e sem que o repositório precise viver dentro de `~/.claude/skills/`
+  - DADO um usuário sem o framework QUANDO ele roda `/plugin marketplace add iuripereira/deltaspec` seguido de `/plugin install deltaspec@deltaspec` ENTÃO as skills do plugin ficam disponíveis sob o namespace `deltaspec:`, sem cópia manual de arquivos e sem que o repositório precise viver dentro de `~/.claude/skills/`
   - DADO o repositório do framework QUANDO o Claude Code registra o marketplace ENTÃO encontra `.claude-plugin/marketplace.json` **e** `.claude-plugin/plugin.json` na raiz, com as skills em `skills/<nome>/SKILL.md`
 - R31 (delta-013) — inventário de skills validado mecanicamente no CI.
   - DADO os manifestos `.claude-plugin/plugin.json` e `.claude-plugin/marketplace.json` QUANDO o job `ci` roda ENTÃO um step compara cada diretório `skills/<nome>/` com as descrições dos dois manifestos (case-insensitive, conforme lição de 2026-07-20) e falha nomeando a skill ausente e o manifesto omisso
   - DADO os dois manifestos citando as 9 skills atuais QUANDO o check roda ENTÃO passa sem achado
 - R33 (delta-013) — perfil de escrita `eu-tenho-tdah` reconhecido como skill do plugin.
-  - DADO o plugin instalado QUANDO as skills são listadas ENTÃO `eu-tenho-tdah` está disponível sob o namespace `sdd-iuri:` como perfil de escrita always-on, fora do ciclo de features, e o README e os manifestos a documentam como tal
+  - DADO o plugin instalado QUANDO as skills são listadas ENTÃO `eu-tenho-tdah` está disponível sob o namespace `deltaspec:` como perfil de escrita always-on, fora do ciclo de features, e o README e os manifestos a documentam como tal
 
 ## Handoff de sessão
 
 - R20 (delta-010) — a skill handoff compacta a sessão nos registros com dono.
-  - DADO uma sessão de trabalho neste repositório ou num projeto do framework QUANDO o usuário invoca `/sdd-iuri:handoff [foco da próxima sessão]` ENTÃO o `HANDOFF.md` (diário de bordo) é atualizado nas quatro seções — Agora, Feito recentemente, Problemas atuais, Próximos passos imediatos — com o foco informado refletido nos próximos passos
+  - DADO uma sessão de trabalho neste repositório ou num projeto do framework QUANDO o usuário invoca `/deltaspec:handoff [foco da próxima sessão]` ENTÃO o `HANDOFF.md` (diário de bordo) é atualizado nas quatro seções — Agora, Feito recentemente, Problemas atuais, Próximos passos imediatos — com o foco informado refletido nos próximos passos
   - DADO o handoff fechado QUANDO ele imprime o prompt de retomada ENTÃO é uma linha única apontando o `HANDOFF.md` com o foco (variante multi-repo: os `HANDOFF.md` dos repos, âncora primeiro)
   - DADO um projeto com `STATE.md` legado e sem `HANDOFF.md` QUANDO o handoff roda ENTÃO ele renomeia `STATE.md` → `HANDOFF.md` (`git mv`) antes de escrever, sem deixar os dois arquivos coexistirem
   - DADO débito, pendência ou lição descoberto na sessão e ainda sem registro QUANDO o handoff roda ENTÃO ele entra no `DEBT.md` (linha `DT-NNN` ou seção Lições) antes de o diário ser fechado
@@ -203,7 +203,7 @@
   - Métrica: toda fase com motor de terceiro tem fallback nativo declarado
   - Verificação: tabela de contrato em `adapters.md` — uma linha por fase, com o ponto sensível a breaking change **e uma seção de fallback correspondente para cada motor da linha**
 - RNF3 (delta-005) — idempotência defensiva: nada é sobrescrito nem migrado sem pedido.
-  - Métrica: 2ª execução de `/sdd-iuri:projeto-init` e `/sdd-iuri:projeto-infra` não altera nenhum arquivo versionado e relata o que pulou; artefato de comparação efêmero (`CLAUDE.generated.md` + diff, conforme R2) é permitido
+  - Métrica: 2ª execução de `/deltaspec:projeto-init` e `/deltaspec:projeto-infra` não altera nenhum arquivo versionado e relata o que pulou; artefato de comparação efêmero (`CLAUDE.generated.md` + diff, conforme R2) é permitido
   - Verificação: rodar duas vezes em repo já inicializado e conferir o relatório
 - RNF4 (delta-002) — todo script de gate carrega o próprio teste, validado no CI.
   - Métrica: 100% dos scripts do framework expõem `--selftest` com fixtures; o C4 é coberto com repositório git real — caso positivo (perda acusada) e falso positivo (alvo declarado em MUDA não acusado)
@@ -217,4 +217,4 @@
 
 - **CI dos gates dentro dos projetos do usuário.** Hoje os gates rodam local (analyze, archive, pré-commit); o porquê e as alternativas renunciadas estão em [ADR-0001](../docs/adrs/ADR-0001-gates-rodam-local.md).
 - **Backfill assistido de TRUTH.md em brownfield.** Existe como tarefa sob demanda, não como fase.
-- **Por design, fora de escopo:** os checks 3 e 5 do analyze (scope creep spec×plan, violação de regra canônica) e o mérito da spec no `/sdd-iuri:spec-review` continuam com o modelo — são juízo, não regex, e automatizá-los produziria falso negativo confiante.
+- **Por design, fora de escopo:** os checks 3 e 5 do analyze (scope creep spec×plan, violação de regra canônica) e o mérito da spec no `/deltaspec:spec-review` continuam com o modelo — são juízo, não regex, e automatizá-los produziria falso negativo confiante.

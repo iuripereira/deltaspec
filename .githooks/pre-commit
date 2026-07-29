@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Gate pré-commit do sdd-iuri (R2 da delta-013, quita DT-005): valida a integridade
+# Gate pré-commit do deltaspec (R2 da delta-013, quita DT-005): valida a integridade
 # documental (deps.toml) quando o commit toca .md ou o próprio deps.toml.
 # Ativação (1x por clone, não se propaga): git config core.hooksPath .githooks
 set -u

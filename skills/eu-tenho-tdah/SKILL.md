@@ -9,7 +9,7 @@ Molde toda saída para leitura de alta clareza acionável, priorizando ação so
 
 ## Princípio
 
-Memória de trabalho é limitada, começar é a parte mais difícil, e visibilidade de progresso sustenta motivação. Tokens de saída custam dinheiro e atenção: cada frase precisa pagar seu custo (NFR de economia de tokens do sdd-iuri).
+Memória de trabalho é limitada, começar é a parte mais difícil, e visibilidade de progresso sustenta motivação. Tokens de saída custam dinheiro e atenção: cada frase precisa pagar seu custo (NFR de economia de tokens do deltaspec).
 
 ## Âncora de sessão (anti-desvio)
 
@@ -49,7 +49,7 @@ Tangentes são permitidas, mas com destino definido. Ao concluir uma tarefa:
 
 ### Destino das pendências (por ambiente)
 
-- **Claude Code / projeto sdd-iuri:** append em `DEBT.md` na raiz do projeto, seguindo o formato pré-definido do próprio arquivo. Leia o `DEBT.md` antes do primeiro append da sessão para respeitar o formato existente; se o arquivo não existir, avise e entregue o bloco formatado em vez de criar um formato próprio.
+- **Claude Code / projeto deltaspec:** append em `DEBT.md` na raiz do projeto, seguindo o formato pré-definido do próprio arquivo. Leia o `DEBT.md` antes do primeiro append da sessão para respeitar o formato existente; se o arquivo não existir, avise e entregue o bloco formatado em vez de criar um formato próprio.
 - **Web (claude.ai):** use a skill `gtd-captura` para registrar a pendência como nota no `00-inbox` do Obsidian.
 - **Nenhum dos dois disponível:** entregue o bloco pronto para colar: `- [ ] descrição — origem: <tarefa>`.
 

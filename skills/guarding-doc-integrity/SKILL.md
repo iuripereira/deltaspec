@@ -25,7 +25,7 @@ Quando NÃO usar: repo sem docs canônicos, ou mudança que não toca arquivo ma
 2. Proponha ao usuário: dono de cada assunto, espelhos sancionados (máx. 2–3 por dono), valores a rastrear.
 3. Crie `deps.toml` na raiz a partir de `templates/deps.toml` (desta skill).
 4. Rode o validador e corrija as violações do estado atual (duplicata fora dos sancionados vira **link** para o dono) até PASS. Esse é o baseline do repo.
-5. **Ofereça o hook pré-commit** (opt-in — recusa segue sem hook, sem insistir): copie `templates/pre-commit` (desta skill) para `.githooks/pre-commit` do projeto, `chmod +x`, e configure `git config core.hooksPath .githooks` + `git config sdd-iuri.validator ${CLAUDE_PLUGIN_ROOT}/skills/guarding-doc-integrity/scripts/validate_integrity.py` (config local do git, não versionada — o template não carrega caminho de máquina). **Nunca sobrescreva** `.githooks/pre-commit` nem `core.hooksPath` já existentes — hook próprio do projeto vence; nesse caso apenas informe o comando manual. Avise que a ativação é por clone (`core.hooksPath` não se propaga).
+5. **Ofereça o hook pré-commit** (opt-in — recusa segue sem hook, sem insistir): copie `templates/pre-commit` (desta skill) para `.githooks/pre-commit` do projeto, `chmod +x`, e configure `git config core.hooksPath .githooks` + `git config deltaspec.validator ${CLAUDE_PLUGIN_ROOT}/skills/guarding-doc-integrity/scripts/validate_integrity.py` (config local do git, não versionada — o template não carrega caminho de máquina). **Nunca sobrescreva** `.githooks/pre-commit` nem `core.hooksPath` já existentes — hook próprio do projeto vence; nesse caso apenas informe o comando manual. Avise que a ativação é por clone (`core.hooksPath` não se propaga).
 
 ### 2. Mudança de valor canônico (cascata)
 

@@ -4,7 +4,7 @@
 
 # Escopo dos checks de materialização (C2) e links (C3).
 # Globs explícitos — evite '**/*.md' em repos com node_modules/ etc.
-# Em projeto com ciclo sdd-iuri: o TRUTH.md entra, as deltas ABERTAS não —
+# Em projeto com ciclo deltaspec: o TRUTH.md entra, as deltas ABERTAS não —
 # uma delta propõe valor novo antes de ele virar vigente, e travá-la em C2
 # quebraria o specify. O valor passa a ser governado quando o archive o consolida.
 scan_globs = ["*.md", "docs/**/*.md", "specs/TRUTH.md", "specs/truth/*.md"]

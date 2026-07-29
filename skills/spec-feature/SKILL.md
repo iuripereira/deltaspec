@@ -1,13 +1,13 @@
 ---
 name: spec-feature
-description: Use when starting, resuming, or archiving a feature increment in a project that follows the sdd-iuri cycle (specs/NNN-name/ with delta specs). Triggers include "/sdd-iuri:spec-feature", "nova feature", "delta spec", "specify", "clarify", "analyze", "arquivar a delta", "consolidar no TRUTH.md", or the sdd-ciclo module in the project's CLAUDE.md.
+description: Use when starting, resuming, or archiving a feature increment in a project that follows the deltaspec cycle (specs/NNN-name/ with delta specs). Triggers include "/deltaspec:spec-feature", "nova feature", "delta spec", "specify", "clarify", "analyze", "arquivar a delta", "consolidar no TRUTH.md", or the sdd-ciclo module in the project's CLAUDE.md.
 ---
 
 # spec-feature
 
 ## Overview
 
-Orquestra o ciclo por incremento do sdd-iuri: **delta specs** (só o que muda em relação ao `TRUTH.md`), estados **proposta → aplicada → arquivada**, com fases delegadas a motores de terceiros via adapters (`references/adapters.md`). O framework orquestra; os plugins executam. Plugin ausente → a fase **degrada com aviso, nunca quebra** (fallbacks nos adapters).
+Orquestra o ciclo por incremento do deltaspec: **delta specs** (só o que muda em relação ao `TRUTH.md`), estados **proposta → aplicada → arquivada**, com fases delegadas a motores de terceiros via adapters (`references/adapters.md`). O framework orquestra; os plugins executam. Plugin ausente → a fase **degrada com aviso, nunca quebra** (fallbacks nos adapters).
 
 Pipeline completo:
 ```
@@ -17,7 +17,7 @@ specify → clarify → [prototipação?] → plan → tasks → test-plan → a
 Estágios entre colchetes são CONDITIONAL (propostos pela IA, aprovados pelo usuário). O **perfil da delta** (`completo|enxuto`, proposto no specify e aprovado pelo usuário) liga/desliga clarify, test-plan e a forma do review — tabela "Perfil de execução" em `references/cycle.md`. Correção de defeito pode abrir como **`Tipo: bugfix`** (template próprio, pipeline curto — seção "Delta bugfix" do cycle.md).
 Detalhe das fases (critérios de entrada/saída, máquina de estados, consolidação da entrevista): `references/cycle.md`. Gate analyze: `references/analyze.md`.
 
-Pré-fase opcional: projeto sem PRD validado ou com insumos brutos de descoberta (transcrição de reunião, planilha legada) → rode `sdd-iuri:descoberta` antes do specify (contrato em `references/adapters.md`).
+Pré-fase opcional: projeto sem PRD validado ou com insumos brutos de descoberta (transcrição de reunião, planilha legada) → rode `deltaspec:descoberta` antes do specify (contrato em `references/adapters.md`).
 
 ## Aplicabilidade por tipo (coluna `ciclo` do projeto-init/detection.md)
 
