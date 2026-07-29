@@ -1,5 +1,5 @@
 # delta-019 — rename-deltaspec
-Estado: proposta · Data: 2026-07-28 · Branch: feat/019-rename-deltaspec · Perfil: enxuto — rename mecânico de identidade (manifestos, namespace, docs), sem lógica nova de gate; risco concentrado em consumidores instalados, endereçado por guia de migração (aprovado: 2026-07-28) · Test-plan: dispensado — a verificação é mecânica (selftests dos gates + grep de resíduo + reinstalação do plugin), declarada nas tasks
+Estado: arquivada · Data: 2026-07-28 · Branch: feat/019-rename-deltaspec · Perfil: enxuto — rename mecânico de identidade (manifestos, namespace, docs), sem lógica nova de gate; risco concentrado em consumidores instalados, endereçado por guia de migração (aprovado: 2026-07-28) · Test-plan: dispensado — a verificação é mecânica (selftests dos gates + grep de resíduo + reinstalação do plugin), declarada nas tasks
 <!-- Numeração: 018 é a última arquivada; 017 segue reservada para a Fase 4 (Jira) e esta delta salta o número (R5 do TRUTH), sem consumi-lo. -->
 
 ## Contexto (≤3 linhas)
@@ -48,4 +48,4 @@ O framework abre à comunidade e `sdd-iuri` carrega o nome pessoal do autor, o q
 - Depende do rename do repositório no GitHub (feito antes do conteúdo; o redirect do GitHub cobre remotes e URLs antigas durante a transição)
 - Risco aceito: URLs `raw.githubusercontent.com` antigas dependem do redirect do GitHub — mitigado atualizando as URLs no README no mesmo change
 - Risco aceito: quem tiver o plugin instalado perde os comandos `/sdd-iuri:*` até reinstalar — é o custo do breaking change, endereçado pelo guia de migração (R5) e pelo corte da v1.0.0
-- [ ] Pendência: publicar a documentação em EN (ou bilíngue) e abrir CONTRIBUTING + código de conduta antes de divulgar o framework à comunidade
+- [x] Pendência: publicar a documentação em EN (ou bilíngue) e abrir CONTRIBUTING + código de conduta antes de divulgar o framework à comunidade — roteada como DT-015 no DEBT.md (archive, 2026-07-28)
