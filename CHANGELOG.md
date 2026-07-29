@@ -8,9 +8,16 @@ O formato segue [Keep a Changelog 1.0.0](https://keepachangelog.com/pt-BR/1.0.0/
 
 ## [Não lançado]
 
+## [1.0.0] - 2026-07-28
+
+### Adicionado
+
+- **Guia de migração e guarda do registro histórico** (delta-019, R47): seção 2.1 do README com os passos exatos para quem vinha do `sdd-iuri`; `specs/_archive/`, ADRs `Accepted` e seções lançadas deste changelog preservam o nome de época — mesma guarda que a delta-010 aplicou no rename `STATE.md` → `HANDOFF.md` (DT-010).
+- **ADR-0016**: decisão do nome com as renúncias registradas — `delta-spec` descartado pela colisão de nicho, camada de compatibilidade do `sdd-iuri.validator` descartada por não alcançar hooks já copiados.
+
 ### Mudado
 
-- **BREAKING — o framework passa a se chamar `deltaspec`** (delta-019, R1–R6 — [ADR-0016](docs/adrs/ADR-0016-rename-deltaspec.md)): o nome pessoal saiu para abrir o projeto à comunidade. Instalação vira `/plugin marketplace add iuripereira/deltaspec` + `/plugin install deltaspec@deltaspec`, o namespace de invocação vira `deltaspec:` (todos os comandos `/sdd-iuri:*` deixam de existir — sem camada de compatibilidade) e a chave de config do hook pré-commit vira `deltaspec.validator`. `delta-spec` foi descartado por colidir com `codebycorey/delta-spec`, do mesmo nicho. Registro histórico preservado: `specs/_archive/`, ADRs `Accepted` e seções lançadas deste changelog mantêm o nome de época. Guia de migração na seção 2.1 do README.
+- **BREAKING — o framework passa a se chamar `deltaspec`** (delta-019, R1–R5 + RNF1 — [ADR-0016](docs/adrs/ADR-0016-rename-deltaspec.md)): o nome pessoal saiu para abrir o projeto à comunidade. Instalação vira `/plugin marketplace add iuripereira/deltaspec` + `/plugin install deltaspec@deltaspec`, o namespace de invocação vira `deltaspec:` (todos os comandos `/sdd-iuri:*` deixam de existir — sem camada de compatibilidade) e a chave de config do hook pré-commit vira `deltaspec.validator`. `delta-spec` foi descartado por colidir com `codebycorey/delta-spec`, do mesmo nicho. Registro histórico preservado: `specs/_archive/`, ADRs `Accepted` e seções lançadas deste changelog mantêm o nome de época. Guia de migração na seção 2.1 do README.
 
   BREAKING CHANGE: o namespace de invocação das skills muda de `sdd-iuri:` para `deltaspec:`; consumidores precisam remover o marketplace antigo, reinstalar o plugin e atualizar os comandos citados no próprio `CLAUDE.md`.
 - **README reescrito em chave didática**: nova estrutura em 8 seções (por que delta spec · instalação e configuração · como funciona · fluxo sugerido · skills uma a uma · gates · onde cada informação mora · convenções), com a analogia "delta spec = commit de requisito, TRUTH.md = working tree", 6 diagramas Mermaid (consolidação das deltas, estados, ciclo completo, orquestra×motores, greenfield, sessão), tabela dos checks C1–C10 e objetivo declarado de cada uma das 9 skills. Os limiares canônicos (particionamento do TRUTH, tamanho de PR) passaram a ser **referenciados** em vez de materializados — o `validate_integrity.py` acusou a duplicação (C2) e a correção mantém a regra de ouro. Diagramas em Mermaid por decisão da ADR-0015 (Figma é camada de apresentação a cliente, não fonte; FigJam não embeda em README).
