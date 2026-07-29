@@ -5,7 +5,7 @@
 **Atualizado em:** 2026-07-28
 
 ## Agora
-- **delta-019 (rename para `deltaspec`) arquivada, `v1.0.0` cortada.** Falta fora do repo: reinstalar o plugin na máquina local (passos nos Próximos passos) e o PR de migração no `imex-travelplanner` — único consumidor externo mapeado.
+- **delta-019 (rename para `deltaspec`) arquivada, `v1.0.0` publicada.** Plugin local já reinstalado sob o nome novo (9 skills, `deltaspec@deltaspec`). Aberto e aguardando merge do Iuri: [imex-travelplanner#236](https://github.com/iuripereira/imex-travelplanner/pull/236) — único consumidor externo mapeado; o PR conserta um gate que o rename tinha quebrado em silêncio (`validate_docs.sh` resolvia o validador por `marketplaces/sdd-iuri/`, caía no AVISO e saía 0, deixando todo commit passar sem validação).
 - Do plano de upgrade resta só a **Fase 4 (delta-017, Jira/tickets.md — número reservado, R5)**, adiada por decisão do usuário (2026-07-28: "não será necessária agora"). Inclui o gatilho de reavaliação do fork do max (ADR-0012).
 
 ## Feito recentemente
@@ -26,6 +26,6 @@
 
 ## Próximos passos imediatos
 - Fase 4 do plano de upgrade (**delta-017 — número reservado via R5**, adiada por decisão do usuário 2026-07-28): skill `spec-tickets` — `tickets.md` canônico no repo, Jira como projeção (escada acli → Rovo MCP → REST, ADR nova revisando ADR-0007); inclui o gatilho de reavaliação do fork do max (ADR-0012). Abrir só quando o Iuri pedir.
-- Reinstalar o plugin local sob o nome novo: `/plugin marketplace remove sdd-iuri` → `add iuripereira/deltaspec` → `install deltaspec@deltaspec` (o cache local está na v0.11.0, anterior às deltas 016, 018 e ao rename).
+- Mergear o [imex-travelplanner#236](https://github.com/iuripereira/imex-travelplanner/pull/236) (checks verdes). O PR levanta duas decisões que ficaram para o Iuri: o DT-002 de lá pode estar quitável (o `check_cycle.py` já aceita `RF-NN`, mas o gatilho pede rodar o gate num archive que ainda não existe) e o `CLAUDE.md` de lá contradiz a ADR-0035 sobre CRs regerem processo.
 - Rodar uma delta real com o gate do specify no imex-travelplanner (gatilho do DT-004 e do DT-013) — agora com perfil, test-plan e grafo `dep:` disponíveis.
 - DT-014 fica em observação: anúncio de preço do `generate_diagram` (ou primeira materialização real).
