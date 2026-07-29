@@ -2,9 +2,10 @@
 
 > Andamento contínuo do trabalho: o que está em curso **agora**, o que acabou de ser feito, os problemas do momento e os próximos passos imediatos. Atualize com frequência dentro da própria sessão. **Janela rolante:** entrada antiga sai — histórico permanente é [CHANGELOG](CHANGELOG.md) + git; débito/pendência/lição é [DEBT.md](DEBT.md); decisão com renúncia é [docs/adrs/](docs/adrs/); o que vige é [specs/TRUTH.md](specs/TRUTH.md). Em conflito de merge, mantenha a **união das verdades** — nunca sobrescreva o progresso de outra sessão.
 
-**Atualizado em:** 2026-07-28
+**Atualizado em:** 2026-07-29
 
 ## Agora
+- **README reescrito como quickstart** (branch `docs/readme-quickstart`, fora do ciclo — é documentação, não mudança de comportamento de skill): linguagem direta, seção de migração do `sdd-iuri` removida (o rename fechou; o histórico vive na ADR-0016 e no archive), diagramas Mermaid com tema claro e as 9 skills numa tabela que linka para cada `SKILL.md` — sem `README.md` por skill, para não duplicar a explicação.
 - **delta-019 (rename para `deltaspec`) arquivada, `v1.0.0` publicada.** Plugin local já reinstalado sob o nome novo (9 skills, `deltaspec@deltaspec`). Aberto e aguardando merge do Iuri: PR de migração em **6 repos consumidores** (lista nos Próximos passos); o PR conserta um gate que o rename tinha quebrado em silêncio (`validate_docs.sh` resolvia o validador por `marketplaces/sdd-iuri/`, caía no AVISO e saía 0, deixando todo commit passar sem validação).
 - Do plano de upgrade resta só a **Fase 4 (delta-017, Jira/tickets.md — número reservado, R5)**, adiada por decisão do usuário (2026-07-28: "não será necessária agora"). Inclui o gatilho de reavaliação do fork do max (ADR-0012).
 

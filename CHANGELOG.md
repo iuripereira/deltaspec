@@ -8,6 +8,16 @@ O formato segue [Keep a Changelog 1.0.0](https://keepachangelog.com/pt-BR/1.0.0/
 
 ## [Não lançado]
 
+### Mudado
+
+- **README reescrito como quickstart**, mais curto e em linguagem direta: 8 seções (o problema · instalação · comece um projeto · o ciclo · o dia a dia · as skills · as checagens · onde cada coisa mora) em vez do guia longo, com o jargão traduzido ("o que vale hoje" no lugar de "o que vige", "checagem automática" no lugar de "gate determinístico", "roda de novo sem estragar" no lugar de "idempotência defensiva"). As 9 skills viraram **uma tabela que linka para cada `SKILL.md`** — a explicação de cada skill continua com um dono só, o próprio `SKILL.md` (regra de ouro; padrão das Agent Skills), em vez de um `README.md` por skill que duplicaria o texto.
+- **Diagramas Mermaid com tema claro**: `theme: base` + `classDef` numa paleta pastel de papel semântico (delta, verdade, gate, fase, fim), nós arredondados e borda escura. A `fontFamily` customizada foi deixada de fora de propósito — o `mmdc` calcula a largura do nó com a fonte disponível e cortava o texto ("ADICIONA R1, R" em vez de "R2"); com a fonte padrão do Mermaid os 6 diagramas renderizam íntegros.
+
+### Removido
+
+- **Seção de migração `sdd-iuri` → `deltaspec` do README** (introduzida pela delta-019/R47): a varredura dos consumidores fechou e o rename está concluído, então o README parte de `deltaspec` e ponto. O registro histórico do rename continua onde tem dono — [ADR-0016](docs/adrs/ADR-0016-rename-deltaspec.md), `specs/_archive/019-rename-deltaspec/` e a seção `[1.0.0]` abaixo.
+- **Detalhamento no README que já tem dono em outro arquivo**: a tabela dos checks C1–C10 (dona: `spec-feature/SKILL.md`), a lista de CLIs de diagrama opcionais (dona: `doc-entregavel`) e a seção de convenções do repositório (dona: `CLAUDE.md`) saíram do README, que agora linka para elas. A versão exibida no topo, que apontava `v0.13.0`, passou a `v1.0.0`.
+
 ## [1.0.0] - 2026-07-28
 
 ### Adicionado
