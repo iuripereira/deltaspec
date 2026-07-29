@@ -5,7 +5,7 @@
 **Atualizado em:** 2026-07-28
 
 ## Agora
-- **delta-019 (rename para `deltaspec`) arquivada, `v1.0.0` publicada.** Plugin local já reinstalado sob o nome novo (9 skills, `deltaspec@deltaspec`). Aberto e aguardando merge do Iuri: [imex-travelplanner#236](https://github.com/iuripereira/imex-travelplanner/pull/236) — único consumidor externo mapeado; o PR conserta um gate que o rename tinha quebrado em silêncio (`validate_docs.sh` resolvia o validador por `marketplaces/sdd-iuri/`, caía no AVISO e saía 0, deixando todo commit passar sem validação).
+- **delta-019 (rename para `deltaspec`) arquivada, `v1.0.0` publicada.** Plugin local já reinstalado sob o nome novo (9 skills, `deltaspec@deltaspec`). Aberto e aguardando merge do Iuri: PR de migração em **6 repos consumidores** (lista nos Próximos passos); o PR conserta um gate que o rename tinha quebrado em silêncio (`validate_docs.sh` resolvia o validador por `marketplaces/sdd-iuri/`, caía no AVISO e saía 0, deixando todo commit passar sem validação).
 - Do plano de upgrade resta só a **Fase 4 (delta-017, Jira/tickets.md — número reservado, R5)**, adiada por decisão do usuário (2026-07-28: "não será necessária agora"). Inclui o gatilho de reavaliação do fork do max (ADR-0012).
 
 ## Feito recentemente
@@ -26,6 +26,6 @@
 
 ## Próximos passos imediatos
 - Fase 4 do plano de upgrade (**delta-017 — número reservado via R5**, adiada por decisão do usuário 2026-07-28): skill `spec-tickets` — `tickets.md` canônico no repo, Jira como projeção (escada acli → Rovo MCP → REST, ADR nova revisando ADR-0007); inclui o gatilho de reavaliação do fork do max (ADR-0012). Abrir só quando o Iuri pedir.
-- Mergear o [imex-travelplanner#236](https://github.com/iuripereira/imex-travelplanner/pull/236) (checks verdes). O PR levanta duas decisões que ficaram para o Iuri: o DT-002 de lá pode estar quitável (o `check_cycle.py` já aceita `RF-NN`, mas o gatilho pede rodar o gate num archive que ainda não existe) e o `CLAUDE.md` de lá contradiz a ADR-0035 sobre CRs regerem processo.
+- Mergear os **6 PRs de migração** (checks verdes ou repo sem CI; `gh pr merge` em repo de terceiro é bloqueado pelo classificador): [imex-travelplanner#236](https://github.com/iuripereira/imex-travelplanner/pull/236) e [imex-contratos#6](https://github.com/iuripereira/imex-contratos/pull/6) — os dois com **gate/exportador quebrado** pelo rename — mais [imex-estoque-inteligente#25](https://github.com/iuripereira/imex-estoque-inteligente/pull/25), [doutor-confia#27](https://github.com/iuripereira/doutor-confia/pull/27), [imex-dashboard-operacional#12](https://github.com/iuripereira/imex-dashboard-operacional/pull/12) e [pj-guerra-amorim-adv#2](https://github.com/iuripereira/pj-guerra-amorim-adv/pull/2), que eram só texto. O PR levanta duas decisões que ficaram para o Iuri: o DT-002 de lá pode estar quitável (o `check_cycle.py` já aceita `RF-NN`, mas o gatilho pede rodar o gate num archive que ainda não existe) e o `CLAUDE.md` de lá contradiz a ADR-0035 sobre CRs regerem processo.
 - Rodar uma delta real com o gate do specify no imex-travelplanner (gatilho do DT-004 e do DT-013) — agora com perfil, test-plan e grafo `dep:` disponíveis.
 - DT-014 fica em observação: anúncio de preço do `generate_diagram` (ou primeira materialização real).
