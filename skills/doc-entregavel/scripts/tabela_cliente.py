@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Transforma um PRD (formato sdd-iuri) em markdown amigável ao cliente (ADR-0009).
+"""Transforma um PRD (formato deltaspec) em markdown amigável ao cliente (ADR-0009).
 
 O quê: nas seções "Requisitos Funcionais"/"Requisitos Não Funcionais" do padrão
-sdd-iuri (localizadas pelo título, independentes da numeração), os cenários `- DADO ... QUANDO ... ENTÃO ...`
+deltaspec (localizadas pelo título, independentes da numeração), os cenários `- DADO ... QUANDO ... ENTÃO ...`
 viram tabela por grupo de RF (Item · Pré-condição · Ação · Resultado esperado) e os
 RNFs viram tabela (ID · Requisito · Métrica · Verificação); no restante do documento,
 a indentação de bullets aninhados é dobrada (2→4), porque o caminho PDF do
@@ -11,7 +11,7 @@ com 2, a hierarquia achata e o cenário aparece como irmão do requisito.
 
 Semântica da tabela: DADO = pré-condição (pré-requisito) · QUANDO = ação (gatilho) ·
 ENTÃO = resultado esperado (saída verificável). Transformação de APRESENTAÇÃO apenas —
-o `PRD.md` canônico permanece no formato sdd-iuri; rode sobre a cópia do entregável.
+o `PRD.md` canônico permanece no formato deltaspec; rode sobre a cópia do entregável.
 
 Paridade garantida por assert: nenhum cenário/RNF pode se perder na transformação.
 

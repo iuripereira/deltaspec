@@ -1,4 +1,4 @@
-# sdd-iuri
+# deltaspec
 
 Framework de **Spec-Driven Development por delta specs** para o [Claude Code](https://claude.com/claude-code).
 
@@ -30,7 +30,7 @@ Versão atual: `v0.13.0` · 9 skills · Licença MIT.
 
 O problema clássico do SDD tradicional: você escreve um PRD de 40 páginas, implementa 3 features, e o PRD já mente. Ninguém reescreve o documento inteiro a cada mudança — então ele vira ficção.
 
-A resposta do sdd-iuri: **o documento grande nunca é escrito à mão.** Ele é *derivado*.
+A resposta do deltaspec: **o documento grande nunca é escrito à mão.** Ele é *derivado*.
 
 ```mermaid
 flowchart LR
@@ -59,18 +59,34 @@ Consequências práticas:
 Não há cópia manual de arquivos. No REPL do Claude Code:
 
 ```
-/plugin marketplace add iuripereira/sdd-iuri
-/plugin install sdd-iuri@sdd-iuri
+/plugin marketplace add iuripereira/deltaspec
+/plugin install deltaspec@deltaspec
 ```
 
-Pronto — as 9 skills ficam disponíveis sob o namespace `sdd-iuri:`. Para atualizar depois: `/plugin update sdd-iuri`.
+Pronto — as 9 skills ficam disponíveis sob o namespace `deltaspec:`. Para atualizar depois: `/plugin update deltaspec`.
+
+#### Vindo do `sdd-iuri`? (migração para a v1.0.0)
+
+O framework se chamava `sdd-iuri` até a v1.0.0. O rename troca o **namespace de invocação**, então os comandos `/sdd-iuri:*` deixam de existir — não há camada de compatibilidade. Três passos:
+
+```
+/plugin marketplace remove sdd-iuri
+/plugin marketplace add iuripereira/deltaspec
+/plugin install deltaspec@deltaspec
+```
+
+Depois, em **cada projeto** que já usava o framework:
+
+1. Troque `/sdd-iuri:` por `/deltaspec:` no `CLAUDE.md` do projeto (e no `doc-profile.yaml`, se ele citar o nome).
+2. Se o hook pré-commit da `guarding-doc-integrity` estiver instalado, reconfigure a chave: `git config deltaspec.validator ${CLAUDE_PLUGIN_ROOT}/skills/guarding-doc-integrity/scripts/validate_integrity.py` — o hook já copiado segue funcionando com a chave antiga até você reinstalá-lo.
+3. **Não reescreva o histórico:** ADRs já `Accepted`, `specs/_archive/` e seções lançadas do `CHANGELOG.md` preservam o nome de época — é registro de quando a decisão foi tomada, não texto vigente. ([ADR-0016](docs/adrs/ADR-0016-rename-deltaspec.md))
 
 ### 2.2 Os motores de terceiros (1 comando, no terminal)
 
 O framework **orquestra**; plugins de terceiros **executam** as fases pesadas. Um comando instala todos:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/iuripereira/sdd-iuri/main/scripts/instala-motores.sh | bash
+curl -fsSL https://raw.githubusercontent.com/iuripereira/deltaspec/main/scripts/instala-motores.sh | bash
 ```
 
 (Com o repo clonado, chame [scripts/instala-motores.sh](scripts/instala-motores.sh) direto.)
@@ -109,7 +125,7 @@ pip install pypandoc-binary python-docx markdown   # + google-chrome para o PDF
 Um comando, uma vez por repositório:
 
 ```
-/sdd-iuri:projeto-init
+/deltaspec:projeto-init
 ```
 
 Ele detecta o tipo do projeto, gera o `CLAUDE.md` a partir das regras canônicas, cria o scaffold e confere se os motores estão instalados. **Nunca sobrescreve nada** — `CLAUDE.md` já existente vira `CLAUDE.generated.md` + diff, e você decide o merge.
@@ -117,7 +133,7 @@ Ele detecta o tipo do projeto, gera o `CLAUDE.md` a partir das regras canônicas
 Opcional, depois de criar o repo no GitHub:
 
 ```
-/sdd-iuri:projeto-infra
+/deltaspec:projeto-infra
 ```
 
 Branch protection, CI, Conventional Commits, release-please, review assistido. Idempotente: 2ª rodada = no-op relatado.
@@ -206,7 +222,7 @@ Há ainda o `Tipo: bugfix`: template próprio (sintoma, reprodução, causa-raiz
 
 ```mermaid
 flowchart LR
-    subgraph fw["sdd-iuri (orquestra)"]
+    subgraph fw["deltaspec (orquestra)"]
         c["ciclo + contratos<br>+ gates determinísticos"]
     end
     subgraph mot["motores (executam)"]
@@ -239,9 +255,9 @@ flowchart LR
     d --> d
 ```
 
-1. **`/sdd-iuri:projeto-init`** na pasta → tipo detectado (pasta vazia: ele pergunta), `CLAUDE.md` + scaffold.
-2. Crie o repo (`gh repo create ... --source .`) e rode **`/sdd-iuri:projeto-infra`**. *Rulesets exigem repo público ou GitHub Pro.*
-3. **`/sdd-iuri:spec-feature`** → a **delta-001 é sempre o walking skeleton**: a menor fatia vertical que funciona de ponta a ponta. Nunca "o sistema inteiro". Sua visão maior vira a seção "Não implementado" do `TRUTH.md`.
+1. **`/deltaspec:projeto-init`** na pasta → tipo detectado (pasta vazia: ele pergunta), `CLAUDE.md` + scaffold.
+2. Crie o repo (`gh repo create ... --source .`) e rode **`/deltaspec:projeto-infra`**. *Rulesets exigem repo público ou GitHub Pro.*
+3. **`/deltaspec:spec-feature`** → a **delta-001 é sempre o walking skeleton**: a menor fatia vertical que funciona de ponta a ponta. Nunca "o sistema inteiro". Sua visão maior vira a seção "Não implementado" do `TRUTH.md`.
 4. Repita por incremento. O `TRUTH.md` é a soma dos archives.
 
 ### 4.2 Projeto existente (brownfield)
@@ -269,7 +285,7 @@ flowchart LR
 Duas regras de higiene que sustentam tudo:
 
 - **1 sessão = 1 branch = 1 escopo.** Surgiu trabalho de outro escopo? Vira outra branch — ou uma linha `DT-NNN` no `DEBT.md`.
-- **Feche a sessão com `/sdd-iuri:handoff`.** O que você descobriu vai para os registros com dono, não para a memória da conversa.
+- **Feche a sessão com `/deltaspec:handoff`.** O que você descobriu vai para os registros com dono, não para a memória da conversa.
 
 ---
 
@@ -277,44 +293,44 @@ Duas regras de higiene que sustentam tudo:
 
 As 8 do ciclo, na ordem em que você as encontra:
 
-### `/sdd-iuri:projeto-init` — o ponto de partida
+### `/deltaspec:projeto-init` — o ponto de partida
 **Objetivo:** transformar uma pasta qualquer num projeto que segue as convenções.
 Detecta o tipo (`app-web` · `backend` · `site-estatico` · `workspace-dados` · `tooling`), monta o `CLAUDE.md` **copiando as regras canônicas** (não improvisando com conhecimento genérico do modelo), cria o scaffold (CHANGELOG, HANDOFF, DEBT, ADRs, `specs/` + `TRUTH.md` nos tipos com ciclo), oferece a infra e confere os plugins.
 **Quando:** uma vez por repositório. **Nunca sobrescreve nada.**
 
-### `/sdd-iuri:projeto-infra` — as travas do repositório
+### `/deltaspec:projeto-infra` — as travas do repositório
 **Objetivo:** deixar a `main` protegida e o PR com checks verdes.
 Branch protection via rulesets, CI, validação de Conventional Commits, release-please (changelog PT-BR), CodeRabbit/claude-code-action.
 **Quando:** depois de criar o remote no GitHub, ou avulsa em repo existente. Idempotente.
 **Requer:** `gh` autenticado + remote GitHub.
 
-### `/sdd-iuri:descoberta` — antes de existir spec
+### `/deltaspec:descoberta` — antes de existir spec
 **Objetivo:** impedir que presunção vire requisito.
 Inventaria insumos brutos (transcrição de reunião, planilha legada, vídeo, processo na cabeça de funcionários), minera o processo as-is num dossiê onde **todo claim carrega confiança e fonte rastreável** — `confirmado` (evidência direta), `inferido` (dedução) ou `lacuna` (requer humano). Popula `GLOSSARY.md`/`DATA_DICTIONARY.md`, aponta divergências contra a baseline vigente e gera a pauta de validação com o stakeholder (ritual *Mob Elaboration*). O que sai daqui para o PRD vem marcado `[PRESUNÇÃO]`.
 **Quando:** não há PRD validado, ou há material bruto para digerir.
 
-### `/sdd-iuri:spec-feature` — o coração
+### `/deltaspec:spec-feature` — o coração
 **Objetivo:** conduzir um incremento do specify ao PR, sem pular etapa.
 Cria `specs/NNN-nome/` com numeração global, abre a branch semântica, orquestra as fases delegando aos motores, roda os gates e, no archive, consolida o `TRUTH.md`.
 **Quando:** a cada incremento de feature. É o comando que você mais usa.
 
-### `/sdd-iuri:spec-review` — o advogado do diabo
+### `/deltaspec:spec-review` — o advogado do diabo
 **Objetivo:** achar o buraco na spec **antes** de virar código.
 Revisão adversarial de spec + plan via `max:grill-me`: premissas frágeis, estados de erro esquecidos, contratos externos. Produz achados + edições propostas em blocos antes/depois — **nunca aplica nada sem sua aprovação**.
 **Quando:** opcional, mas **recomendada** quando a spec toca segurança, dados persistentes, contrato externo ou dependência nova.
 *Diferença para o analyze:* o analyze checa **consistência mecânica** entre artefatos; o spec-review checa **mérito**.
 
-### `/sdd-iuri:guarding-doc-integrity` — o antídoto da duplicação
+### `/deltaspec:guarding-doc-integrity` — o antídoto da duplicação
 **Objetivo:** garantir que um valor de negócio duplicado em 5 arquivos não fique dessincronizado.
 Um assunto tem **um arquivo dono**; valor concreto só existe no dono + espelhos sancionados; o resto do repo linka. O mapa dono→espelhos vive num `deps.toml` versionado, e um validador determinístico roda como hook pré-commit **e** gate de sessão.
 **Quando:** o repo tem docs canônicos e um valor mudou. *Grep ad-hoc não é garantia; o script é.*
 
-### `/sdd-iuri:handoff` — o fim de sessão
+### `/deltaspec:handoff` — o fim de sessão
 **Objetivo:** que nada importante viva só na conversa.
 Atualiza o `HANDOFF.md` (diário de bordo, janela rolante), roteia débito/pendência/lição novo para o `DEBT.md` como `DT-NNN`, cita a delta em curso com fase e veredito do último gate, e imprime o prompt de retomada da próxima sessão.
 **Quando:** ao encerrar. Argumento opcional: o foco da próxima sessão.
 
-### `/sdd-iuri:doc-entregavel` — o documento que o cliente assina
+### `/deltaspec:doc-entregavel` — o documento que o cliente assina
 **Objetivo:** congelar um entregável em PDF/DOCX assinável.
 Renderiza os diagramas do `doc-profile.yaml`, monta o documento com capa de assinatura parametrizada e exporta versionado em `docs/entregaveis/`. Despacha por tipo: `prd-cliente`, `juridico-nda`, `juridico-contrato-ti`, `requisitos-cliente`.
 **Quando:** projeto com `publico.cliente: true`, no `momento` declarado no perfil.

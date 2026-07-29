@@ -6,7 +6,7 @@ Princípio: acoplamento = (i) **contrato na invocação** (instrução de format
 
 | Fase | Skill esperada | Ponto sensível a breaking change |
 |---|---|---|
-| descoberta (pré-specify) | `sdd-iuri:descoberta` (própria) · `max:write-prd` (motor do PRD) | nome da skill max; formato/local do PRD gerado |
+| descoberta (pré-specify) | `deltaspec:descoberta` (própria) · `max:write-prd` (motor do PRD) | nome da skill max; formato/local do PRD gerado |
 | clarify | `max:grill-me` · `max:grill-with-docs` | nome das skills; formato de ADR próprio do plugin |
 | plan | `superpowers:writing-plans` | local default de planos (`docs/superpowers/plans/`) e a frase "User preferences for plan location override this default" |
 | implement | `superpowers:executing-plans` · `superpowers:subagent-driven-development` · `superpowers:test-driven-development` · `superpowers:using-git-worktrees` | nomes das skills; obrigatoriedade de TDD |
@@ -17,7 +17,7 @@ Princípio: acoplamento = (i) **contrato na invocação** (instrução de format
 
 ## descoberta / write-prd (pré-specify — delta-012)
 
-- **Quando:** projeto sem PRD validado ou com insumos brutos de descoberta (transcrição, planilha legada, vídeo) — a `sdd-iuri:descoberta` roda antes do specify e produz o dossiê com claims tagueados (`confirmado`/`inferido`/`lacuna`).
+- **Quando:** projeto sem PRD validado ou com insumos brutos de descoberta (transcrição, planilha legada, vídeo) — a `deltaspec:descoberta` roda antes do specify e produz o dossiê com claims tagueados (`confirmado`/`inferido`/`lacuna`).
 - **Invocação (write-prd):** passe o dossiê como contexto com o contrato — *"claims `inferido`/`lacuna` entram no PRD marcados `[PRESUNÇÃO]`; só `confirmado`/validado entra sem marca"*. **Verificação pós-fase:** nenhum claim não-confirmado sem `[PRESUNÇÃO]` no PRD.
 - **Fallback (max ausente):** PRD rascunho nativo com a mesma regra de marcação e o aviso *"saída degradada: max/write-prd não instalado"*. A skill `descoberta` em si é própria do framework — não degrada.
 
@@ -25,12 +25,12 @@ Princípio: acoplamento = (i) **contrato na invocação** (instrução de format
 
 - **Invocação (clarify):** passe a delta spec rascunho como objeto da entrevista. Gatilhos para `grill-with-docs` (senão `grill-me`): contrato externo · modelo de dados persistente · dependência nova · segurança. Reporte a escolha ao usuário.
 - **Contrato ADR (grill-with-docs):** instrua na invocação — *"registre decisões como ADR usando o template `docs/adrs/ADR-TEMPLATE.md` deste projeto (PT-BR, imutável), na numeração existente"*. **Verificação pós-fase:** ADRs novos conformes ao template; não conformes → reformatar antes de prosseguir.
-- **Consolidação:** passo nativo (cycle.md) — `to-spec` não está no plugin instalado. Se for instalado no futuro, mesmo contrato: *"emita no formato delta-spec do sdd-iuri"* (fatoração upstream: ADR-0012).
+- **Consolidação:** passo nativo (cycle.md) — `to-spec` não está no plugin instalado. Se for instalado no futuro, mesmo contrato: *"emita no formato delta-spec do deltaspec"* (fatoração upstream: ADR-0012).
 - **Fallback (max ausente):** clarify próprio simplificado — cheque uma a uma as ambiguidades de **permissões, estados de erro, persistência, limites, concorrência** — com o aviso *"clarify degradado: max/grill-me não instalado"*.
 
 ## Superpowers
 
-- **plan:** input = delta spec pós-clarify (**a spec do sdd-iuri é a fonte da verdade; o brainstorming/spec do Superpowers não é**). Local: a preferência no CLAUDE.md (módulo sdd-ciclo) redireciona para `specs/NNN-nome/plan.md`; reforce na invocação. Formato: o dele, **sem pós-processamento**. **Pós-fase:** (1) plano no local certo — se foi para `docs/superpowers/plans/`, mova; (2) prependa o cabeçalho de `templates/resumo-plan.md`.
+- **plan:** input = delta spec pós-clarify (**a spec do deltaspec é a fonte da verdade; o brainstorming/spec do Superpowers não é**). Local: a preferência no CLAUDE.md (módulo sdd-ciclo) redireciona para `specs/NNN-nome/plan.md`; reforce na invocação. Formato: o dele, **sem pós-processamento**. **Pós-fase:** (1) plano no local certo — se foi para `docs/superpowers/plans/`, mova; (2) prependa o cabeçalho de `templates/resumo-plan.md`.
 - **implement:** TDD conforme a coluna `tdd` do tipo. `recomendado`/`off` → instrua na invocação a dispensa permitida, com justificativa registrada no plan.md por task dispensada. Unidades paralelizáveis (cycle.md, "Execução paralela por unidades") → um subagente com worktree por unidade (superpowers:using-git-worktrees); sem subagentes/worktree → sequencial topológico com aviso.
 - **Fallback (superpowers ausente):** gere `plan.md` próprio (cabeçalho-resumo + plano detalhado com caminhos e verificação por passo) e rode o implement inline, com o aviso *"plan degradado: superpowers/writing-plans não instalado"*. O fallback **não substitui a fase tasks**: `tasks.md` continua sendo gerado dele (o analyze depende do tasks.md).
 - **Fallback do review eixo Spec (superpowers ausente):** conduza a conferência inline — cada Rn/RNFn da spec confrontado com o diff da delta, com veredito por requisito — e registre o aviso *"review eixo Spec degradado: superpowers/requesting-code-review não instalado"*. O eixo Qualidade segue o fallback do ponytail abaixo.

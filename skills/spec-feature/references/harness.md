@@ -1,9 +1,9 @@
 # Harness — vocabulário canônico do framework
 
-<!-- Dono único dos termos de harness engineering que o sdd-iuri pratica (delta-016).
+<!-- Dono único dos termos de harness engineering que o deltaspec pratica (delta-016).
      Skills e docs citam o termo e linkam este arquivo; não redefinem (regra de ouro). -->
 
-O sdd-iuri é um **harness**: a estrutura determinística — skills, gates, registros
+O deltaspec é um **harness**: a estrutura determinística — skills, gates, registros
 com dono — que envolve o agente e torna o trabalho verificável, auditável e
 retomável entre sessões. Termos canônicos:
 

@@ -1,13 +1,13 @@
 ---
 name: doc-entregavel
-description: Use when producing or exporting a frozen client deliverable — a PDF/DOCX with signature cover and embedded diagrams from a project whose doc-profile.yaml declares publico.cliente true, or a legal-commercial document (NDA, IT services contract, client requirements/vision document). Triggers include "/sdd-iuri:doc-entregavel", "exportar entregável", "gerar PDF para o cliente", "documento para assinatura", "congelar o PRD", "gerar NDA", "acordo de confidencialidade", "minuta de contrato", "contrato de prestação de serviços", "documento de requisitos para o cliente", "proposta com orçamento e cronograma", or the visual-documentation gate of the sdd-iuri spec flow.
+description: Use when producing or exporting a frozen client deliverable — a PDF/DOCX with signature cover and embedded diagrams from a project whose doc-profile.yaml declares publico.cliente true, or a legal-commercial document (NDA, IT services contract, client requirements/vision document). Triggers include "/deltaspec:doc-entregavel", "exportar entregável", "gerar PDF para o cliente", "documento para assinatura", "congelar o PRD", "gerar NDA", "acordo de confidencialidade", "minuta de contrato", "contrato de prestação de serviços", "documento de requisitos para o cliente", "proposta com orçamento e cronograma", or the visual-documentation gate of the deltaspec spec flow.
 ---
 
 # doc-entregavel
 
 ## Overview
 
-Exporta o **entregável congelado para o cliente**: renderiza os diagramas declarados no `doc-profile.yaml`, monta o documento final (PRD/spec + diagramas embutidos + capa de assinatura) e exporta **PDF e/ou DOCX** em `docs/entregaveis/`. Generalização do pipeline validado nos PRDs e contratos IMEX. Documentação cliente é **isenta da economia de tokens** (exceção registrada na ADR-0009 do sdd-iuri) — completude e fidelidade visual dominam; a renderização é via CLI, o custo de tokens é marginal.
+Exporta o **entregável congelado para o cliente**: renderiza os diagramas declarados no `doc-profile.yaml`, monta o documento final (PRD/spec + diagramas embutidos + capa de assinatura) e exporta **PDF e/ou DOCX** em `docs/entregaveis/`. Generalização do pipeline validado nos PRDs e contratos IMEX. Documentação cliente é **isenta da economia de tokens** (exceção registrada na ADR-0009 do deltaspec) — completude e fidelidade visual dominam; a renderização é via CLI, o custo de tokens é marginal.
 
 Distinção central (ADR-0009): documentação **interna** é viva (Mermaid inline, mantida junto do código); o **entregável** é congelado — exportado em momento definido, versionado no nome do arquivo, re-assinado a cada baseline. **Nunca sobrescreva um entregável já enviado**: nova baseline → novo arquivo → nova assinatura.
 
@@ -39,14 +39,14 @@ Identifique o `tipo` antes de qualquer coisa; pergunte **uma** vez, com opções
      `docker run --rm -u $(id -u):$(id -g) -v "$PWD":/data plantuml/plantuml -tsvg arq.puml`
    - `.d2` → `d2 arq.d2 arq.svg`
    - `.excalidraw` → `npx -y excalidraw-brute-export-cli -i arq.excalidraw --format png --scale 2 -o arq.png --quiet` (headless via Playwright; na primeira vez `npx -y playwright install firefox`)
-   Ferramenta ausente → reporte o comando de instalação (seção de setup do README do sdd-iuri) e pergunte se segue sem o diagrama — **nunca entregue silenciosamente incompleto**.
+   Ferramenta ausente → reporte o comando de instalação (seção de setup do README do deltaspec) e pergunte se segue sem o diagrama — **nunca entregue silenciosamente incompleto**.
    **A ferramenta segue a categoria do diagrama** (tabela do ADR-0009): não reaproveite um diagrama pronto de outra categoria — arquitetura C4 em Mermaid migra para Structurizr DSL antes do export.
    SVG que precise virar PNG (docx): `rsvg-convert -z 2 arq.svg -o arq.png`; sem rsvg-convert, embrulhe num HTML mínimo (`<img src="arq.svg">`, margin 0) e capture com `google-chrome --headless=new --screenshot --hide-scrollbars --window-size=<LxA nativo do SVG>` — screenshot do SVG "cru" corta e captura scrollbar.
 3. **Montar o markdown final**: documento base (PRD.md ou o que o usuário indicar) com os diagramas referenciados como imagem markdown — SVG no pdf, PNG no docx:
    ```markdown
    ![Arquitetura]({{saida do perfil}}/arquitetura.svg)
    ```
-   PRD no padrão sdd-iuri (seções "Requisitos Funcionais"/"Requisitos Não Funcionais", localizadas pelo título — independem da numeração)? Aplique antes o **formato cliente**: `scripts/tabela_cliente.py entrada.md saida.md` tabela os cenários DADO/QUANDO/ENTÃO (Pré-condição · Ação · Resultado esperado) e os RNFs (Métrica · Verificação), e corrige o achatamento de listas do caminho pdf (indentação 2→4 — python-markdown só aninha com 4 espaços); paridade garantida por assert. Confirme com o usuário versão e data da baseline — **a data da capa é a da baseline do PRD** (a que o contrato pina), não a do export.
+   PRD no padrão deltaspec (seções "Requisitos Funcionais"/"Requisitos Não Funcionais", localizadas pelo título — independem da numeração)? Aplique antes o **formato cliente**: `scripts/tabela_cliente.py entrada.md saida.md` tabela os cenários DADO/QUANDO/ENTÃO (Pré-condição · Ação · Resultado esperado) e os RNFs (Métrica · Verificação), e corrige o achatamento de listas do caminho pdf (indentação 2→4 — python-markdown só aninha com 4 espaços); paridade garantida por assert. Confirme com o usuário versão e data da baseline — **a data da capa é a da baseline do PRD** (a que o contrato pina), não a do export.
 
    **Regras de página (pdf):**
    - **Tabela inteira numa página** quando couber (`break-inside: avoid` já no CSS do exportador); se não couber, a quebra nunca corta uma linha ao meio e o cabeçalho repete na página seguinte (no docx, `cantSplit`/`tblHeader` aplicados pelo script).
@@ -98,4 +98,4 @@ Identifique o `tipo` antes de qualquer coisa; pergunte **uma** vez, com opções
 
 - `references/juridico.md` — regras de **conteúdo** dos tipos `juridico-nda`, `juridico-contrato-ti` e `requisitos-cliente`: minuta e disclaimers, formatação de mercado (não ABNT), eficácia executiva (testemunhas, assinatura eletrônica, RTD), estrutura canônica, cláusulas obrigatórias por tipo, duas versões do documento de requisitos (com orçamento, prazo e cronograma obrigatórios) e checklist de eficácia. Base jurídica datada.
 - `scripts/exporta_entregavel.py` — md → docx (pypandoc + python-docx) e md → pdf (markdown → HTML+CSS → chrome headless), capa parametrizada, corpo justificado e Sumário formato contrato (pdf em 2 passadas com nº de página; docx via campo TOC do Word). `--selftest` valida o próprio script (inclui Sumário com nº de página no pdf e justificação no docx).
-- `scripts/tabela_cliente.py` — formato cliente para PRD sdd-iuri: cenários e RNFs das seções de RF/RNF (localizadas pelo título, independentes da numeração) viram tabelas (Pré-condição · Ação · Resultado esperado; Métrica · Verificação); indentação aninhada corrigida para o caminho pdf. `--selftest` valida o próprio script.
+- `scripts/tabela_cliente.py` — formato cliente para PRD deltaspec: cenários e RNFs das seções de RF/RNF (localizadas pelo título, independentes da numeração) viram tabelas (Pré-condição · Ação · Resultado esperado; Métrica · Verificação); indentação aninhada corrigida para o caminho pdf. `--selftest` valida o próprio script.

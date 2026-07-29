@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Instala os motores de terceiros que o ciclo sdd-iuri delega.
+# Instala os motores de terceiros que o ciclo deltaspec delega.
 # Degradação graciosa: falha em um motor não interrompe os demais.
 set -u
 

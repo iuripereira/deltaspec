@@ -1,4 +1,4 @@
-# Ciclo sdd-iuri — máquina de estados e fases
+# Ciclo deltaspec — máquina de estados e fases
 
 ## Estados da delta (vivem no cabeçalho do `spec.md`)
 

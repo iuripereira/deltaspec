@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Gate determinístico do ciclo sdd-iuri — checa o que é mecânico numa delta spec.
+"""Gate determinístico do ciclo deltaspec — checa o que é mecânico numa delta spec.
 Saída parcial: os checks 3 e 5 do analyze (scope creep, regra canônica) continuam humanos.
 
 Automatiza os checks 1 e 2 do analyze (references/analyze.md), o estado ×
