@@ -8,6 +8,10 @@ O formato segue [Keep a Changelog 1.0.0](https://keepachangelog.com/pt-BR/1.0.0/
 
 ## [Não lançado]
 
+### Adicionado
+
+- **`SECURITY.md` no padrão da comunidade** (pesquisa em claude-code, OpenSpec, Electron e Express): reporte privado via GitHub Security Advisories (nunca issue pública), SLA explícito (confirmação ≤ 3 dias úteis, correção ou decisão ≤ 30 dias), versões suportadas = última tag apenas (sem tabela fictícia de versões), e modelo de ameaça de ferramenta local com tabela escopo/fora de escopo — vulnerabilidade do Claude Code em si é redirecionada ao HackerOne da Anthropic. As práticas de desenvolvimento seguem referenciadas no CLAUDE.md (regra de ouro, sem duplicação).
+
 ### Mudado
 
 - **README reescrito como quickstart**, mais curto e em linguagem direta: 8 seções (o problema · instalação · comece um projeto · o ciclo · o dia a dia · as skills · as checagens · onde cada coisa mora) em vez do guia longo, com o jargão traduzido ("o que vale hoje" no lugar de "o que vige", "checagem automática" no lugar de "gate determinístico", "roda de novo sem estragar" no lugar de "idempotência defensiva"). As 9 skills viraram **uma tabela que linka para cada `SKILL.md`** — a explicação de cada skill continua com um dono só, o próprio `SKILL.md` (regra de ouro; padrão das Agent Skills), em vez de um `README.md` por skill que duplicaria o texto.
