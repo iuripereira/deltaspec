@@ -5,6 +5,7 @@
 **Atualizado em:** 2026-07-30
 
 ## Agora
+- **delta-020 em curso (apresentação: Figma → diagram-design + design-sync).** Perfil enxuto aprovado (2026-07-30), analyze LIBERADO COM RESSALVAS (só a dispensa de test-plan sancionada), implement completo (ADR-0018 supersede a 0015; adapters, doc-profile template, doc-entregavel e cycle atualizados), review fundido APROVADO COM AJUSTES (aplicados). Falta: PR da implementação → merge → archive (MUDA R45/R46 no TRUTH, quitar DT-014) → tag `v1.1.0`.
 - **Rename concluído no framework, faltando 3 consumidores.** delta-019 arquivada, `v1.0.0` publicada, plugin local reinstalado sob o nome novo (9 skills, `deltaspec@deltaspec`) e, em 2026-07-29, os **6 PRs de migração mergeados** — mas o inventário real é de **10 consumidores**, e `~/code/imex`, `radar-financeiro` e `imex-nao-conformidade` seguem apontando para `sdd-iuri` (detalhe nos próximos passos). Entre os 6 ia o conserto de um gate que o rename tinha quebrado em silêncio (`validate_docs.sh` resolvia o validador por `marketplaces/sdd-iuri/`, caía no AVISO e saía 0, deixando todo commit passar sem validação).
 - Do plano de upgrade resta só a **Fase 4 (delta-017, Jira/tickets.md — número reservado, R5)**, adiada por decisão do usuário (2026-07-28: "não será necessária agora"). Inclui o gatilho de reavaliação do fork do max (ADR-0012).
 

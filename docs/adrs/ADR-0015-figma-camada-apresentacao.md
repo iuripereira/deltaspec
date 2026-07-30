@@ -3,7 +3,7 @@
 - **Status:** Accepted (2026-07-28, delta-018)
 - **Data:** 2026-07-28
 - **Supersedes:** — (complementa a ADR-0009, imutável — mesmo mecanismo da categoria `prototipo`, ADR-0013)
-- **Superseded by:** —
+- **Superseded by:** [ADR-0018](ADR-0018-diagram-design-camada-apresentacao.md) (2026-07-30, delta-020)
 
 ## Context
 

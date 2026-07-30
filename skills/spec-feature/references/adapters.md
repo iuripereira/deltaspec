@@ -12,7 +12,7 @@ Princípio: acoplamento = (i) **contrato na invocação** (instrução de format
 | implement | `superpowers:executing-plans` · `superpowers:subagent-driven-development` · `superpowers:test-driven-development` · `superpowers:using-git-worktrees` | nomes das skills; obrigatoriedade de TDD |
 | review | `superpowers:requesting-code-review` (eixo Spec) · `ponytail:ponytail-review` (eixo Qualidade) — paralelos | nomes; formato da delete-list |
 | contexto de codebase (descoberta · specify/plan · review) — opcional | `graphify` (CLI/MCP externo, não é plugin Claude) | nomes dos comandos `query`/`path`/`explain`; formato das tags de confiança; instalador (escreve hook/CLAUDE.md — nunca usar) |
-| apresentação a cliente (categoria `apresentacao`) — opcional | Figma MCP (`generate_diagram`, serviço remoto) | `generate_diagram` é beta e "will eventually be a usage-based paid feature"; só FigJam, ~6 tipos de `.mmd` |
+| apresentação a cliente/gestão/stakeholder (categoria `apresentacao`) — opcional | `diagram-design` (plugin de terceiro, local) · `design-sync` (ferramenta do harness + serviço claude.ai) | nomes/estrutura da skill diagram-design (27 tipos, HTML+SVG, `diagram-design:export` via Playwright); design-sync exige login claude.ai com escopo design e o fluxo list → plan → write |
 | transversal | `ponytail:ponytail` (hook always-on) | nível default; `PONYTAIL_SUBAGENT_MATCHER` |
 
 ## descoberta / write-prd (pré-specify — delta-012)
@@ -67,13 +67,14 @@ Camada de contexto para as fases que leem código em projeto-alvo grande/brownfi
 - **Fallback (ausente ou desabilitado):** fluxo atual (grep/Explore) com no máximo
   1 linha de aviso — degradação graciosa (RNF2).
 
-## Figma MCP (apresentação a cliente — delta-018, opcional)
+## diagram-design + design-sync (apresentação a cliente/gestão/stakeholder — delta-020, opcional)
 
-Materializa o `.mmd` fonte no FigJam para acabamento de apresentação (categoria `apresentacao` do doc-profile — ADR-0015). **Unidirecional por design:** o `.mmd` em git é a única fonte; edição no Figma nunca retorna; em divergência, o `.mmd` governa e re-materializa.
+Materializa o `.mmd` fonte como diagrama editorial **HTML+SVG autocontido e brandado** (categoria `apresentacao` do doc-profile — ADR-0018). **Unidirecional por design:** o `.mmd` em git é a única fonte de conteúdo; edição na materialização (HTML ou projeto claude.ai/design) nunca retorna; em divergência, o `.mmd` governa e re-materializa.
 
-- **Invocação:** `generate_diagram` com o conteúdo do `.mmd` versionado; retoque manual depois, só na cópia de apresentação. Tipo de `.mmd` não suportado (~6 aceitos) → render CLI + imagem colada no FigJam.
-- **Fora do caminho crítico:** o entregável congelado (doc-entregavel) segue exclusivamente no pipeline CLI — a camada Figma nunca entra no export assinável.
-- **Fallback (MCP ausente/não autenticado ou categoria não declarada):** fluxo atual com no máximo 1 linha de aviso (RNF2).
+- **Invocação (geração):** skill `diagram-design` com o conteúdo do `.mmd` versionado como fonte; identidade visual via onboarding da skill (site do cliente/projeto) ou tokens do doc-profile — ausente, paleta default sem bloquear. Saída versionável em `docs/apresentacao/`.
+- **Invocação (publicação):** `design-sync` publica os HTML num projeto claude.ai/design, **incremental** (list → plan → write, nunca replace integral) e **só por pedido explícito do usuário** — nunca automática.
+- **Fora do caminho crítico:** o entregável congelado (doc-entregavel) segue exclusivamente no pipeline CLI; acabamento da camada entra no congelado só pelo caminho reprodutível `diagram-design:export` (HTML → PNG/SVG via Playwright) com a imagem embutida no pipeline.
+- **Fallback (plugin ausente, design-sync sem autorização claude.ai, ou categoria não declarada):** fluxo atual (render CLI do Mermaid) com no máximo 1 linha de aviso (RNF2).
 
 ## Política de dependência (versões)
 
@@ -83,7 +84,8 @@ Materializa o `.mmd` fonte no FigJam para acabamento de apresentação (categori
 | `superpowers@claude-plugins-official` | 6.1.1 | faixa 6.x | 2026-07-28 (upstream 6.2.0 de 2026-07-24 — dentro da faixa, não testada) | **não forkável** — dependência real; mitigação = fallbacks acima |
 | `ponytail@ponytail` | 4.8.4 | faixa 4.x | 2026-07-28 | forkável (ruleset markdown + hook simples) |
 | `graphify` (CLI externo) | — (não testada — contrato definido pela doc upstream) | pin por tag na primeira adoção real | 2026-07-28 (release quase diária, bus factor = 1) | opcional com degradação total: ausente, nada do ciclo quebra; a primeira adoção real define o pin e valida o contrato |
-| Figma MCP (`generate_diagram`) | n/a — serviço remoto (beta, sem versão pinável) | acompanhar anúncio de preço (gatilho no DT roteado pela delta-018) | 2026-07-28 (contrato pela doc primária do MCP) | opcional com degradação total: ausente, o pipeline CLI cobre; breaking/preço → reavaliar a categoria |
+| `diagram-design` (plugin de terceiro) | — (não testada — contrato pela doc upstream) | pin por commit/tag na primeira adoção real (mesmo padrão do graphify) | 2026-07-30 (MIT, bus factor = 1) | opcional com degradação total: ausente, o render CLI cobre; a primeira adoção real define o pin e valida o contrato |
+| `design-sync` (ferramenta do harness + serviço claude.ai) | n/a — serviço remoto, sem versão pinável | acompanhar o fluxo list → plan → write na doc da ferramenta | 2026-07-30 (contrato pela doc da ferramenta) | opcional com degradação total: sem login/escopo design, a camada fica local (HTML versionado em git) |
 
 Re-verificação: toda delta que tocar este arquivo atualiza a coluna "Verificado em" dos motores que conferir.
 
