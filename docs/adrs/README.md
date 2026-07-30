@@ -22,9 +22,10 @@ Escreva uma ADR quando a **renúncia de uma alternativa** precisa registrar o *p
 | [0012](ADR-0012-recontratacao-motores.md) | Pin do max é fork deliberado — divergência upstream documentada, migração com gatilho | Accepted | 2026-07-28 |
 | [0013](ADR-0013-selecao-adaptativa-e-bugfix.md) | Seleção adaptativa por perfil da delta, prototipação opt-in e bugfix de pipeline curto | Accepted | 2026-07-28 |
 | [0014](ADR-0014-harness-paralelismo-e-graphify.md) | Grafo de tasks no repo, auditoria distribuída nos artefatos e graphify como motor opcional | Accepted | 2026-07-28 |
-| [0015](ADR-0015-figma-camada-apresentacao.md) | Figma como camada de apresentação — Mermaid permanece a fonte da verdade | Accepted | 2026-07-28 |
+| [0015](ADR-0015-figma-camada-apresentacao.md) | Figma como camada de apresentação — Mermaid permanece a fonte da verdade | Superseded by 0018 | 2026-07-28 |
 | [0016](ADR-0016-rename-deltaspec.md) | O framework passa a se chamar `deltaspec` | Accepted | 2026-07-28 |
 | [0017](ADR-0017-claude-code-only.md) | Portabilidade multi-agente — Claude Code only, por enquanto | Accepted | 2026-07-30 |
+| [0018](ADR-0018-diagram-design-camada-apresentacao.md) | diagram-design + design-sync como camada de apresentação — Mermaid permanece a fonte | Accepted | 2026-07-30 |
 
 > ADR-0002 a 0006 são **backfill** (2026-07-19): decisões que já vigiam, registradas retroativamente na varredura de registros do repo. A data de cada uma aproxima a decisão real pelo histórico disponível — o histórico pré-plugin foi reescrito (`filter-repo`), então decisões anteriores podem ser mais antigas do que a data registrada.
 
