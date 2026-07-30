@@ -8,6 +8,10 @@ O formato segue [Keep a Changelog 1.0.0](https://keepachangelog.com/pt-BR/1.0.0/
 
 ## [Não lançado]
 
+### Adicionado
+
+- **Abertura à comunidade (DT-015): README em inglês, guia de contribuição e código de conduta** — `README.en.md` como espelho sancionado do `README.md` (tradução integral com nota de sincronia e seletor de idioma nos dois); `CONTRIBUTING.md` com o fluxo (fork → branch por escopo → Conventional Commits → PR com checks → squash), a regra do ciclo para mudanças em `skills/` e resumo em EN; `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1, tradução oficial pt-BR). As skills permanecem em PT-BR por convenção registrada no CLAUDE.md.
+
 ## [1.1.0] - 2026-07-30
 
 ### Adicionado
