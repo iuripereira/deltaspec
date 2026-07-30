@@ -1,5 +1,5 @@
 # delta-020 — apresentação por diagram-design + design-sync
-Estado: proposta · Data: 2026-07-30 · Branch: feat/020-apresentacao-diagram-design · Perfil: enxuto — troca de motor em camada opcional fora do caminho crítico, sem código de gate; mesmo perímetro da delta-018 (aprovado: 2026-07-30)
+Estado: arquivada · Data: 2026-07-30 · Branch: feat/020-apresentacao-diagram-design · Perfil: enxuto — troca de motor em camada opcional fora do caminho crítico, sem código de gate; mesmo perímetro da delta-018 (aprovado: 2026-07-30)
 <!-- Perfil (R1, delta-015): regras e sintaxe de dispensa na tabela "Perfil de execução" do cycle.md; sem campo = completo; só vale com a aprovação do usuário registrada -->
 Test-plan: dispensado — mudança é texto de contrato/skill, sem lógica nova; verificação = gate C1–C10 + grep de menção (mesma dispensa sancionada na delta-018)
 

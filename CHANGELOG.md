@@ -8,6 +8,8 @@ O formato segue [Keep a Changelog 1.0.0](https://keepachangelog.com/pt-BR/1.0.0/
 
 ## [Não lançado]
 
+## [1.1.0] - 2026-07-30
+
 ### Adicionado
 
 - **`SECURITY.md` no padrão da comunidade** (pesquisa em claude-code, OpenSpec, Electron e Express): reporte privado via GitHub Security Advisories (nunca issue pública), SLA explícito (confirmação ≤ 3 dias úteis, correção ou decisão ≤ 30 dias), versões suportadas = última tag apenas (sem tabela fictícia de versões), e modelo de ameaça de ferramenta local com tabela escopo/fora de escopo — vulnerabilidade do Claude Code em si é redirecionada ao HackerOne da Anthropic. As práticas de desenvolvimento seguem referenciadas no CLAUDE.md (regra de ouro, sem duplicação).
