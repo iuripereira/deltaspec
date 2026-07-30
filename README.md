@@ -2,11 +2,13 @@
 
 **Spec-Driven Development por delta specs**, para o [Claude Code](https://claude.com/claude-code).
 
+**[Read in English](README.en.md)**
+
 Em vez de manter um documento de requisitos gigante que envelhece mal, cada feature escreve **só o que muda**. Um único arquivo — o `specs/TRUTH.md` — guarda o que vale hoje.
 
 > **É o git, aplicado a requisitos.** Cada feature é um *commit* de spec (ADICIONA / MUDA / REMOVE). O `TRUTH.md` é o *working tree*: o estado atual, com todos os commits já aplicados. As specs antigas vão para `specs/_archive/` — elas são histórico, não verdade.
 
-`v1.0.0` · 9 skills · Licença MIT
+`v1.1.0` · 9 skills · Licença MIT
 
 ---
 
