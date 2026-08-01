@@ -8,6 +8,8 @@ O formato segue [Keep a Changelog 1.0.0](https://keepachangelog.com/pt-BR/1.0.0/
 
 ## [Não lançado]
 
+## [1.4.0] - 2026-08-01
+
 ### Adicionado
 
 - **Dívida técnica com score determinístico e projeção para tickets** (delta-023, R1–R3 — [ADR-0020](docs/adrs/ADR-0020-modelo-de-divida-tecnica.md) e [ADR-0021](docs/adrs/ADR-0021-projecao-de-tickets.md)): o `DEBT.md` ganha `Título`, `Local`, `Fila` (`P·J·Pr`) e `Externo`, mais os estados `aceito`, `vigente` e `descartado`. O score `(juros × probabilidade) / principal` é calculado na leitura pelo novo `skills/handoff/scripts/debito.py` e **nunca gravado**; a probabilidade é conferida contra o churn real do git. O mesmo script exporta o JSON canônico e os dialetos de importação (bulk do Jira, linhas do GitHub) e compara o registro com o estado da ferramenta — **sem tocar a rede**: quem executa os comandos é a skill, no padrão do `projeto-infra`. Política de fila (override, trilha planejada, aging, aceitação) em `skills/handoff/references/debito.md`.
