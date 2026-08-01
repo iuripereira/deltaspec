@@ -53,8 +53,14 @@ FILA = re.compile(r"^P([139])·J([139])·Pr([139])(?:\s*·\s*(.+))?$")
 OVERRIDE = re.compile(r"^!(\w+)\((\d{4}-\d{2}-\d{2})\)$")
 DATA = re.compile(r"\d{4}-\d{2}-\d{2}")  # data obrigatória em quitado/descartado (R18)
 LINK_MD = re.compile(r"\[[^\]]*\]\(([^)\s]+)\)")
-CELULA = re.compile(r"(?<!\\)\|")  # separador de coluna; `\|` escapado não separa
 TRILHA = "trilha"
+
+# Gramática do bloco (delta-024). Todas ancoradas em início de linha: campo citado
+# na prosa da descrição não é campo — a lição de 2026-07-28, agora em forma de bloco.
+BLOCO = re.compile(r"^###\s+(DT-\d+)\s*·\s*([^·\n]+?)\s*·\s*([^·\n]+?)\s*$", re.M)
+TITULO = re.compile(r"^\*\*(.+?)\*\*\s*$", re.M)
+CAMPO = re.compile(r"^-\s+\*\*([^:*]+):\*\*\s*(.*)$", re.M)
+TABELA_ANTIGA = re.compile(r"^\|\s*DT-\d+\s*\|", re.M)
 
 
 def die(msg: str) -> None:
@@ -62,33 +68,35 @@ def die(msg: str) -> None:
     sys.exit(2)
 
 
-def parse_tabela(texto: str) -> list:
-    """Linhas da tabela `## Registro` como dicionários, lidos pela POSIÇÃO da coluna.
+def parse_blocos(texto: str) -> list:
+    """Blocos `### DT-NNN · natureza · estado` como dicionários.
 
-    O mapa nome→índice vem do cabeçalho da tabela; nenhum campo é procurado por
-    busca de texto na linha. Sem isso, prosa dentro de uma célula (a palavra
-    'aberto' no texto de um item quitado, por exemplo) seria lida como o campo —
-    é a lição de 2026-07-28, que já custou dois falsos positivos em outros gates.
+    Cada peça vem de uma âncora de início de linha: o cabeçalho do `###`, o título
+    do primeiro `**negrito**` e os campos de `- **Nome:** valor`. Nada é procurado
+    por busca solta — prosa que mencione a sintaxe (a palavra "aberto" no meio de
+    uma descrição, um `- **Fila:**` citado como exemplo) não pode virar campo. É a
+    lição de 2026-07-28, que já custou falsos positivos em três gates diferentes.
     """
-    linhas = [l for l in texto.splitlines() if l.lstrip().startswith("|")]
-    if not linhas:
-        return []
-    cabecalho = [c.strip() for c in CELULA.split(linhas[0])[1:-1]]
-    mapa = {nome.lower(): i for i, nome in enumerate(cabecalho)}
+    marcas = list(BLOCO.finditer(texto))
     itens = []
-    for linha in linhas[1:]:
-        celulas = [c.strip().replace("\\|", "|") for c in CELULA.split(linha)[1:-1]]
-        if len(celulas) != len(cabecalho) or set(celulas[0]) <= set("-: "):
-            continue  # separador do markdown ou linha malformada
-        item = {nome: celulas[i] for nome, i in mapa.items() if i < len(celulas)}
-        if item.get("id", "").startswith("DT-"):
-            itens.append(item)
+    for i, m in enumerate(marcas):
+        corpo = texto[m.end():marcas[i + 1].start() if i + 1 < len(marcas) else len(texto)]
+        item = {"id": m.group(1), "natureza": m.group(2).strip(), "status": m.group(3).strip()}
+        # O título é a primeira linha em negrito; a descrição é o que vem antes do
+        # primeiro campo, sem o título — prosa livre, quantas linhas precisar.
+        t = TITULO.search(corpo)
+        item["título"] = t.group(1).strip() if t else ""
+        antes = corpo[:CAMPO.search(corpo).start()] if CAMPO.search(corpo) else corpo
+        item["descrição"] = (antes.replace(t.group(0), "", 1) if t else antes).strip()
+        for campo, valor in CAMPO.findall(corpo):
+            item[campo.strip().lower()] = valor.strip()
+        itens.append(item)
     return itens
 
 
 def estado(item: dict) -> str:
-    """Primeira palavra da célula de status — 'quitado (data, ref) — prosa' → 'quitado'."""
-    return item.get("status", "").split("(")[0].strip().lower().split(" ")[0]
+    """Estado do cabeçalho do bloco, normalizado."""
+    return item.get("status", "").strip().lower()
 
 
 def parse_fila(valor: str):
@@ -97,7 +105,7 @@ def parse_fila(valor: str):
     O vocabulário de override é fechado: `!segurança-com-typo(data)` seria aceito em
     silêncio e rebaixaria um impedimento à prioridade de trilha (achado do review).
     """
-    m = FILA.match(valor.strip())
+    m = FILA.match(valor.strip().strip("`").strip())  # crase é formatação, não conteúdo
     if not m:
         return None
     principal, juros, prob = (int(m.group(i)) for i in (1, 2, 3))
@@ -124,17 +132,8 @@ def score(principal: int, juros: int, prob: int) -> float:
     return (juros * prob) / principal
 
 
-def legado(item: dict) -> bool:
-    """Linha do formato anterior à delta-023 (tabela sem a coluna `Fila`).
-
-    Projeto scaffoldado antes desta delta continua válido: o registro vale sozinho e
-    só a fila se omite — retrocompatível sem migração, como o `dep:` do tasks.md (R40).
-    """
-    return "fila" not in item
-
-
 def pontuavel(item: dict) -> bool:
-    return (not legado(item) and item.get("natureza", "") in NATUREZAS_PONTUAVEIS
+    return (item.get("natureza", "") in NATUREZAS_PONTUAVEIS
             and estado(item) in ESTADOS_ATIVOS)
 
 
@@ -147,21 +146,21 @@ def validar(itens: list, root: Path) -> list:
             erros.append(f"{ident}: status '{st or 'vazio'}' fora do conjunto "
                          f"{', '.join(ESTADOS_ATIVOS + ESTADOS_FINAIS)}")
             continue
-        if st == "aceito" and item.get("gatilho de correção", "") in VAZIO:
-            erros.append(f"{ident}: status 'aceito' exige gatilho de reavaliação")
-        if st in ESTADOS_FINAIS and not DATA.search(item.get("status", "")):
-            erros.append(f"{ident}: status '{st}' exige data (AAAA-MM-DD) — R18")
-        if legado(item):
-            continue  # tabela anterior à delta-023: só o registro vale, a fila se omite
+        if st == "aceito" and item.get("gatilho", "") in VAZIO:
+            erros.append(f"{ident}: estado 'aceito' exige o campo Gatilho (reavaliação)")
+        if st in ESTADOS_FINAIS and not DATA.search(item.get("encerrado", "")):
+            erros.append(f"{ident}: estado '{st}' exige o campo Encerrado com data e ref — R18")
         if item.get("natureza") == "guarda" and item.get("fila", "") not in VAZIO:
-            erros.append(f"{ident}: guarda não tem principal nem juros — 'Fila' deve ficar '—'")
+            erros.append(f"{ident}: guarda não tem principal nem juros — não declare Fila")
         if not pontuavel(item):
             continue
         if item.get("título", "") in VAZIO:
-            erros.append(f"{ident}: 'Título' vazio — o ticket precisa de um sintoma observável")
+            erros.append(f"{ident}: título vazio — o ticket precisa de um sintoma observável")
+        if item.get("gatilho", "") in VAZIO:
+            erros.append(f"{ident}: campo Gatilho ausente — sem ele o item nunca é reavaliado")
         local = item.get("local", "")
         if local in VAZIO:
-            erros.append(f"{ident}: 'Local' vazio — dívida sem localização não é acionável")
+            erros.append(f"{ident}: campo Local ausente — dívida sem localização não é acionável")
         else:
             for alvo in LINK_MD.findall(local):
                 if not (root / alvo.split("#")[0]).exists():
@@ -204,11 +203,12 @@ def prob_do_churn(caminho: str, contagem):
 
 
 def dias_parado(root: Path, ident: str, hoje: date):
-    """Dias desde o último commit que tocou a linha do item — base do 'stale'.
+    """Dias desde a última mudança no **cabeçalho** do item — base do 'stale'.
 
-    `-G` e não `-S`: o pickaxe (`-S`) só conta quando a string passa a existir ou
-    deixa de existir, então editar a linha de um item já registrado não contaria e o
-    `stale` nunca sairia. `-G` casa qualquer diff que mencione o ID.
+    O ID só aparece na linha `### DT-NNN · natureza · estado`, então `-G` casa
+    exatamente as mudanças de estado e natureza — que é o que "parado" quer dizer:
+    editar a prosa da descrição não é decidir, e não deve reiniciar o relógio.
+    (`-G` e não `-S`: o pickaxe só conta quando a string passa a existir ou some.)
     """
     saida = git(root, "log", "-1", "--format=%cs", "-G", ident, "--", "DEBT.md")
     if not saida or not saida.strip():
@@ -258,9 +258,9 @@ def corpo_ticket(item: dict, entrada: dict) -> str:
     return (
         f"{item.get('descrição', '')}\n\n"
         f"- **Local:** `{caminho}`\n"
-        f"- **Origem:** {item.get('origem', '—')} · **Aberto em:** {item.get('aberto em', '—')}\n"
+        f"- **Origem:** {item.get('origem', '—')}\n"
         f"- **Fila:** {item.get('fila', '—')} · **Score:** {entrada['score']:.2f}\n"
-        f"- **Gatilho de correção:** {item.get('gatilho de correção', '—')}\n\n---\n"
+        f"- **Gatilho:** {item.get('gatilho', '—')}\n\n---\n"
         f"_Projeção de **{item['id']}** do `DEBT.md`. A fonte da verdade é o arquivo versionado; "
         f"este ticket é espelho para gestão (ADR-0021)._"
     )
@@ -282,7 +282,7 @@ def canonico(fila: list) -> dict:
     itens = []
     for entrada in fila:
         item = entrada["item"]
-        externo = item.get("externo", "")
+        ticket = item.get("ticket", "")
         itens.append({
             "id": item["id"],
             "title": f"[{item['id']}] {item.get('título', '')}",
@@ -293,14 +293,25 @@ def canonico(fila: list) -> dict:
                      "probabilidade": entrada["prob"], "trilha": entrada["trilha"],
                      "override": entrada["override"][0] if entrada["override"] else None,
                      "prazo": entrada["override"][1] if entrada["override"] else None},
-            "externo": None if externo in VAZIO else externo,
+            "externo": None if ticket in VAZIO else ticket,
         })
     return {"version": 1, "source": "DEBT.md", "items": itens}
 
 
 def carregar(root: Path):
-    """Itens válidos do DEBT.md, ou None quando há erro (já reportado)."""
-    itens = parse_tabela((root / "DEBT.md").read_text(encoding="utf-8"))
+    """Itens válidos do DEBT.md, ou None quando há erro (já reportado).
+
+    Registro no formato de tabela (delta-023 e anteriores, incluindo o template ainda
+    distribuído pelo projeto-init) devolve lista vazia com instrução de conversão: o
+    arquivo continua valendo como registro, só a fila não é calculável sobre ele.
+    """
+    texto = (root / "DEBT.md").read_text(encoding="utf-8")
+    itens = parse_blocos(texto)
+    if not itens and TABELA_ANTIGA.search(texto):
+        print("Registro em formato de tabela (anterior à delta-024) — o arquivo vale como "
+              "registro, mas a fila precisa dos blocos `### DT-NNN · natureza · estado`. "
+              "Gramática em skills/handoff/references/debito.md.")
+        return []
     erros = validar(itens, root)
     for e in erros:
         print(f"[inválido] {e}")
@@ -356,7 +367,7 @@ def diff(root: Path, externo: Path) -> int:
     Só reporta. A atualização do DEBT.md é proposta ao usuário e aplicada por ele —
     a ferramenta externa nunca sobrescreve a fonte (ADR-0021).
     """
-    itens = parse_tabela((root / "DEBT.md").read_text(encoding="utf-8"))
+    itens = parse_blocos((root / "DEBT.md").read_text(encoding="utf-8"))
     try:  # fronteira de confiança: o arquivo vem de fora, coletado à mão pela skill
         tickets = json.loads(externo.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as erro:
@@ -407,10 +418,8 @@ def cmd_fila(root: Path, hoje=None) -> int:
     itens = carregar(root)
     if itens is None:
         return 1
-    if itens and all(legado(i) for i in itens):
-        print("Tabela no formato anterior à delta-023 (sem a coluna `Fila`) — "
-              "o registro vale, a fila se omite. Migre para priorizar.")
-        return 0
+    if not itens:
+        return 0  # formato antigo ou registro vazio: carregar() já explicou
     fila = montar_fila(itens, root, hoje)
     print(f"# Fila de dívida — {len(fila)} item(ns) pontuável(is)\n")
     print("| # | ID | Score | Fila | Título | Marcas |")
@@ -458,18 +467,19 @@ def main() -> None:
 # ---------------------------------------------------------------- selftest
 
 
-CABECALHO_FIXTURE = (
-    "# DEBT.md\n\n## Registro\n\n"
-    "| ID | Natureza | Título | Descrição | Local | Origem | Aberto em | Fila "
-    "| Gatilho de correção | Status | Externo |\n"
-    "|---|---|---|---|---|---|---|---|---|---|---|\n"
-)
+CABECALHO_FIXTURE = "# DEBT.md\n\n## Registro\n\n"
 
 
 def linha(ident, natureza="débito", titulo="Título curto", local="[alvo](alvo.py)",
-          fila="P3·J9·Pr9", gatilho="quando doer", status="aberto", externo="—"):
-    return (f"| {ident} | {natureza} | {titulo} | descrição | {local} | PR #1 "
-            f"| 2026-01-01 | {fila} | {gatilho} | {status} | {externo} |\n")
+          fila="P3·J9·Pr9", gatilho="quando doer", status="aberto", externo="",
+          descricao="descrição do sintoma", encerrado=""):
+    """Um bloco de fixture. Campo com valor vazio simplesmente não é declarado —
+    é assim que guarda e item encerrado se distinguem de item ativo incompleto."""
+    campos = [("Fila", fila), ("Local", local), ("Gatilho", gatilho),
+              ("Origem", "[PR #1](../../pull/1) · 2026-01-01"),
+              ("Ticket", externo), ("Encerrado", encerrado)]
+    corpo = "".join(f"- **{nome}:** {valor}\n" for nome, valor in campos if valor)
+    return f"### {ident} · {natureza} · {status}\n**{titulo}**\n\n{descricao}\n\n{corpo}\n"
 
 
 def selftest() -> None:
@@ -497,6 +507,7 @@ def selftest() -> None:
 
     # parse da fila e dos sufixos
     assert parse_fila("P3·J9·Pr9") == (3, 9, 9, False, None)
+    assert parse_fila("`P3·J9·Pr9`") == (3, 9, 9, False, None), "crase de formatação quebrou a fila"
     assert parse_fila("P9·J3·Pr9 · trilha")[3] is True
     assert parse_fila("P1·J1·Pr1 · !security(2026-09-01)")[4] == ("security", "2026-09-01")
     for ruim in ("P2·J9·Pr9", "P3-J9-Pr9", "", "P3·J9", "P3·J9·Pr9 · bagunça",
@@ -512,80 +523,86 @@ def selftest() -> None:
     assert max(ordem_prec) < precedencia(entrada(trilha=True)) < precedencia(entrada()), \
         "override deve vir antes de trilha, e trilha antes do resto"
 
-    # tabela limpa passa
-    root = montar(linha("DT-001") + linha("DT-002", natureza="guarda", titulo="—",
-                                          local="—", fila="—", status="vigente"))
-    itens = parse_tabela((root / "DEBT.md").read_text(encoding="utf-8"))
-    assert len(itens) == 2, f"parser perdeu linha: {itens}"
+    # registro limpo passa; guarda sem Fila/Local também
+    root = montar(linha("DT-001") + linha("DT-002", natureza="guarda", local="", fila="", status="vigente"))
+    itens = parse_blocos((root / "DEBT.md").read_text(encoding="utf-8"))
+    assert len(itens) == 2, f"parser perdeu bloco: {itens}"
     assert validar(itens, root) == [], f"fixture limpa acusada: {validar(itens, root)}"
+    assert itens[0]["descrição"] == "descrição do sintoma", f"descrição mal recortada: {itens[0]}"
 
-    # REGRESSÃO (lição 2026-07-28): prosa dentro da célula não pode virar campo.
-    # A célula de status de um item quitado contém a palavra 'aberto' no texto —
-    # busca solta na linha leria o item como ativo e cobraria Local/Título dele.
-    prosa = linha("DT-003", titulo="—", local="—", fila="—",
-                  status="quitado (2026-07-31, #85) — ficou aberto 7 dias após satisfeito")
+    # REGRESSÃO (lição 2026-07-28): a descrição menciona a palavra 'aberto' e cita a
+    # própria sintaxe de campo. Busca solta leria o item como ativo e o `- **Fila:**`
+    # da prosa como fila real; só a âncora de início de linha do bloco separa os dois.
+    prosa = linha("DT-003", local="", fila="", status="quitado",
+                  encerrado="2026-07-31 · [#85](../../pull/85) — ficou aberto 7 dias após satisfeito",
+                  descricao="A dívida seguia aberto no papel. Exemplo citado: `- **Fila:** P9·J9·Pr9`.")
     root_p = montar(prosa)
-    itens_p = parse_tabela((root_p / "DEBT.md").read_text(encoding="utf-8"))
+    itens_p = parse_blocos((root_p / "DEBT.md").read_text(encoding="utf-8"))
     assert estado(itens_p[0]) == "quitado", f"prosa enganou o estado: {estado(itens_p[0])}"
+    assert itens_p[0].get("fila", "") == "", "sintaxe citada na prosa virou campo Fila"
     assert validar(itens_p, root_p) == [], "item quitado com prosa foi cobrado como ativo"
     assert montar_fila(itens_p, root_p) == [], "item quitado entrou na fila"
 
-    # célula com pipe escapado não quebra a contagem de colunas
-    root_pipe = montar(linha("DT-004", titulo="a \\| b"))
-    itens_pipe = parse_tabela((root_pipe / "DEBT.md").read_text(encoding="utf-8"))
-    assert itens_pipe[0]["título"] == "a | b", f"pipe escapado quebrou o parser: {itens_pipe}"
+    # o bloco aceita descrição de várias linhas e caractere que a tabela exigia escapar
+    multi = linha("DT-004", titulo="Pipe | e travessão — livres no bloco",
+                  descricao="Primeira linha da descrição.\n\nSegundo parágrafo, com `código` e | pipe.")
+    itens_multi = parse_blocos(multi)
+    assert itens_multi[0]["título"] == "Pipe | e travessão — livres no bloco"
+    assert "Segundo parágrafo" in itens_multi[0]["descrição"], "descrição multilinha truncada"
 
     # validações bloqueantes, uma por campo
     casos = {
-        "Título": linha("DT-010", titulo="—"),
-        "Local": linha("DT-011", local="—"),
+        "título": linha("DT-010", titulo=""),
+        "Local": linha("DT-011", local=""),
         "Fila": linha("DT-012", fila="P2·J2·Pr2"),
-        "gatilho": linha("DT-013", status="aceito", gatilho="—"),
+        "Gatilho": linha("DT-013", status="aceito", gatilho=""),
     }
     for campo_esperado, fixture in casos.items():
         r = montar(fixture)
-        erros = validar(parse_tabela((r / "DEBT.md").read_text(encoding="utf-8")), r)
+        erros = validar(parse_blocos((r / "DEBT.md").read_text(encoding="utf-8")), r)
         assert any(campo_esperado in e for e in erros), f"{campo_esperado} não acusado: {erros}"
         assert all(e.startswith("DT-") for e in erros), f"erro sem o DT-NNN: {erros}"
     r_morto = montar(linha("DT-014", local="[x](nao-existe.py)"))
     assert any("inexistente" in e for e in
-               validar(parse_tabela((r_morto / "DEBT.md").read_text(encoding="utf-8")), r_morto)), \
+               validar(parse_blocos((r_morto / "DEBT.md").read_text(encoding="utf-8")), r_morto)), \
         "link morto no Local não acusado"
     r_estado = montar(linha("DT-015", status="pendente"))
     assert any("fora do conjunto" in e for e in
-               validar(parse_tabela((r_estado / "DEBT.md").read_text(encoding="utf-8")), r_estado)), \
+               validar(parse_blocos((r_estado / "DEBT.md").read_text(encoding="utf-8")), r_estado)), \
         "status inventado não acusado"
     r_guarda = montar(linha("DT-016", natureza="guarda", status="vigente", fila="P1·J1·Pr1"))
     assert any("guarda" in e for e in
-               validar(parse_tabela((r_guarda / "DEBT.md").read_text(encoding="utf-8")), r_guarda)), \
+               validar(parse_blocos((r_guarda / "DEBT.md").read_text(encoding="utf-8")), r_guarda)), \
         "guarda com fila preenchida não acusada"
-    r_sem_data = montar(linha("DT-017", titulo="—", local="—", fila="—", status="quitado"))
-    assert any("exige data" in e for e in
-               validar(parse_tabela((r_sem_data / "DEBT.md").read_text(encoding="utf-8")), r_sem_data)), \
-        "quitado sem data não acusado (R18 exige data e ref)"
+    r_sem_data = montar(linha("DT-017", local="", fila="", status="quitado"))
+    assert any("Encerrado" in e for e in
+               validar(parse_blocos((r_sem_data / "DEBT.md").read_text(encoding="utf-8")), r_sem_data)), \
+        "quitado sem o campo Encerrado não acusado (R18 exige data e ref)"
 
     # os cinco estados válidos convivem; só o pontuável exige os campos novos
     r_estados = montar(
         linha("DT-050", status="aberto")
         + linha("DT-051", status="aceito", gatilho="quando o motor mudar")
-        + linha("DT-052", natureza="guarda", titulo="—", local="—", fila="—", status="vigente")
-        + linha("DT-053", titulo="—", local="—", fila="—", status="descartado (2026-08-01, virou obsoleto)")
-        + linha("DT-054", titulo="—", local="—", fila="—", status="quitado (2026-08-01, #99)"))
-    itens_e = parse_tabela((r_estados / "DEBT.md").read_text(encoding="utf-8"))
+        + linha("DT-052", natureza="guarda", local="", fila="", status="vigente")
+        + linha("DT-053", local="", fila="", status="descartado", encerrado="2026-08-01 — virou obsoleto")
+        + linha("DT-054", local="", fila="", status="quitado", encerrado="2026-08-01 · [#99](../../issues/99)"))
+    itens_e = parse_blocos((r_estados / "DEBT.md").read_text(encoding="utf-8"))
     assert validar(itens_e, r_estados) == [], f"estados válidos acusados: {validar(itens_e, r_estados)}"
     assert {e["item"]["id"] for e in montar_fila(itens_e, r_estados)} == {"DT-050", "DT-051"}, \
         "só item ativo e pontuável entra na fila"
 
-    # tabela anterior à delta-023 (7 colunas) degrada em vez de rejeitar
+    # registro em tabela (delta-023 ou o template ainda distribuído): avisa, não quebra
     legado_txt = ("## Registro\n\n| ID | Natureza | Descrição | Origem | Aberto em "
                   "| Gatilho de correção | Status |\n|---|---|---|---|---|---|---|\n"
                   "| DT-001 | débito | x | PR #1 | 2026-01-01 | quando doer | aberto |\n")
     r_legado = Path(tempfile.mkdtemp())
     (r_legado / "DEBT.md").write_text(legado_txt, encoding="utf-8")
-    itens_l = parse_tabela(legado_txt)
-    assert itens_l and all(legado(i) for i in itens_l), "formato antigo não reconhecido"
-    assert validar(itens_l, r_legado) == [], "formato antigo foi rejeitado em vez de degradar"
-    assert quieto(cmd_fila, r_legado) == 0, "cmd_fila não degradou com tabela antiga"
+    assert parse_blocos(legado_txt) == [], "tabela não deveria produzir bloco"
+    aviso = io.StringIO()
+    with contextlib.redirect_stdout(aviso):
+        assert carregar(r_legado) == [], "formato antigo deveria devolver lista vazia"
+        assert cmd_fila(r_legado) == 0, "cmd_fila não degradou com registro em tabela"
+    assert "formato de tabela" in aviso.getvalue(), "faltou instruir a conversão do formato antigo"
 
     # ordenação: override → trilha → score desc
     root_o = montar(
@@ -594,12 +611,12 @@ def selftest() -> None:
         + linha("DT-022", fila="P9·J9·Pr9 · trilha")                     # trilha
         + linha("DT-023", fila="P9·J1·Pr1 · !contract(2026-12-01)")      # override tardio
         + linha("DT-024", fila="P9·J1·Pr1 · !security(2026-09-01)"))     # override primeiro
-    ordem = [e["item"]["id"] for e in montar_fila(itens=parse_tabela(
+    ordem = [e["item"]["id"] for e in montar_fila(itens=parse_blocos(
         (root_o / "DEBT.md").read_text(encoding="utf-8")), root=root_o)]
     assert ordem == ["DT-024", "DT-023", "DT-022", "DT-021", "DT-020"], f"ordem errada: {ordem}"
 
     # exportar: três arquivos, JSON válido, item já projetado é pulado
-    root_e = montar(linha("DT-030") + linha("DT-031", externo="gh#7"))
+    root_e = montar(linha("DT-030") + linha("DT-031", externo="[#7](../../issues/7)"))
     saida = root_e / "out"
     assert quieto(exportar, root_e, saida, "PROJ") == 0
     dados = json.loads((saida / "tickets.json").read_text(encoding="utf-8"))
@@ -653,7 +670,7 @@ def selftest() -> None:
     quieto(diff, root_e, estado_ext)
     assert (root_e / "DEBT.md").read_text(encoding="utf-8") == antes, "diff alterou o DEBT.md"
     # caso limpo: item projetado e ticket aberto do outro lado → zero divergência
-    root_ok = montar(linha("DT-060", externo="gh#1"))
+    root_ok = montar(linha("DT-060", externo="[#1](../../issues/1)"))
     sincronizado = root_ok / "estado.json"
     sincronizado.write_text(json.dumps(
         [{"number": 1, "state": "OPEN", "labels": [{"name": "dt:DT-060"}]}]), encoding="utf-8")
@@ -694,8 +711,8 @@ def selftest_git() -> None:
         (root / "frio.py").write_text("y = 1\n", encoding="utf-8")
         (root / "DEBT.md").write_text(
             CABECALHO_FIXTURE
-            + linha("DT-040", local="[q](quente.py)", fila="P3·J9·Pr1")
-            + linha("DT-041", local="[f](frio.py)", fila="P3·J9·Pr9"),
+            + linha("DT-040", titulo="Item quente", local="[q](quente.py)", fila="P3·J9·Pr1")
+            + linha("DT-041", titulo="Item frio", local="[f](frio.py)", fila="P3·J9·Pr9"),
             encoding="utf-8")
         g("add", "-A")
         g("commit", "-qm", "base", quando="2020-01-01T00:00:00")
@@ -710,7 +727,7 @@ def selftest_git() -> None:
         assert prob_do_churn("quente.py", contagem) == 9, "arquivo mais tocado não virou Pr9"
         assert prob_do_churn("nunca-tocado.py", contagem) == 1, "arquivo ausente não virou Pr1"
 
-        itens = parse_tabela((root / "DEBT.md").read_text(encoding="utf-8"))
+        itens = parse_blocos((root / "DEBT.md").read_text(encoding="utf-8"))
         fila = montar_fila(itens, root, hoje=date(2020, 1, 2))
         derivadas = {e["item"]["id"]: e["prob_derivada"] for e in fila}
         assert derivadas["DT-040"] == 9, f"divergência de churn não detectada: {derivadas}"
@@ -720,24 +737,35 @@ def selftest_git() -> None:
         tarde = montar_fila(itens, root, hoje=date(2021, 1, 1))
         assert all(e["stale"] for e in tarde), f"stale não marcado após {STALE_DIAS} dias"
 
-        # tocar a linha do DT-040 derruba o stale dele — e só dele
+        # editar só a prosa NÃO é decidir: o relógio do stale não pode reiniciar
         texto = (root / "DEBT.md").read_text(encoding="utf-8")
-        (root / "DEBT.md").write_text(texto.replace("| DT-040 | débito | Título curto",
-                                                    "| DT-040 | débito | Título revisado"),
+        (root / "DEBT.md").write_text(texto.replace("**Item quente**", "**Item quente revisado**"),
                                       encoding="utf-8")
         g("add", "-A")
-        g("commit", "-qm", "revisa DT-040", quando="2020-12-31T00:00:00")
+        g("commit", "-qm", "reescreve o título do DT-040", quando="2020-12-31T00:00:00")
         churn.cache_clear()  # o cache é por root; o repo mudou dentro do mesmo processo
+        so_prosa = {e["item"]["id"]: e["stale"]
+                    for e in montar_fila(parse_blocos((root / "DEBT.md").read_text(encoding="utf-8")),
+                                         root, hoje=date(2021, 1, 1))}
+        assert so_prosa["DT-040"] is True, "editar prosa reiniciou o relógio de decisão"
+
+        # mudar o ESTADO no cabeçalho é decidir: aí sim o stale sai
+        texto = (root / "DEBT.md").read_text(encoding="utf-8")
+        (root / "DEBT.md").write_text(texto.replace("### DT-040 · débito · aberto",
+                                                    "### DT-040 · débito · aceito"), encoding="utf-8")
+        g("add", "-A")
+        g("commit", "-qm", "aceita o DT-040", quando="2020-12-31T00:00:00")
+        churn.cache_clear()
         depois = {e["item"]["id"]: e["stale"]
-                  for e in montar_fila(parse_tabela((root / "DEBT.md").read_text(encoding="utf-8")),
+                  for e in montar_fila(parse_blocos((root / "DEBT.md").read_text(encoding="utf-8")),
                                        root, hoje=date(2021, 1, 1))}
-        assert depois["DT-040"] is False, "stale não sumiu depois de a linha ser tocada"
+        assert depois["DT-040"] is False, "stale não sumiu depois da mudança de estado"
         assert depois["DT-041"] is True, "stale de item não tocado sumiu junto"
 
         sem_git = Path(tempfile.mkdtemp())
-        (sem_git / "DEBT.md").write_text(CABECALHO_FIXTURE + linha("DT-050", local="—",
-                                                                   fila="—", natureza="guarda",
-                                                                   titulo="—", status="vigente"),
+        (sem_git / "DEBT.md").write_text(CABECALHO_FIXTURE + linha("DT-050", local="",
+                                                                   fila="", natureza="guarda",
+                                                                   status="vigente"),
                                          encoding="utf-8")
         assert churn(sem_git) is None, "churn não degradou fora de repositório git"
     print(f"selftest git: OK (churn real, Pr derivada, stale >{STALE_DIAS}d, degradação sem git)")

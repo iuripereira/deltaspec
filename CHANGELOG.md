@@ -8,6 +8,13 @@ O formato segue [Keep a Changelog 1.0.0](https://keepachangelog.com/pt-BR/1.0.0/
 
 ## [Não lançado]
 
+## [1.5.0] - 2026-08-01
+
+### Mudado
+
+- **O `DEBT.md` vira um bloco por item, com referências navegáveis** (delta-024, MUDA R18/R51): a tabela de 11 colunas da delta-023 tinha linhas de até 1.549 caracteres e um campo `Título` que repetia o início da `Descrição` — ilegível na prática. Cada dívida passa a ser `### DT-NNN · natureza · estado` com título, descrição em prosa livre e campos (`Fila`, `Local`, `Gatilho`, `Origem`, `Ticket`/`Encerrado`), no mesmo padrão dos ADRs. Ticket, PR, issue, delta e artefato agora são **links relativos navegáveis** (`../../issues/N`, `specs/_archive/NNN-*/`), que resolvem no GitHub e sobrevivem a fork. O cabeçalho ganhou a legenda que faltava: uma tabela explicando os cinco estados e o que cada um exige, mais os três eixos da fila. Data e referência de encerramento saíram do rótulo de estado e viraram o campo `Encerrado`, deixando o estado escaneável. Registro ainda em tabela (incluindo o template distribuído pelo `projeto-init`) segue válido: o script avisa como converter em vez de rejeitar.
+- **`stale` passa a medir decisão, não edição** (delta-024): como o `DT-NNN` vive só no cabeçalho do bloco, o relógio do aging reinicia quando o **estado** muda — reescrever a descrição não conta mais como "mexeu no item", o que é mais fiel ao que a marca cobra.
+
 ## [1.4.0] - 2026-08-01
 
 ### Adicionado
