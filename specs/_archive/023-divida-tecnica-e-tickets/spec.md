@@ -1,5 +1,5 @@
 # delta-023 — dívida técnica com score e projeção para tickets
-Estado: proposta · Data: 2026-08-01 · Branch: feat/023-divida-tecnica-e-tickets · Perfil: completo — script novo com lógica determinística, mudança de contrato normativo (MUDA R18) e integração externa inédita (aprovado: 2026-08-01)
+Estado: arquivada · Data: 2026-08-01 · Branch: feat/023-divida-tecnica-e-tickets · Perfil: completo — script novo com lógica determinística, mudança de contrato normativo (MUDA R18) e integração externa inédita (aprovado: 2026-08-01)
 <!-- Numeração: 022 é a última arquivada; 017 segue reservada para a Fase 4 (Jira/tickets.md) e esta delta salta o número sem consumi-lo (R5). Esta delta constrói o mecanismo de projeção que a delta-017 reusará no tickets.md. -->
 <!-- Clarify: conduzido em plan mode (2026-08-01) por 8 perguntas fechadas — alcance, arquitetura, campos, estados, escopo vs delta-017, profundidade da ida, volta e ferramenta a validar. Decisões no plano aprovado; não re-entrevistar (cycle.md). -->
 
@@ -44,4 +44,4 @@ O `DEBT.md` tem 19 itens sem priorização mecânica e sem validação nenhuma �
 - O repositório é público e os tickets criados também serão; o conteúdo já está publicado hoje no `DEBT.md`, mas o corpo gerado é conferido antes da criação.
 - A ADR-0021 supersede a ADR-0007 — a ADR antiga permanece imutável, marcada `Superseded by`, e a citação em `CLAUDE.md` passa a apontar a nova.
 - O conjunto de artefatos + implementação passa do limiar canônico de PR: split obrigatório (R17), artefatos primeiro.
-- [ ] Propagar o modelo ao template distribuído do `projeto-init` depois do dogfood — vira `DT-NNN` no archive.
+- [x] Propagar o modelo ao template distribuído do `projeto-init` depois do dogfood — vira `DT-NNN` no archive.
