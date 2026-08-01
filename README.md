@@ -8,7 +8,7 @@ Em vez de manter um documento de requisitos gigante que envelhece mal, cada feat
 
 > **É o git, aplicado a requisitos.** Cada feature é um *commit* de spec (ADICIONA / MUDA / REMOVE). O `TRUTH.md` é o *working tree*: o estado atual, com todos os commits já aplicados. As specs antigas vão para `specs/_archive/` — elas são histórico, não verdade.
 
-`v1.2.0` · 10 skills · Licença MIT
+`v1.3.0` · 10 skills · Licença MIT
 
 ---
 

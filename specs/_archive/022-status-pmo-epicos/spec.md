@@ -1,5 +1,5 @@
 # delta-022 — status-pmo-epicos
-Estado: proposta · Data: 2026-07-31 · Branch: feat/status-pmo-epicos · Perfil: enxuto — incremento declarativo na skill recém-criada, sem código executável nem mudança de gate (aprovado: 2026-07-31)
+Estado: arquivada · Data: 2026-07-31 · Branch: feat/status-pmo-epicos · Perfil: enxuto — incremento declarativo na skill recém-criada, sem código executável nem mudança de gate (aprovado: 2026-07-31)
 Test-plan: dispensado — delta declarativa (skill/templates); validação = CI (frontmatter, JSON, commits) + check_cycle.
 
 ## Contexto (≤3 linhas)

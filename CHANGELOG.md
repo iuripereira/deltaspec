@@ -8,6 +8,8 @@ O formato segue [Keep a Changelog 1.0.0](https://keepachangelog.com/pt-BR/1.0.0/
 
 ## [Não lançado]
 
+## [1.3.0] - 2026-07-31
+
 ## [1.2.0] - 2026-07-31
 
 ### Adicionado
