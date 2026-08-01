@@ -152,7 +152,7 @@
   - DADO o repositório do framework QUANDO o Claude Code registra o marketplace ENTÃO encontra `.claude-plugin/marketplace.json` **e** `.claude-plugin/plugin.json` na raiz, com as skills em `skills/<nome>/SKILL.md`
 - R31 (delta-013) — inventário de skills validado mecanicamente no CI.
   - DADO os manifestos `.claude-plugin/plugin.json` e `.claude-plugin/marketplace.json` QUANDO o job `ci` roda ENTÃO um step compara cada diretório `skills/<nome>/` com as descrições dos dois manifestos (case-insensitive, conforme lição de 2026-07-20) e falha nomeando a skill ausente e o manifesto omisso
-  - DADO os dois manifestos citando as 9 skills atuais QUANDO o check roda ENTÃO passa sem achado
+  - DADO os dois manifestos citando as 10 skills atuais QUANDO o check roda ENTÃO passa sem achado
 - R33 (delta-019) — perfil de escrita `eu-tenho-tdah` reconhecido como skill do plugin.
   - DADO o plugin instalado QUANDO as skills são listadas ENTÃO `eu-tenho-tdah` está disponível sob o namespace `deltaspec:` como perfil de escrita always-on, fora do ciclo de features, e o README e os manifestos a documentam como tal
 - R47 (delta-019) — o rename preserva o registro histórico e publica caminho de migração.
@@ -197,6 +197,13 @@
   - DADO a tabela de contrato de `adapters.md` QUANDO a delta consolida ENTÃO a linha do Figma MCP é substituída pelas linhas do `diagram-design` (plugin de terceiro, local) e do `design-sync` (ferramenta do harness, serviço claude.ai), cada uma com ponto sensível a breaking e fallback declarado, e a política de versões tem as entradas com verificação datada (R34) — diagram-design sem pin até a primeira adoção real, mesmo padrão do graphify
   - DADO o plugin `diagram-design` ausente, ou o `design-sync` sem autorização claude.ai, ou a categoria `apresentacao` não declarada QUANDO o ciclo ou a doc-entregavel rodam ENTÃO o fluxo atual (render CLI do Mermaid) segue com no máximo 1 linha de aviso — degradação graciosa (RNF2)
   - DADO um cliente que exige o acabamento da camada dentro do documento congelado QUANDO o export é montado ENTÃO o caminho é exportar o HTML materializado para PNG/SVG (`diagram-design:export`, Playwright) e embutir a imagem no pipeline CLI — sem etapa manual não reprodutível
+
+## Acompanhamento de status (PMO)
+
+- R48 (delta-021) — a skill `status-pmo` conduz a montagem do site de status PMO.
+  - DADO um repo do ciclo que precisa de acompanhamento de status QUANDO `/deltaspec:status-pmo` é invocada ENTÃO a SKILL.md conduz o processo em 6 gates (cronograma canônico → ata semanal → gerador no repo cliente → marca por tokens → publicação restrita → integração externa via contrato de dados), com invariantes explícitos (fonte da verdade no repo, saída não versionada, só metadado de gestão, self-contained, coleta separada do render) e tabela de erros comuns
+- R49 (delta-021) — os templates da status-pmo existem e são utilizáveis.
+  - DADO o diretório `skills/status-pmo/references/templates/` QUANDO a skill é seguida ENTÃO existem: `styles-tokens.css` (design system com paleta placeholder e instrução de troca por marca), `theme.js` (toggle de tema persistido), `cronograma-template.md` (D0 + seções por projeto + `## Marcos` parseáveis), `ata-template.md` (5 seções fixas) e `dados-schema.md` (contrato do `dados.json`, com regra de evolução aditiva)
 
 ## Não funcionais
 

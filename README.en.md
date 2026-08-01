@@ -9,7 +9,7 @@ Instead of maintaining a giant requirements document that ages badly, each featu
 
 > **It's git, applied to requirements.** Each feature is a spec *commit* (ADICIONA / MUDA / REMOVE — adds / changes / removes). `TRUTH.md` is the *working tree*: the current state, with every commit already applied. Old specs go to `specs/_archive/` — they are history, not truth.
 
-`v1.1.0` · 9 skills · MIT License
+`v1.2.0` · 10 skills · MIT License
 
 ---
 
@@ -69,7 +69,7 @@ What this gives you:
 /plugin install deltaspec@deltaspec
 ```
 
-Done: the 9 skills show up under the `deltaspec:` prefix. To update later, `/plugin update deltaspec`.
+Done: the 10 skills show up under the `deltaspec:` prefix. To update later, `/plugin update deltaspec`.
 
 ### 2.2 The engines — 1 command in the terminal
 
@@ -297,8 +297,9 @@ Eight cycle commands, in the order you meet them. Click a name to read the skill
 | [`guarding-doc-integrity`](skills/guarding-doc-integrity/SKILL.md) | Keeps a value repeated across 5 files from drifting apart: one topic has one owner file, the rest link to it | A value changed in a repository with canonical documents |
 | [`handoff`](skills/handoff/SKILL.md) | Closes the session into the right files: `HANDOFF.md`, `DEBT.md` and the state of the current delta | At the end of the day |
 | [`doc-entregavel`](skills/doc-entregavel/SKILL.md) | Freezes a signable PDF/DOCX for the client, with a signature cover page and rendered diagrams | Projects with `publico.cliente: true` |
+| [`status-pmo`](skills/status-pmo/SKILL.md) | Builds the PMO status site (dashboard with %/phase/traffic light, gantt with milestones, per-project one-page) the same way every time | Portfolio/project reporting status to management |
 
-The ninth is not a command: [`eu-tenho-tdah`](skills/eu-tenho-tdah/SKILL.md) is Iuri's writing profile (based on [ayghri/i-have-adhd](https://github.com/ayghri/i-have-adhd)), always on — action before context, ranked lists, tangents become saved pending items.
+The tenth is not a command: [`eu-tenho-tdah`](skills/eu-tenho-tdah/SKILL.md) is Iuri's writing profile (based on [ayghri/i-have-adhd](https://github.com/ayghri/i-have-adhd)), always on — action before context, ranked lists, tangents become saved pending items.
 
 **spec-review or analyze?** analyze checks whether the documents **agree with each other** (mechanical). spec-review debates the **merit** of the spec.
 
