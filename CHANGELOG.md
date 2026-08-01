@@ -8,6 +8,8 @@ O formato segue [Keep a Changelog 1.0.0](https://keepachangelog.com/pt-BR/1.0.0/
 
 ## [Não lançado]
 
+## [1.2.0] - 2026-07-31
+
 ### Adicionado
 
 - **Skill `status-pmo` — site de status PMO montado sempre da mesma forma** (delta-021, [ADR-0019](docs/adrs/ADR-0019-status-pmo-site-de-status.md)): processo em 6 gates (cronograma canônico com D0/etapas/marcos → ata semanal → gerador stdlib no repo cliente → marca por tokens de CSS → publicação restrita → integração externa trocando só a coleta) + templates em `references/templates/` (`styles-tokens.css` com paleta placeholder, `theme.js`, templates de cronograma e ata, `dados-schema.md` como contrato do `dados.json`). Extração do caso validado no repo imex (deltas 002/003); renúncias registradas na ADR: SaaS/BI de status, gerador genérico no plugin e lib de gráfico (gantt é CSS grid puro).

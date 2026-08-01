@@ -8,7 +8,7 @@ Em vez de manter um documento de requisitos gigante que envelhece mal, cada feat
 
 > **É o git, aplicado a requisitos.** Cada feature é um *commit* de spec (ADICIONA / MUDA / REMOVE). O `TRUTH.md` é o *working tree*: o estado atual, com todos os commits já aplicados. As specs antigas vão para `specs/_archive/` — elas são histórico, não verdade.
 
-`v1.1.0` · 9 skills · Licença MIT
+`v1.2.0` · 10 skills · Licença MIT
 
 ---
 
@@ -68,7 +68,7 @@ O que isso te dá:
 /plugin install deltaspec@deltaspec
 ```
 
-Pronto: as 9 skills aparecem com o prefixo `deltaspec:`. Para atualizar depois, `/plugin update deltaspec`.
+Pronto: as 10 skills aparecem com o prefixo `deltaspec:`. Para atualizar depois, `/plugin update deltaspec`.
 
 ### 2.2 Os motores — 1 comando no terminal
 
@@ -296,8 +296,9 @@ Oito comandos do ciclo, na ordem em que você os encontra. Clique no nome para l
 | [`guarding-doc-integrity`](skills/guarding-doc-integrity/SKILL.md) | Impede que um valor repetido em 5 arquivos fique desencontrado: um assunto tem um arquivo dono, o resto linka | Um valor mudou num repositório com documentos canônicos |
 | [`handoff`](skills/handoff/SKILL.md) | Fecha a sessão nos arquivos certos: `HANDOFF.md`, `DEBT.md` e o estado da delta em curso | Ao encerrar o dia |
 | [`doc-entregavel`](skills/doc-entregavel/SKILL.md) | Congela um PDF/DOCX assinável para o cliente, com capa de assinatura e diagramas renderizados | Projeto com `publico.cliente: true` |
+| [`status-pmo`](skills/status-pmo/SKILL.md) | Monta o site de status PMO (dashboard %/fase/farol, gantt com marcos, one-page por projeto) sempre da mesma forma | Portfólio/projeto que reporta status à gestão |
 
-A nona não é comando: [`eu-tenho-tdah`](skills/eu-tenho-tdah/SKILL.md) é o perfil de escrita do Iuri (baseado em [ayghri/i-have-adhd](https://github.com/ayghri/i-have-adhd)), ligado o tempo todo — ação antes de contexto, listas ranqueadas, tangente vira pendência salva.
+A décima não é comando: [`eu-tenho-tdah`](skills/eu-tenho-tdah/SKILL.md) é o perfil de escrita do Iuri (baseado em [ayghri/i-have-adhd](https://github.com/ayghri/i-have-adhd)), ligado o tempo todo — ação antes de contexto, listas ranqueadas, tangente vira pendência salva.
 
 **spec-review ou analyze?** O analyze confere se os documentos **combinam entre si** (mecânico). O spec-review discute o **mérito** da spec.
 
