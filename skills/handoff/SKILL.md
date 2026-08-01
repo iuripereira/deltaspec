@@ -40,15 +40,16 @@ python3 ${CLAUDE_PLUGIN_ROOT}/skills/handoff/scripts/debito.py exportar .   # JS
 python3 ${CLAUDE_PLUGIN_ROOT}/skills/handoff/scripts/debito.py diff . --externo estado.json
 ```
 
-- **Ida:** rode `exportar`, **revise o corpo gerado** (vai para uma ferramenta possivelmente pública), execute as linhas de `gh issue create` (ou `acli jira workitem create-bulk --from-json`) e **grave a chave devolvida na coluna `Externo`** — é ela que evita ticket duplicado na próxima vez.
-- **Volta:** colete com `gh issue list --search "label:deltaspec:debito,deltaspec:pendencia" --state all --json number,title,state,labels > estado.json` (vírgula no `--search` é OR; `--label dt` não funciona — a etiqueta é `dt:DT-NNN`), rode `diff`, classifique cada divergência e **proponha** a atualização; o `DEBT.md` só muda com aprovação do usuário (ADR-0021).
-- Sem `gh`/`acli` ou sem autenticação: avise em 1 linha e siga — o `DEBT.md` vale sozinho (RNF2).
+- **Ida:** rode `exportar` a partir da raiz do repo, **revise o corpo gerado** (vai para uma ferramenta possivelmente pública), execute o roteiro emitido e **grave a chave devolvida na coluna `Externo`**.
+- **Volta:** colete o estado com o comando de coleta da política, rode `diff`, classifique cada divergência e **proponha** a atualização; o `DEBT.md` só muda com aprovação do usuário.
+- Motor ausente ou sem autenticação: avise em 1 linha e siga — o `DEBT.md` vale sozinho (RNF2).
+
+O comando exato de coleta, a regra de idempotência e as quatro seções da política vivem no reference — não os reproduza aqui.
 
 ## Regras de conteúdo
 
 - **Referencie, não duplique** (regra de ouro): o que já está em spec, plan, ADR, DEBT.md, CHANGELOG ou commit entra por caminho/ID (`DT-003`, `specs/_archive/007-*/`, `#21`), nunca copiado.
 - **Segredo/PII nunca entra no diário** — nem em nenhum registro versionado (seção Segurança do CLAUDE.md).
-- **Score de dívida não se escreve** no `DEBT.md`: ele é derivado na leitura pelo script (ADR-0020).
 
 ## Erros comuns
 

@@ -50,6 +50,7 @@ jobs:
           set -e
           python3 skills/spec-feature/scripts/check_cycle.py --selftest
           python3 skills/guarding-doc-integrity/scripts/validate_integrity.py --selftest
+          python3 skills/handoff/scripts/debito.py --selftest
       - name: Integridade documental (deps.toml)
         run: python3 skills/guarding-doc-integrity/scripts/validate_integrity.py .
       - name: Validar frontmatter dos SKILL.md

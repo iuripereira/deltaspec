@@ -22,7 +22,7 @@ Os três eixos usam a mesma escala de três degraus — baixo, médio, alto (`ES
 
 **Probabilidade não se chuta.** O script deriva a estimativa do churn do arquivo apontado em `Local` (percentil sobre o `git log` da janela configurada) e reporta divergência contra o valor declarado. Quem manda é o valor declarado; a derivação existe para desmentir otimismo.
 
-> **Viés conhecido do proxy:** churn mede atividade **no arquivo**, não frequência com que **a dívida** incide. Dívida que é caso de borda dentro de um arquivo movimentado aparece superestimada — foi o que aconteceu na primeira medição real (2026-08-01), com o `tabela_cliente.py` em alta posição de churn por ter sido criado havia pouco, enquanto o defeito específico só aparece em documento de cliente com tabela aninhada. Por isso a derivação **informa e não decide**: divergir dela é legítimo, ignorá-la sem olhar não é.
+> **Viés conhecido:** churn mede atividade **no arquivo**, não frequência com que **a dívida** incide, e superestima defeito de borda em arquivo movimentado. Por isso a derivação **informa e não decide**: divergir dela é legítimo, ignorá-la sem olhar não é. (Caso concreto na seção Lições do `DEBT.md`.)
 
 O score é **derivado na leitura e nunca gravado**. Persistir o cálculo criaria uma segunda fonte da verdade — exatamente o que a regra de ouro proíbe.
 

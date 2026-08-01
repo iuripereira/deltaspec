@@ -20,6 +20,7 @@ Uso: debito.py fila [ROOT]
      debito.py --selftest
 Exit 0 = sem erro · 1 = registro inválido ou divergência · 2 = erro de uso.
 """
+import argparse
 import json
 import re
 import shlex
@@ -27,14 +28,16 @@ import subprocess
 import sys
 from collections import Counter
 from datetime import date, datetime
+from functools import lru_cache
 from pathlib import Path
 
 STALE_DIAS = 90  # sem mudança na linha e com juros altos: força decisão explícita
 JANELA_CHURN = "6 months ago"  # janela do git log que estima a probabilidade de incidência
 PERCENTIL_QUENTE = 0.10  # top 10% dos arquivos mais tocados → probabilidade 9
 PERCENTIL_MORNO = 0.40  # top 40% → probabilidade 3; o resto → 1
-ESCALA = (1, 3, 9)  # 1 = baixo · 3 = médio · 9 = alto (principal, juros, probabilidade)
 JUROS_RELEVANTE = 3  # a partir daqui o aging cobra decisão (C do references/debito.md)
+FAIXA_ALTA = 9  # limiares de SCORE para a etiqueta de faixa — não confundir com a
+FAIXA_MEDIA = 3  # escala dos eixos, que é fechada pelo próprio regex FILA
 
 # Precedência do override: impedimento, não prioridade alta — entra fora da competição por score.
 OVERRIDES = ("security", "compliance", "eol", "contract")
@@ -42,13 +45,13 @@ NATUREZAS_PONTUAVEIS = ("débito", "pendência")
 ESTADOS_ATIVOS = ("aberto", "aceito", "vigente")
 ESTADOS_FINAIS = ("quitado", "descartado")
 VAZIO = ("", "—", "-")
-ROTULO_NATUREZA = {"débito": "debito", "pendência": "pendencia", "guarda": "guarda"}
-COR_ETIQUETA = {"dt": "bfd4f2", "deltaspec": "d4c5f9", "fila": "fbca04"}
+ROTULO_NATUREZA = {"débito": "debito", "pendência": "pendencia"}  # só o que é pontuável
 
 # `P3·J9·Pr9` com sufixos opcionais ` · trilha` / ` · !security(AAAA-MM-DD)`.
 # Ancorada no início: a fila só vale na posição canônica da célula (lição 2026-07-28).
 FILA = re.compile(r"^P([139])·J([139])·Pr([139])(?:\s*·\s*(.+))?$")
 OVERRIDE = re.compile(r"^!(\w+)\((\d{4}-\d{2}-\d{2})\)$")
+DATA = re.compile(r"\d{4}-\d{2}-\d{2}")  # data obrigatória em quitado/descartado (R18)
 LINK_MD = re.compile(r"\[[^\]]*\]\(([^)\s]+)\)")
 CELULA = re.compile(r"(?<!\\)\|")  # separador de coluna; `\|` escapado não separa
 TRILHA = "trilha"
@@ -85,11 +88,15 @@ def parse_tabela(texto: str) -> list:
 
 def estado(item: dict) -> str:
     """Primeira palavra da célula de status — 'quitado (data, ref) — prosa' → 'quitado'."""
-    return item.get("status", "").split("(")[0].strip().split()[0].lower() if item.get("status") else ""
+    return item.get("status", "").split("(")[0].strip().lower().split(" ")[0]
 
 
 def parse_fila(valor: str):
-    """(principal, juros, probabilidade, trilha, override) ou None se malformada."""
+    """(principal, juros, probabilidade, trilha, override) ou None se malformada.
+
+    O vocabulário de override é fechado: `!segurança-com-typo(data)` seria aceito em
+    silêncio e rebaixaria um impedimento à prioridade de trilha (achado do review).
+    """
     m = FILA.match(valor.strip())
     if not m:
         return None
@@ -98,12 +105,18 @@ def parse_fila(valor: str):
     for sufixo in (s.strip() for s in (m.group(4) or "").split("·") if s.strip()):
         if sufixo == TRILHA:
             trilha = True
-        elif OVERRIDE.match(sufixo):
-            nome, prazo = OVERRIDE.match(sufixo).groups()
-            override = (nome, prazo)
+        elif (mo := OVERRIDE.match(sufixo)) and mo.group(1) in OVERRIDES:
+            override = mo.groups()
         else:
             return None
     return principal, juros, prob, trilha, override
+
+
+def precedencia(entrada: dict) -> int:
+    """Posição na fila antes do score: override (na ordem do enum) < trilha < resto."""
+    if entrada["override"]:
+        return OVERRIDES.index(entrada["override"][0])
+    return len(OVERRIDES) if entrada["trilha"] else len(OVERRIDES) + 1
 
 
 def score(principal: int, juros: int, prob: int) -> float:
@@ -111,8 +124,18 @@ def score(principal: int, juros: int, prob: int) -> float:
     return (juros * prob) / principal
 
 
+def legado(item: dict) -> bool:
+    """Linha do formato anterior à delta-023 (tabela sem a coluna `Fila`).
+
+    Projeto scaffoldado antes desta delta continua válido: o registro vale sozinho e
+    só a fila se omite — retrocompatível sem migração, como o `dep:` do tasks.md (R40).
+    """
+    return "fila" not in item
+
+
 def pontuavel(item: dict) -> bool:
-    return item.get("natureza", "") in NATUREZAS_PONTUAVEIS and estado(item) in ESTADOS_ATIVOS
+    return (not legado(item) and item.get("natureza", "") in NATUREZAS_PONTUAVEIS
+            and estado(item) in ESTADOS_ATIVOS)
 
 
 def validar(itens: list, root: Path) -> list:
@@ -126,6 +149,10 @@ def validar(itens: list, root: Path) -> list:
             continue
         if st == "aceito" and item.get("gatilho de correção", "") in VAZIO:
             erros.append(f"{ident}: status 'aceito' exige gatilho de reavaliação")
+        if st in ESTADOS_FINAIS and not DATA.search(item.get("status", "")):
+            erros.append(f"{ident}: status '{st}' exige data (AAAA-MM-DD) — R18")
+        if legado(item):
+            continue  # tabela anterior à delta-023: só o registro vale, a fila se omite
         if item.get("natureza") == "guarda" and item.get("fila", "") not in VAZIO:
             erros.append(f"{ident}: guarda não tem principal nem juros — 'Fila' deve ficar '—'")
         if not pontuavel(item):
@@ -153,8 +180,12 @@ def git(root: Path, *args):
     return r.stdout if r.returncode == 0 else None
 
 
+@lru_cache(maxsize=None)
 def churn(root: Path):
-    """{caminho: commits na janela} — proxy objetivo da probabilidade de incidência."""
+    """{caminho: commits na janela} — proxy objetivo da probabilidade de incidência.
+
+    Em cache: o `git log` varre o repositório inteiro e o relatório o consulta por item.
+    """
     saida = git(root, "log", f"--since={JANELA_CHURN}", "--name-only", "--pretty=format:")
     if saida is None:
         return None
@@ -162,19 +193,24 @@ def churn(root: Path):
 
 
 def prob_do_churn(caminho: str, contagem):
-    """Percentil do arquivo no ranking de churn → escala 1|3|9."""
+    """Percentil do arquivo no ranking de churn → escala do eixo (1, 3 ou 9)."""
     if not contagem:
         return None
-    ranking = [c for c, _ in contagem.most_common()]
-    if caminho not in ranking:
+    if caminho not in contagem:
         return 1
+    ranking = [c for c, _ in contagem.most_common()]
     posicao = ranking.index(caminho) / len(ranking)
     return 9 if posicao < PERCENTIL_QUENTE else 3 if posicao < PERCENTIL_MORNO else 1
 
 
 def dias_parado(root: Path, ident: str, hoje: date):
-    """Dias desde o último commit que tocou a linha do item — base do 'stale'."""
-    saida = git(root, "log", "-1", "--format=%cs", "-S", ident, "--", "DEBT.md")
+    """Dias desde o último commit que tocou a linha do item — base do 'stale'.
+
+    `-G` e não `-S`: o pickaxe (`-S`) só conta quando a string passa a existir ou
+    deixa de existir, então editar a linha de um item já registrado não contaria e o
+    `stale` nunca sairia. `-G` casa qualquer diff que mencione o ID.
+    """
+    saida = git(root, "log", "-1", "--format=%cs", "-G", ident, "--", "DEBT.md")
     if not saida or not saida.strip():
         return None
     try:
@@ -207,11 +243,7 @@ def montar_fila(itens: list, root: Path, hoje=None) -> list:
             "prob_derivada": derivada,
             "stale": bool(parado is not None and parado > STALE_DIAS and juros >= JUROS_RELEVANTE),
         })
-    fila.sort(key=lambda f: (
-        OVERRIDES.index(f["override"][0]) if f["override"] and f["override"][0] in OVERRIDES
-        else len(OVERRIDES) if f["override"] else len(OVERRIDES) + (0 if f["trilha"] else 1),
-        -f["score"],
-    ))
+    fila.sort(key=lambda f: (precedencia(f), -f["score"]))
     return fila
 
 
@@ -235,9 +267,9 @@ def corpo_ticket(item: dict, entrada: dict) -> str:
 
 
 def etiquetas(item: dict, entrada: dict) -> list:
-    faixa = "alta" if entrada["score"] >= 9 else "media" if entrada["score"] >= 3 else "baixa"
-    marcas = [f"dt:{item['id']}", f"deltaspec:{ROTULO_NATUREZA.get(item.get('natureza'), 'debito')}",
-              f"fila:{faixa}"]
+    faixa = ("alta" if entrada["score"] >= FAIXA_ALTA
+             else "media" if entrada["score"] >= FAIXA_MEDIA else "baixa")
+    marcas = [f"dt:{item['id']}", f"deltaspec:{ROTULO_NATUREZA[item['natureza']]}", f"fila:{faixa}"]
     if entrada["trilha"]:
         marcas.append("fila:trilha")
     if entrada["override"]:
@@ -266,23 +298,32 @@ def canonico(fila: list) -> dict:
     return {"version": 1, "source": "DEBT.md", "items": itens}
 
 
-def exportar(root: Path, saida: Path) -> int:
+def carregar(root: Path):
+    """Itens válidos do DEBT.md, ou None quando há erro (já reportado)."""
     itens = parse_tabela((root / "DEBT.md").read_text(encoding="utf-8"))
     erros = validar(itens, root)
-    if erros:
-        for e in erros:
-            print(f"[inválido] {e}")
+    for e in erros:
+        print(f"[inválido] {e}")
+    return None if erros else itens
+
+
+def exportar(root: Path, saida: Path, projeto: str = "") -> int:
+    itens = carregar(root)
+    if itens is None:
         return 1
     dados = canonico(montar_fila(itens, root))
     saida.mkdir(parents=True, exist_ok=True)
     (saida / "tickets.json").write_text(json.dumps(dados, ensure_ascii=False, indent=2) + "\n",
                                         encoding="utf-8")
-    # Dialeto do `acli jira workitem create-bulk --from-json` (campos flat).
-    bulk = {"issues": [{"summary": i["title"], "issueType": "Task",
-                        "description": i["body"], "label": i["labels"]}
-                       for i in dados["items"] if not i["externo"]]}
-    (saida / "tickets-acli.json").write_text(json.dumps(bulk, ensure_ascii=False, indent=2) + "\n",
-                                             encoding="utf-8")
+    # Dialeto do `acli jira workitem create-bulk --from-json` (campos flat). Só é
+    # emitido com a chave do projeto: sem `projectKey` o acli recusa o lote, e emitir
+    # um payload que não roda seria pior que não emitir (achado do review).
+    if projeto:
+        bulk = {"issues": [{"summary": i["title"], "projectKey": projeto, "issueType": "Task",
+                            "description": i["body"], "label": i["labels"]}
+                           for i in dados["items"] if not i["externo"]]}
+        (saida / "tickets-acli.json").write_text(
+            json.dumps(bulk, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     linhas = ["#!/usr/bin/env bash",
               "# Emitido por debito.py — revise antes de executar. Itens já projetados são pulados.",
               "# Rode a partir da raiz do repositório: o gh resolve o repo pelo diretório corrente.",
@@ -290,8 +331,7 @@ def exportar(root: Path, saida: Path) -> int:
               "# Etiquetas primeiro — `gh issue create` falha se a etiqueta não existir.",
               "# Idempotente: recriar uma etiqueta existente é erro, e aqui ele é inofensivo."]
     for rotulo in sorted({r for i in dados["items"] if not i["externo"] for r in i["labels"]}):
-        cor = COR_ETIQUETA.get(rotulo.split(":")[0], "ededed")
-        linhas.append(f"gh label create {shlex.quote(rotulo)} --color {cor} "
+        linhas.append(f"gh label create {shlex.quote(rotulo)} "
                       f"--description {shlex.quote('Projeção do DEBT.md (ADR-0021)')} 2>/dev/null || true")
     linhas.append("")
     for i in dados["items"]:
@@ -305,6 +345,8 @@ def exportar(root: Path, saida: Path) -> int:
     (saida / "tickets-gh.sh").write_text("\n".join(linhas) + "\n", encoding="utf-8")
     pendentes = sum(1 for i in dados["items"] if not i["externo"])
     print(f"{len(dados['items'])} item(ns) na fila · {pendentes} sem projeção · saída em {saida}")
+    if not projeto:
+        print("> Dialeto do Jira omitido: informe --projeto CHAVE para gerar o lote do acli.")
     return 0
 
 
@@ -315,7 +357,12 @@ def diff(root: Path, externo: Path) -> int:
     a ferramenta externa nunca sobrescreve a fonte (ADR-0021).
     """
     itens = parse_tabela((root / "DEBT.md").read_text(encoding="utf-8"))
-    tickets = json.loads(externo.read_text(encoding="utf-8"))
+    try:  # fronteira de confiança: o arquivo vem de fora, coletado à mão pela skill
+        tickets = json.loads(externo.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as erro:
+        die(f"não consegui ler {externo}: {erro}")
+    if not isinstance(tickets, list):
+        die(f"{externo} deveria ser a lista JSON do `gh issue list --json ...`")
     por_id = {}
     for t in tickets:
         for rotulo in t.get("labels", []):
@@ -357,12 +404,13 @@ def diff(root: Path, externo: Path) -> int:
 
 
 def cmd_fila(root: Path, hoje=None) -> int:
-    itens = parse_tabela((root / "DEBT.md").read_text(encoding="utf-8"))
-    erros = validar(itens, root)
-    if erros:
-        for e in erros:
-            print(f"[inválido] {e}")
+    itens = carregar(root)
+    if itens is None:
         return 1
+    if itens and all(legado(i) for i in itens):
+        print("Tabela no formato anterior à delta-023 (sem a coluna `Fila`) — "
+              "o registro vale, a fila se omite. Migre para priorizar.")
+        return 0
     fila = montar_fila(itens, root, hoje)
     print(f"# Fila de dívida — {len(fila)} item(ns) pontuável(is)\n")
     print("| # | ID | Score | Fila | Título | Marcas |")
@@ -385,37 +433,26 @@ def cmd_fila(root: Path, hoje=None) -> int:
 
 
 def main() -> None:
-    args = [a for a in sys.argv[1:]]
-    if not args or args[0] in ("-h", "--help"):
-        die("uso: debito.py fila|exportar|diff [ROOT] [--saida DIR] [--externo ESTADO.json]")
-    if args[0] == "--selftest":
+    if "--selftest" in sys.argv[1:]:
         selftest()
         return
-    comando = args[0]
-    if comando not in ("fila", "exportar", "diff"):
-        die(f"comando desconhecido: {comando}")
-    opcoes = {}
-    posicionais = []
-    i = 1
-    while i < len(args):
-        if args[i] in ("--saida", "--externo"):
-            if i + 1 >= len(args):
-                die(f"{args[i]} exige um caminho")
-            opcoes[args[i]] = args[i + 1]
-            i += 2
-        else:
-            posicionais.append(args[i])
-            i += 1
-    root = Path(posicionais[0] if posicionais else ".").resolve()
+    p = argparse.ArgumentParser(description="Fila de dívida técnica e projeção para tickets.")
+    p.add_argument("comando", choices=("fila", "exportar", "diff"))
+    p.add_argument("root", nargs="?", default=".", help="raiz do repositório (default: .)")
+    p.add_argument("--saida", help="diretório dos arquivos de importação (exportar)")
+    p.add_argument("--projeto", default="", help="chave do projeto Jira (exportar)")
+    p.add_argument("--externo", help="JSON do `gh issue list --json ...` (diff)")
+    a = p.parse_args()
+    root = Path(a.root).resolve()
     if not (root / "DEBT.md").is_file():
         die(f"DEBT.md não encontrado em {root}")
-    if comando == "fila":
+    if a.comando == "fila":
         sys.exit(cmd_fila(root))
-    if comando == "exportar":
-        sys.exit(exportar(root, Path(opcoes.get("--saida", root / "docs" / "tickets"))))
-    if not opcoes.get("--externo"):
+    if a.comando == "exportar":
+        sys.exit(exportar(root, Path(a.saida) if a.saida else root / "docs" / "tickets", a.projeto))
+    if not a.externo:
         die("diff exige --externo ESTADO.json (saída de `gh issue list --json ...`)")
-    sys.exit(diff(root, Path(opcoes["--externo"])))
+    sys.exit(diff(root, Path(a.externo)))
 
 
 # ---------------------------------------------------------------- selftest
@@ -436,6 +473,7 @@ def linha(ident, natureza="débito", titulo="Título curto", local="[alvo](alvo.
 
 
 def selftest() -> None:
+    import ast
     import contextlib
     import io
     import tempfile
@@ -461,8 +499,18 @@ def selftest() -> None:
     assert parse_fila("P3·J9·Pr9") == (3, 9, 9, False, None)
     assert parse_fila("P9·J3·Pr9 · trilha")[3] is True
     assert parse_fila("P1·J1·Pr1 · !security(2026-09-01)")[4] == ("security", "2026-09-01")
-    for ruim in ("P2·J9·Pr9", "P3-J9-Pr9", "", "P3·J9", "P3·J9·Pr9 · bagunça"):
+    for ruim in ("P2·J9·Pr9", "P3-J9-Pr9", "", "P3·J9", "P3·J9·Pr9 · bagunça",
+                 "P3·J9·Pr9 · !secutiry(2026-09-01)"):  # typo em 'security' não pode passar
         assert parse_fila(ruim) is None, f"fila malformada aceita: {ruim!r}"
+
+    # precedência: cada override na ordem do enum, depois trilha, depois o resto
+    def entrada(trilha=False, override=None):
+        return {"trilha": trilha, "override": override}
+    ordem_prec = [precedencia(entrada(override=(o, "2026-01-01"))) for o in OVERRIDES]
+    assert ordem_prec == sorted(ordem_prec) and len(set(ordem_prec)) == len(OVERRIDES), \
+        f"overrides não respeitam a ordem do enum: {ordem_prec}"
+    assert max(ordem_prec) < precedencia(entrada(trilha=True)) < precedencia(entrada()), \
+        "override deve vir antes de trilha, e trilha antes do resto"
 
     # tabela limpa passa
     root = montar(linha("DT-001") + linha("DT-002", natureza="guarda", titulo="—",
@@ -511,6 +559,33 @@ def selftest() -> None:
     assert any("guarda" in e for e in
                validar(parse_tabela((r_guarda / "DEBT.md").read_text(encoding="utf-8")), r_guarda)), \
         "guarda com fila preenchida não acusada"
+    r_sem_data = montar(linha("DT-017", titulo="—", local="—", fila="—", status="quitado"))
+    assert any("exige data" in e for e in
+               validar(parse_tabela((r_sem_data / "DEBT.md").read_text(encoding="utf-8")), r_sem_data)), \
+        "quitado sem data não acusado (R18 exige data e ref)"
+
+    # os cinco estados válidos convivem; só o pontuável exige os campos novos
+    r_estados = montar(
+        linha("DT-050", status="aberto")
+        + linha("DT-051", status="aceito", gatilho="quando o motor mudar")
+        + linha("DT-052", natureza="guarda", titulo="—", local="—", fila="—", status="vigente")
+        + linha("DT-053", titulo="—", local="—", fila="—", status="descartado (2026-08-01, virou obsoleto)")
+        + linha("DT-054", titulo="—", local="—", fila="—", status="quitado (2026-08-01, #99)"))
+    itens_e = parse_tabela((r_estados / "DEBT.md").read_text(encoding="utf-8"))
+    assert validar(itens_e, r_estados) == [], f"estados válidos acusados: {validar(itens_e, r_estados)}"
+    assert {e["item"]["id"] for e in montar_fila(itens_e, r_estados)} == {"DT-050", "DT-051"}, \
+        "só item ativo e pontuável entra na fila"
+
+    # tabela anterior à delta-023 (7 colunas) degrada em vez de rejeitar
+    legado_txt = ("## Registro\n\n| ID | Natureza | Descrição | Origem | Aberto em "
+                  "| Gatilho de correção | Status |\n|---|---|---|---|---|---|---|\n"
+                  "| DT-001 | débito | x | PR #1 | 2026-01-01 | quando doer | aberto |\n")
+    r_legado = Path(tempfile.mkdtemp())
+    (r_legado / "DEBT.md").write_text(legado_txt, encoding="utf-8")
+    itens_l = parse_tabela(legado_txt)
+    assert itens_l and all(legado(i) for i in itens_l), "formato antigo não reconhecido"
+    assert validar(itens_l, r_legado) == [], "formato antigo foi rejeitado em vez de degradar"
+    assert quieto(cmd_fila, r_legado) == 0, "cmd_fila não degradou com tabela antiga"
 
     # ordenação: override → trilha → score desc
     root_o = montar(
@@ -526,13 +601,28 @@ def selftest() -> None:
     # exportar: três arquivos, JSON válido, item já projetado é pulado
     root_e = montar(linha("DT-030") + linha("DT-031", externo="gh#7"))
     saida = root_e / "out"
-    assert quieto(exportar, root_e, saida) == 0
+    assert quieto(exportar, root_e, saida, "PROJ") == 0
     dados = json.loads((saida / "tickets.json").read_text(encoding="utf-8"))
     assert len(dados["items"]) == 2 and dados["version"] == 1
     assert dados["items"][0]["title"].startswith("[DT-0"), "título sem o ID como prefixo"
     assert any(l == "dt:DT-030" for l in dados["items"][0]["labels"]), "etiqueta de idempotência ausente"
     bulk = json.loads((saida / "tickets-acli.json").read_text(encoding="utf-8"))
     assert len(bulk["issues"]) == 1, "item já projetado entrou no bulk do Jira"
+    assert bulk["issues"][0]["projectKey"] == "PROJ", "lote do Jira sem chave de projeto não roda"
+    sem_projeto = root_e / "out2"
+    assert quieto(exportar, root_e, sem_projeto) == 0
+    assert not (sem_projeto / "tickets-acli.json").exists(), \
+        "sem --projeto o dialeto do Jira deve ser omitido, não emitido quebrado"
+    # O módulo não fala com a rede. A checagem lê a árvore sintática, não o texto:
+    # uma busca por "import urllib" acharia a própria lista de proibidos abaixo — a
+    # lição de 2026-07-28 pegando este selftest pela segunda vez.
+    arvore = ast.parse(Path(__file__).read_text(encoding="utf-8"))
+    importados = {alias.name.split(".")[0] for no in ast.walk(arvore)
+                  if isinstance(no, ast.Import) for alias in no.names}
+    importados |= {no.module.split(".")[0] for no in ast.walk(arvore)
+                   if isinstance(no, ast.ImportFrom) and no.module}
+    rede = importados & {"urllib", "http", "socket", "requests", "httpx", "ftplib", "asyncio"}
+    assert not rede, f"módulo passou a acessar a rede: {rede}"
     sh = (saida / "tickets-gh.sh").read_text(encoding="utf-8")
     assert "gh issue create" in sh and "DT-031 já projetado" in sh, "roteiro do gh incorreto"
     # Comando só conta na posição canônica (início da linha, fora de comentário): o
@@ -629,6 +719,20 @@ def selftest_git() -> None:
         # o mesmo registro, avaliado muito depois: juros altos e linha parada → stale
         tarde = montar_fila(itens, root, hoje=date(2021, 1, 1))
         assert all(e["stale"] for e in tarde), f"stale não marcado após {STALE_DIAS} dias"
+
+        # tocar a linha do DT-040 derruba o stale dele — e só dele
+        texto = (root / "DEBT.md").read_text(encoding="utf-8")
+        (root / "DEBT.md").write_text(texto.replace("| DT-040 | débito | Título curto",
+                                                    "| DT-040 | débito | Título revisado"),
+                                      encoding="utf-8")
+        g("add", "-A")
+        g("commit", "-qm", "revisa DT-040", quando="2020-12-31T00:00:00")
+        churn.cache_clear()  # o cache é por root; o repo mudou dentro do mesmo processo
+        depois = {e["item"]["id"]: e["stale"]
+                  for e in montar_fila(parse_tabela((root / "DEBT.md").read_text(encoding="utf-8")),
+                                       root, hoje=date(2021, 1, 1))}
+        assert depois["DT-040"] is False, "stale não sumiu depois de a linha ser tocada"
+        assert depois["DT-041"] is True, "stale de item não tocado sumiu junto"
 
         sem_git = Path(tempfile.mkdtemp())
         (sem_git / "DEBT.md").write_text(CABECALHO_FIXTURE + linha("DT-050", local="—",
