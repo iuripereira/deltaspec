@@ -1,6 +1,6 @@
 {
   "name": "deltaspec",
-  "description": "Spec-Driven Development por delta specs com gates determinísticos: projeto-init, projeto-infra, descoberta, spec-feature, spec-review, guarding-doc-integrity, handoff, doc-entregavel e eu-tenho-tdah.",
+  "description": "Spec-Driven Development por delta specs com gates determinísticos: projeto-init, projeto-infra, descoberta, spec-feature, spec-review, guarding-doc-integrity, handoff, doc-entregavel, status-pmo e eu-tenho-tdah.",
   "author": {
     "name": "Iuri Pereira"
   },
