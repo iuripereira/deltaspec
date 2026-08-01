@@ -2,10 +2,11 @@
 
 > Andamento contínuo do trabalho: o que está em curso **agora**, o que acabou de ser feito, os problemas do momento e os próximos passos imediatos. Atualize com frequência dentro da própria sessão. **Janela rolante:** entrada antiga sai — histórico permanente é [CHANGELOG](CHANGELOG.md) + git; débito/pendência/lição é [DEBT.md](DEBT.md); decisão com renúncia é [docs/adrs/](docs/adrs/); o que vige é [specs/TRUTH.md](specs/TRUTH.md). Em conflito de merge, mantenha a **união das verdades** — nunca sobrescreva o progresso de outra sessão.
 
-**Atualizado em:** 2026-07-30
+**Atualizado em:** 2026-07-31
 
 ## Agora
-- **Rename concluído no framework, faltando 3 consumidores.** delta-019 arquivada, `v1.0.0` publicada, plugin local reinstalado sob o nome novo (9 skills, `deltaspec@deltaspec`) e, em 2026-07-29, os **6 PRs de migração mergeados** — mas o inventário real é de **10 consumidores**, e `~/code/imex`, `radar-financeiro` e `imex-nao-conformidade` seguem apontando para `sdd-iuri` (detalhe nos próximos passos). Entre os 6 ia o conserto de um gate que o rename tinha quebrado em silêncio (`validate_docs.sh` resolvia o validador por `marketplaces/sdd-iuri/`, caía no AVISO e saía 0, deixando todo commit passar sem validação).
+- **delta-021 (skill `status-pmo`) na branch `feat/021-status-pmo`**: extração do site de status PMO validado no repo imex (deltas 002/003) — SKILL.md (6 gates + invariantes), templates (styles-tokens/theme/cronograma/ata/dados-schema), ADR-0019, manifestos, CHANGELOG. Falta: PR + CI + squash-merge; depois PR de archive (TRUTH, `_archive`, release 1.2.0 + tag).
+- **Rename concluído no framework, faltando consumidores.** delta-019 arquivada, `v1.0.0` publicada, plugin local reinstalado sob o nome novo (9 skills, `deltaspec@deltaspec`) e, em 2026-07-29, os **6 PRs de migração mergeados** — mas o inventário real é de **10 consumidores**: a delta-003 do `~/code/imex` (branch `feat/003-site-status`, 2026-07-31, ainda não mergeada) corrige o CLAUDE.md do umbrella; seguem em `sdd-iuri` o `radar-financeiro` e o `imex-nao-conformidade` (detalhe nos próximos passos). Entre os 6 ia o conserto de um gate que o rename tinha quebrado em silêncio (`validate_docs.sh` resolvia o validador por `marketplaces/sdd-iuri/`, caía no AVISO e saía 0, deixando todo commit passar sem validação).
 - Do plano de upgrade resta só a **Fase 4 (delta-017, Jira/tickets.md — número reservado, R5)**, adiada por decisão do usuário (2026-07-28: "não será necessária agora"). Inclui o gatilho de reavaliação do fork do max (ADR-0012).
 
 ## Feito recentemente

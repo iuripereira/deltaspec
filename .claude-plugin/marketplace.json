@@ -8,7 +8,7 @@
   "plugins": [
     {
       "name": "deltaspec",
-      "description": "Skills do ciclo deltaspec: projeto-init, projeto-infra, descoberta, spec-feature, spec-review, guarding-doc-integrity, handoff, doc-entregavel e eu-tenho-tdah.",
+      "description": "Skills do ciclo deltaspec: projeto-init, projeto-infra, descoberta, spec-feature, spec-review, guarding-doc-integrity, handoff, doc-entregavel, status-pmo e eu-tenho-tdah.",
       "source": "./",
       "category": "workflow",
       "homepage": "https://github.com/iuripereira/deltaspec"

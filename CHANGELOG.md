@@ -10,6 +10,7 @@ O formato segue [Keep a Changelog 1.0.0](https://keepachangelog.com/pt-BR/1.0.0/
 
 ### Adicionado
 
+- **Skill `status-pmo` — site de status PMO montado sempre da mesma forma** (delta-021, [ADR-0019](docs/adrs/ADR-0019-status-pmo-site-de-status.md)): processo em 6 gates (cronograma canônico com D0/etapas/marcos → ata semanal → gerador stdlib no repo cliente → marca por tokens de CSS → publicação restrita → integração externa trocando só a coleta) + templates em `references/templates/` (`styles-tokens.css` com paleta placeholder, `theme.js`, templates de cronograma e ata, `dados-schema.md` como contrato do `dados.json`). Extração do caso validado no repo imex (deltas 002/003); renúncias registradas na ADR: SaaS/BI de status, gerador genérico no plugin e lib de gráfico (gantt é CSS grid puro).
 - **Abertura à comunidade (DT-015): README em inglês, guia de contribuição e código de conduta** — `README.en.md` como espelho sancionado do `README.md` (tradução integral com nota de sincronia e seletor de idioma nos dois); `CONTRIBUTING.md` com o fluxo (fork → branch por escopo → Conventional Commits → PR com checks → squash), a regra do ciclo para mudanças em `skills/` e resumo em EN; `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1, tradução oficial pt-BR). As skills permanecem em PT-BR por convenção registrada no CLAUDE.md.
 
 ## [1.1.0] - 2026-07-30
