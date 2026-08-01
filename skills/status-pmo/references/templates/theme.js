@@ -8,9 +8,7 @@
   const saved = localStorage.getItem(STORAGE_KEY);
   if (saved === "dark" || saved === "light") root.dataset.theme = saved;
 
-  const isDark = () =>
-    root.dataset.theme === "dark" ||
-    (!root.dataset.theme && matchMedia("(prefers-color-scheme: dark)").matches);
+  const isDark = () => root.dataset.theme === "dark"; // padrão do site: claro
 
   const button = document.createElement("button");
   button.type = "button";

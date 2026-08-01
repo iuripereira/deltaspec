@@ -5,6 +5,7 @@
 **Atualizado em:** 2026-07-31
 
 ## Agora
+- **delta-022 (`status-pmo`: épicos, tarefas e dependências) na branch `feat/status-pmo-epicos`**: reflete no dono as lições da 1ª revisão do PO no caso imex (gate de épicos, página por épico, grafo SVG, tema claro padrão, escopo rastreado). Falta: PR + CI + merge; depois archive (R50–R52, release 1.3.0).
 - **delta-021 (skill `status-pmo`) arquivada** (#81 + PR de archive): R48–R49 no TRUTH, ADR-0019, templates extraídos do caso imex (deltas 002/003), `v1.2.0`. Perfil enxuto (3º dogfood), test-plan dispensado no cabeçalho.
 - **Rename concluído no framework, faltando consumidores.** delta-019 arquivada, `v1.0.0` publicada, plugin local reinstalado sob o nome novo (9 skills, `deltaspec@deltaspec`) e, em 2026-07-29, os **6 PRs de migração mergeados** — mas o inventário real é de **10 consumidores**: a delta-003 do `~/code/imex` (branch `feat/003-site-status`, 2026-07-31, ainda não mergeada) corrige o CLAUDE.md do umbrella; seguem em `sdd-iuri` o `radar-financeiro` e o `imex-nao-conformidade` (detalhe nos próximos passos). Entre os 6 ia o conserto de um gate que o rename tinha quebrado em silêncio (`validate_docs.sh` resolvia o validador por `marketplaces/sdd-iuri/`, caía no AVISO e saía 0, deixando todo commit passar sem validação).
 - Do plano de upgrade resta só a **Fase 4 (delta-017, Jira/tickets.md — número reservado, R5)**, adiada por decisão do usuário (2026-07-28: "não será necessária agora"). Inclui o gatilho de reavaliação do fork do max (ADR-0012).
