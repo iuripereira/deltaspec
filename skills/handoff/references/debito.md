@@ -1,5 +1,27 @@
 # Fila de dívida técnica e projeção para tickets
 
+## Gramática do registro
+
+Cada item é um bloco. Os campos valem **na âncora de início de linha** — a mesma sintaxe citada dentro da descrição é prosa, não campo:
+
+```markdown
+### DT-001 · débito · aberto
+**Parser do check_cycle acoplado ao formato dos templates**
+
+Descrição em prosa, quantas linhas precisar.
+
+- **Fila:** `P3·J3·Pr9`
+- **Local:** [check_cycle.py]({caminho/do/artefato.py})
+- **Gatilho:** template mudar de forma
+- **Origem:** [PR #{N}](../../pull/{N}) · [delta-{NNN}](specs/_archive/{NNN-nome}/) · aberto em {AAAA-MM-DD}
+- **Ticket:** [#{N}](../../issues/{N})
+```
+
+> Os `{…}` acima são placeholders do exemplo — no arquivo real vão os valores. A chave também faz o validador de integridade pular estes links, que são de exemplo e não apontam arquivo.
+
+`guarda` dispensa **Fila** e **Local**. Item `quitado` ou `descartado` troca **Ticket** por **Encerrado**, que carrega data e referência. Referências a PR, issue e delta são links relativos (`../../pull/N`, `../../issues/N`, `specs/_archive/NNN-*/`) — resolvem no GitHub e sobrevivem a fork. A legenda dos estados vive no cabeçalho do próprio `DEBT.md`, não aqui.
+
+
 Regra canônica de **como priorizar dívida** e **como projetá-la** numa ferramenta de ticket. O registro em si tem dono próprio: o `DEBT.md` da raiz ([ADR-0007](../../../docs/adrs/ADR-0007-registros-com-dono.md)). As decisões e renúncias estão na [ADR-0020](../../../docs/adrs/ADR-0020-modelo-de-divida-tecnica.md) (modelo) e na [ADR-0021](../../../docs/adrs/ADR-0021-projecao-de-tickets.md) (projeção).
 
 Os limiares numéricos (janela de churn, dias até `stale`, percentis, escala) vivem como **constantes nomeadas** no `scripts/debito.py` — este documento os cita pelo nome, nunca pelo valor.
