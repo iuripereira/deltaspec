@@ -1,0 +1,4 @@
+<!-- resumo deltaspec · ≤15 linhas · única parte do plano lida pelo analyze e pelo humano -->
+**Objetivo:** refletir na skill `status-pmo` o nível épico/tarefa com dependências e as correções de padrão validadas na revisão do PO no caso IMEX. **Cobre:** R50, R51, R52 (delta-022) **Decisões duráveis → ADRs:** nenhuma nova — segue a ADR-0019 (gerador no repo cliente, zero lib, SVG/CSS puros) **Riscos assumidos:** templates de CSS/JS são cópia do caso de referência (duplicação documentada).
+
+Execução: SKILL.md ganha o gate 2 (épicos), a página por épico no gate 4, o tema claro no gate 5 e a seção "Diagramas de dependência"; 4 linhas novas na tabela de erros comuns. Templates: `epicos-template.md` novo; `styles-tokens.css` sem bloco escuro automático e com o espaçamento do nav; `theme.js` sem `prefers-color-scheme`; `dados-schema.md` com `jira` e `epicos[]`. TDD não se aplica (conteúdo declarativo, zero script novo); validação = CI + check_cycle.

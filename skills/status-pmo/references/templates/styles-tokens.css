@@ -3,7 +3,7 @@
    TROQUE OS TOKENS DE :root PELA MARCA DO CLIENTE — os valores abaixo são placeholder neutro.
    Regra semântica que NÃO muda entre clientes: verde=feito/ok · azul(--acc)=em curso ·
    cinza=previsto · vermelho=atraso/risco · --mag=marco. Pares -ink/-bg mantêm o contraste
-   nos dois temas. Modo escuro por prefers-color-scheme, forçável por data-theme (theme.js). */
+   nos dois temas. Site claro por padrão; o escuro entra só pelo toggle (data-theme, theme.js). */
 
 :root{
   --paper:#F6F8FA; --card:#FFFFFF; --ink:#22262B; --muted:#67706E; --line:#DFE4E8;
@@ -11,14 +11,7 @@
   --warn-ink:#8A5A00; --warn-bg:#F8EFDC; --crit-ink:#C21038; --crit-bg:#FBE2E8; --ok-ink:#0E7D63; --ok-bg:#E0F3EE;
   --chip:#EDF1F3;
 }
-@media (prefers-color-scheme: dark){
-  :root{
-    --paper:#14171A; --card:#1D2226; --ink:#E7EAE9; --muted:#9AA5A2; --line:#333B40;
-    --acc:#60A5FA; --acc-soft:#1E2A4A; --amber:#E89A47; --amber-soft:#3A2A12; --mag:#A78BFA; --mag-soft:#2A1D45;
-    --warn-ink:#E3B45C; --warn-bg:#33290F; --crit-ink:#F27E9B; --crit-bg:#3C1620; --ok-ink:#48C8A8; --ok-bg:#123A31;
-    --chip:#262D33;
-  }
-}
+/* Padrão do site é o tema claro — o escuro entra só pelo toggle (data-theme). */
 :root[data-theme="dark"]{
   --paper:#14171A; --card:#1D2226; --ink:#E7EAE9; --muted:#9AA5A2; --line:#333B40;
   --acc:#60A5FA; --acc-soft:#1E2A4A; --amber:#E89A47; --amber-soft:#3A2A12; --mag:#A78BFA; --mag-soft:#2A1D45;
@@ -136,7 +129,7 @@ footer{margin-top:70px; border-top:1px solid var(--line); padding-top:16px; font
 @media (prefers-reduced-motion: no-preference){ .bar,.hbar>i,.pbar>i{transition:width .3s ease;} }
 
 /* ---- Navegação ---- */
-.topnav{display:flex; flex-wrap:wrap; gap:6px 14px; align-items:center; margin:24px 0 -22px; font-size:.8rem;}
+.topnav{display:flex; flex-wrap:wrap; gap:6px 14px; align-items:center; margin:24px 0 0; font-size:.8rem;}
 .topnav a{color:var(--muted); text-decoration:none; border:1px solid var(--line); background:var(--card);
   padding:4px 11px; border-radius:999px; font-weight:600;}
 .topnav a:hover,.topnav a:focus-visible{color:var(--acc); border-color:var(--acc);}

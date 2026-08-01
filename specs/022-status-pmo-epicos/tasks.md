@@ -1,0 +1,7 @@
+# Tasks — delta-022
+- [x] T1 — SKILL.md: gate 2 (épicos), página por épico no gate 4, tema claro no gate 5, seção "Diagramas de dependência", 4 erros comuns novos · arquivos: skills/status-pmo/SKILL.md · cobre: R50, R52 · verificação: CI de frontmatter e links relativos
+- [x] T2 — `epicos-template.md` (épico=etapa, dep, regras de status/paralelismo/sem-data-inventada) · arquivos: skills/status-pmo/references/templates/epicos-template.md · cobre: R51 · verificação: template com placeholders e bloco de regras
+- [x] T3 — Templates de marca alinhados: CSS sem bloco `prefers-color-scheme: dark` + espaçamento do `.topnav`; theme.js sem consulta ao sistema · arquivos: skills/status-pmo/references/templates/{styles-tokens.css,theme.js} · cobre: R51 · verificação: `grep prefers-color-scheme` sem ocorrência de tema
+- [x] T4 — `dados-schema.md`: campos `jira` e `epicos[]` (com `tarefas[]`) · arquivos: skills/status-pmo/references/templates/dados-schema.md · cobre: R51 · verificação: schema casa com o `dados.json` do caso de referência
+- [x] T5 — CHANGELOG + HANDOFF · arquivos: CHANGELOG.md, HANDOFF.md · cobre: infra · verificação: entrada em `[Não lançado]`
+- [ ] T6 (dep: T1, T2, T3, T4, T5) — PR + CI verde + squash-merge; depois PR de archive (TRUTH R50–R52, `_archive`, release 1.3.0 + tag) · arquivos: specs/TRUTH.md, specs/_archive/022-status-pmo-epicos/ · cobre: infra · verificação: check_cycle sem BLOQUEADO; tag v1.3.0

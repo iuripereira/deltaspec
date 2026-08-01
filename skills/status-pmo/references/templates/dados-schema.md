@@ -16,7 +16,13 @@
   "projetos": [{
     "nome": "…", "dir": "repo-dir", "curto": "…",
     "prazo": "2026-09-02", "prazo_nota": "D0 + 30d — contrato", "fonte": "repo/PRD.md:534",
+    "jira": "TP",                         // chave do projeto no sistema externo ("" se não houver)
     "etapas": [["Etapa", "feita|em curso|prevista"]],
+    "epicos": [{                          // 1 por etapa, mesma ordem (docs/epicos/<dir>.md)
+      "id": "E1", "nome": "…", "dep": ["E0"], "notas": ["…"],
+      "status": "…",                      // espelho do status da etapa (dono: cronograma)
+      "tarefas": [{"id": "E1-T1", "nome": "RF-01 — …", "dep": ["E1-T0"], "status": "prevista"}]
+    }],
     "notas": ["…"],
     "pct": 38,                            // derivado: feita=1 · em curso=0,5 · prevista=0
     "fase": "…",                          // primeira etapa em curso (senão prevista, senão "Concluído")
