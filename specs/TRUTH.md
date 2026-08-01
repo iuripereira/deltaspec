@@ -200,10 +200,13 @@
 
 ## Acompanhamento de status (PMO)
 
-- R48 (delta-021) — a skill `status-pmo` conduz a montagem do site de status PMO.
-  - DADO um repo do ciclo que precisa de acompanhamento de status QUANDO `/deltaspec:status-pmo` é invocada ENTÃO a SKILL.md conduz o processo em 6 gates (cronograma canônico → ata semanal → gerador no repo cliente → marca por tokens → publicação restrita → integração externa via contrato de dados), com invariantes explícitos (fonte da verdade no repo, saída não versionada, só metadado de gestão, self-contained, coleta separada do render) e tabela de erros comuns
-- R49 (delta-021) — os templates da status-pmo existem e são utilizáveis.
-  - DADO o diretório `skills/status-pmo/references/templates/` QUANDO a skill é seguida ENTÃO existem: `styles-tokens.css` (design system com paleta placeholder e instrução de troca por marca), `theme.js` (toggle de tema persistido), `cronograma-template.md` (D0 + seções por projeto + `## Marcos` parseáveis), `ata-template.md` (5 seções fixas) e `dados-schema.md` (contrato do `dados.json`, com regra de evolução aditiva)
+- R48 (delta-022) — a skill `status-pmo` conduz a montagem do site de status PMO.
+  - DADO um repo do ciclo que precisa de acompanhamento de status QUANDO `/deltaspec:status-pmo` é invocada ENTÃO a SKILL.md conduz o processo em 7 gates (cronograma canônico → épicos e tarefas → ata semanal → gerador no repo cliente → marca por tokens → publicação restrita → integração externa via contrato de dados), com invariantes explícitos (fonte da verdade no repo, saída não versionada, só metadado de gestão, self-contained, coleta separada do render), **somente projetos com entrega rastreada** (repo de apoio fica fora) e tabela de erros comuns
+- R50 (delta-022) — a skill cobre épicos, tarefas e dependências, com página por épico.
+  - DADO a skill `status-pmo` QUANDO o processo é seguido ENTÃO existe o gate "Épicos e tarefas com dependências" (`docs/epicos/<dir>.md`: um épico por etapa do cronograma, mesma ordem e quantidade, com `**Dep:**` e tabela `| ID | Tarefa | Dep | Status |`), o gerador produz `etapa-<dir>-eN.html` por épico (tarefas, depende-de/bloqueia, registros, chave do sistema externo) com a etapa do cronograma clicável, e a seção "Diagramas de dependência" descreve o grafo em SVG inline (camadas por profundidade, tokens CSS, nó clicável, ciclo degrada sem quebrar)
+  - DADO um projeto sem `docs/epicos/<dir>.md` QUANDO o site é gerado ENTÃO a seção mostra "em elaboração" e a geração completa
+- R49 (delta-022) — os templates da status-pmo existem e são utilizáveis.
+  - DADO o diretório `skills/status-pmo/references/templates/` QUANDO a skill é seguida ENTÃO existem: `styles-tokens.css` (design system com paleta placeholder e instrução de troca por marca), `theme.js` (toggle de tema persistido), `cronograma-template.md` (D0 + seções por projeto + `## Marcos` parseáveis), `ata-template.md` (5 seções fixas), `epicos-template.md` (épico = etapa, tarefas com dependência) e `dados-schema.md` (contrato do `dados.json`, incluindo `jira` e `epicos[]`, com regra de evolução aditiva); os assets de marca nascem com **tema claro por padrão** (sem `prefers-color-scheme`, escuro só por `data-theme`)
 
 ## Não funcionais
 

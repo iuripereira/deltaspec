@@ -9,7 +9,7 @@ Instead of maintaining a giant requirements document that ages badly, each featu
 
 > **It's git, applied to requirements.** Each feature is a spec *commit* (ADICIONA / MUDA / REMOVE — adds / changes / removes). `TRUTH.md` is the *working tree*: the current state, with every commit already applied. Old specs go to `specs/_archive/` — they are history, not truth.
 
-`v1.2.0` · 10 skills · MIT License
+`v1.3.0` · 10 skills · MIT License
 
 ---
 
