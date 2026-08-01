@@ -15,7 +15,7 @@ Argumento opcional: o **foco da próxima sessão** (`/deltaspec:handoff terminar
 
 ## Processo (na ordem — o diário fecha por último)
 
-1. **Rotear os achados novos.** Débito, pendência ou guarda descoberto na sessão e ainda sem registro → linha `DT-NNN` no `DEBT.md` (próximo número livre; natureza, origem, data, gatilho, status). Post-mortem sem ação pendente → seção **Lições**, com data e desfecho. Projeto sem `DEBT.md` → crie do template da `projeto-init`.
+1. **Rotear os achados novos.** Débito, pendência ou guarda descoberto na sessão e ainda sem registro → linha `DT-NNN` no `DEBT.md` (próximo número livre; natureza, origem, data, gatilho, status). Item de natureza `débito`/`pendência` nasce também com **`Título`** (sintoma observável), **`Local`** (link para o artefato) e **`Fila`** (`P·J·Pr`) — regra e escala em [references/debito.md](references/debito.md). Post-mortem sem ação pendente → seção **Lições**, com data e desfecho. Projeto sem `DEBT.md` → crie do template da `projeto-init`.
 2. **Atualizar o `HANDOFF.md`** nas quatro seções — `Agora`, `Feito recentemente` (com data e ref de PR/commit), `Problemas atuais`, `Próximos passos imediatos` (foco do argumento em primeiro) — e o campo "Atualizado em". **Janela rolante:** entrada antiga sai; histórico permanente é CHANGELOG + git, não o diário. Projeto com `STATE.md` legado e sem `HANDOFF.md` → `git mv STATE.md HANDOFF.md` antes de escrever (nunca deixe os dois coexistirem).
 3. **Citar a delta em curso**, se houver `specs/NNN-*/`: número, fase em que parou (specify … archive) e o veredito do último gate — em dúvida, rode `python3 ${CLAUDE_PLUGIN_ROOT}/skills/spec-feature/scripts/check_cycle.py specs/NNN-nome`.
 4. **Commitar junto do trabalho da sessão** quando houver mudança pendente (regra do CLAUDE.md: doc no mesmo change). Sessão só de leitura → commit próprio do diário é aceitável.
@@ -29,6 +29,22 @@ Argumento opcional: o **foco da próxima sessão** (`/deltaspec:handoff terminar
    Workspace multi-repo → `Leia os HANDOFF.md dos repos (<repo âncora> primeiro) e continue. Foco: <próximo marco>.`
 
    O prompt referencia os registros, nunca os resume — o conteúdo vive no repo (regra de ouro).
+
+## Fila de dívida e projeção para tickets (sob demanda, fora do fechamento de sessão)
+
+Regra completa em [references/debito.md](references/debito.md); o script **não acessa a rede** — ele calcula e emite, quem executa os comandos é você.
+
+```bash
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/handoff/scripts/debito.py fila .       # o que fazer primeiro
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/handoff/scripts/debito.py exportar .   # JSON canônico + dialetos
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/handoff/scripts/debito.py diff . --externo estado.json
+```
+
+- **Ida:** rode `exportar` a partir da raiz do repo, **revise o corpo gerado** (vai para uma ferramenta possivelmente pública), execute o roteiro emitido e **grave a chave devolvida na coluna `Externo`**.
+- **Volta:** colete o estado com o comando de coleta da política, rode `diff`, classifique cada divergência e **proponha** a atualização; o `DEBT.md` só muda com aprovação do usuário.
+- Motor ausente ou sem autenticação: avise em 1 linha e siga — o `DEBT.md` vale sozinho (RNF2).
+
+O comando exato de coleta, a regra de idempotência e as quatro seções da política vivem no reference — não os reproduza aqui.
 
 ## Regras de conteúdo
 
@@ -45,3 +61,5 @@ Argumento opcional: o **foco da próxima sessão** (`/deltaspec:handoff terminar
 | Duplicar conteúdo de spec/ADR/CHANGELOG no diário | Referência por caminho/ID |
 | Esquecer a delta em curso | Passo 3 é obrigatório quando existe `specs/NNN-*/` |
 | Fechar sem dizer como retomar | Passo 5: imprimir o prompt de retomada preenchido com o foco real |
+| Gravar o score calculado no DEBT.md | O score é derivado na leitura; persistir cria segunda fonte (ADR-0020) |
+| Criar ticket buscando por título para não duplicar | Idempotência é pela chave em `Externo` e pela etiqueta `dt:DT-NNN` (ADR-0021) |

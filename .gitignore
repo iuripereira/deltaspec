@@ -17,3 +17,6 @@ dist/
 __pycache__/
 # Planos de sessão (locais, por máquina — o plano vive fora do git; specs/NNN-nome/ é o versionado)
 .claude/plans/
+# Arquivos de importação de tickets (saída do debito.py): derivados do DEBT.md e
+# carregam o score calculado — versioná-los criaria a segunda fonte que a ADR-0020 proíbe.
+docs/tickets/
