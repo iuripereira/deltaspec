@@ -3,7 +3,7 @@
 - **Status:** Accepted
 - **Data:** 2026-07-19
 - **Supersedes:** —
-- **Superseded by:** —
+- **Superseded by:** [ADR-0021](ADR-0021-projecao-de-tickets.md) (2026-08-01, delta-023) — **apenas na parte das Issues**: a alternativa 3 (espelho sancionado) foi adotada quando a cláusula "Reabre quando" abaixo disparou. O `DEBT.md` file-first, os IDs `DT-NNN` e a regra "quitado muda de status, nunca some" seguem vigentes e continuam sendo referenciados por esta ADR.
 
 ## Context
 

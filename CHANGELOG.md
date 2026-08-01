@@ -8,6 +8,11 @@ O formato segue [Keep a Changelog 1.0.0](https://keepachangelog.com/pt-BR/1.0.0/
 
 ## [Não lançado]
 
+### Adicionado
+
+- **Dívida técnica com score determinístico e projeção para tickets** (delta-023, R1–R3 — [ADR-0020](docs/adrs/ADR-0020-modelo-de-divida-tecnica.md) e [ADR-0021](docs/adrs/ADR-0021-projecao-de-tickets.md)): o `DEBT.md` ganha `Título`, `Local`, `Fila` (`P·J·Pr`) e `Externo`, mais os estados `aceito`, `vigente` e `descartado`. O score `(juros × probabilidade) / principal` é calculado na leitura pelo novo `skills/handoff/scripts/debito.py` e **nunca gravado**; a probabilidade é conferida contra o churn real do git. O mesmo script exporta o JSON canônico e os dialetos de importação (bulk do Jira, linhas do GitHub) e compara o registro com o estado da ferramenta — **sem tocar a rede**: quem executa os comandos é a skill, no padrão do `projeto-infra`. Política de fila (override, trilha planejada, aging, aceitação) em `skills/handoff/references/debito.md`.
+- **A ADR-0021 substitui a ADR-0007 na parte das Issues**, exatamente pela cláusula que a própria ADR-0007 havia escrito: com Issues e Jira entrando em uso, o espelho sancionado deixa de ser renúncia. O file-first permanece — ferramenta de ticket é projeção, a ida é mecânica e a volta só muda o arquivo com aprovação humana. A delta-017 (reservada) reusará este mecanismo no `tickets.md`.
+
 ## [1.3.0] - 2026-07-31
 
 ## [1.2.0] - 2026-07-31

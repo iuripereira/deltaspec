@@ -14,7 +14,7 @@ Escreva uma ADR quando a **renúncia de uma alternativa** precisa registrar o *p
 | [0004](ADR-0004-degradacao-graciosa-adapters.md) | Degradação graciosa por adapters — motores de terceiros com contrato e fallback | Accepted | 2026-07-18 |
 | [0005](ADR-0005-consolidacao-mecanica-archive.md) | Consolidação mecânica do archive — MUDA substitui integralmente, sem inferir intenção | Accepted | 2026-07-18 |
 | [0006](ADR-0006-perimetro-dos-gates.md) | Perímetro dos gates determinísticos — o papel, não o implement/review | Accepted | 2026-07-18 |
-| [0007](ADR-0007-registros-com-dono.md) | Registros com dono — DEBT.md file-first; Issues não são registro | Accepted | 2026-07-19 |
+| [0007](ADR-0007-registros-com-dono.md) | Registros com dono — DEBT.md file-first; Issues não são registro | Superseded by 0021 (só a parte das Issues) | 2026-07-19 |
 | [0008](ADR-0008-skill-handoff-propria.md) | Skill handoff própria — nem vendorizada, nem delegada | Accepted | 2026-07-20 |
 | [0009](ADR-0009-documentacao-visual-gate-configuravel.md) | Documentação visual como gate configurável — a decisão é obrigatória, os diagramas não | Accepted (2026-07-28, delta-013) | 2026-07-20 |
 | [0010](ADR-0010-handoff-renomeia-state.md) | HANDOFF.md renomeia STATE.md — o diário de bordo é o ponto de entrada da retomada | Accepted | 2026-07-24 |
@@ -26,6 +26,9 @@ Escreva uma ADR quando a **renúncia de uma alternativa** precisa registrar o *p
 | [0016](ADR-0016-rename-deltaspec.md) | O framework passa a se chamar `deltaspec` | Accepted | 2026-07-28 |
 | [0017](ADR-0017-claude-code-only.md) | Portabilidade multi-agente — Claude Code only, por enquanto | Accepted | 2026-07-30 |
 | [0018](ADR-0018-diagram-design-camada-apresentacao.md) | diagram-design + design-sync como camada de apresentação — Mermaid permanece a fonte | Accepted | 2026-07-30 |
+| [0019](ADR-0019-status-pmo-site-de-status.md) | status-pmo — site de status PMO como skill do framework | Accepted | 2026-07-31 |
+| [0020](ADR-0020-modelo-de-divida-tecnica.md) | Dívida técnica com score determinístico, derivado e nunca gravado | Accepted | 2026-08-01 |
+| [0021](ADR-0021-projecao-de-tickets.md) | Ferramenta de ticket é projeção do arquivo — ida mecânica, volta aprovada | Accepted | 2026-08-01 |
 
 > ADR-0002 a 0006 são **backfill** (2026-07-19): decisões que já vigiam, registradas retroativamente na varredura de registros do repo. A data de cada uma aproxima a decisão real pelo histórico disponível — o histórico pré-plugin foi reescrito (`filter-repo`), então decisões anteriores podem ser mais antigas do que a data registrada.
 
