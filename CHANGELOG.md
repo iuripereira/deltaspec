@@ -8,6 +8,8 @@ O formato segue [Keep a Changelog 1.0.0](https://keepachangelog.com/pt-BR/1.0.0/
 
 ## [Não lançado]
 
+## [1.6.0] - 2026-08-02
+
 ### Adicionado
 
 - **Campo `motores.graphify_backend` no template do `doc-profile.yaml`** (delta-025, [ADR-0022](docs/adrs/ADR-0022-backend-do-graphify-registrado-no-perfil.md)): registra qual backend LLM indexa a documentação quando o graphify roda fora do modo só-código. Vazio com indexação de docs pedida faz a IA **parar e perguntar**, nunca assumir um default; em `--code-only` o campo é dispensável.
