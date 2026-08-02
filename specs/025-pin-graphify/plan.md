@@ -1,5 +1,5 @@
 <!-- resumo deltaspec · ≤15 linhas · única parte do plano lida pelo analyze e pelo humano -->
-**Objetivo:** Levar ao contrato do adapter o que a primeira execução real do graphify (0.9.32, imex-travelplanner, 2026-08-02) ensinou: pin verificado, escopo do `--code-only`, backend de docs registrado no perfil e claim sobre arquivo inexistente. **Cobre:** R1, R2, R3 (da delta-025) **Decisões duráveis → ADRs:** ADR-0022 (gravada no clarify) **Riscos assumidos:** a recomendação de backend é datada e envelhece com o upstream (release quase diária, bus factor = 1); o campo novo do `doc-profile.yaml` precisa propagar ao template distribuído, dívida já registrada no DT-022.
+**Objetivo:** Levar ao contrato do adapter o que a primeira execução real do graphify (0.9.32, imex-travelplanner, 2026-08-02) ensinou: pin verificado, escopo do `--code-only`, backend de docs registrado no perfil e claim sobre arquivo inexistente. **Cobre:** R1 (bloco único MUDA R44 — da delta-025) **Decisões duráveis → ADRs:** ADR-0022 (gravada no clarify) **Riscos assumidos:** a recomendação de backend é datada e envelhece com o upstream (release quase diária, bus factor = 1); o campo novo do `doc-profile.yaml` precisa propagar ao template distribuído, dívida já registrada no DT-022.
 
 **Dispensa de TDD (tipo `tooling`, coluna `tdd: recomendado`):** nenhuma task escreve código — a delta muda 4 arquivos de documentação/contrato e um YAML de template. Não há função a testar; a verificação de cada task é `grep` de âncora + os gates existentes (`validate_integrity.py`, `check_cycle.py`), que já rodam no CI. Dispensa registrada por task abaixo.
 
@@ -36,7 +36,7 @@
 
 - [ ] **Step 1: Reescrever o bullet "Habilitação dupla e manual"** — acrescentar que a proibição vale também para o alvo por plataforma `graphify claude install` (verificado: escreve seção no CLAUDE.md + hook `PreToolUse`), e mover a preferência por `--code-only` para o bullet novo do Step 2.
 
-- [ ] **Step 2: Inserir o bullet "Modos e o que cada um enxerga"** (cobre R1), com o texto:
+- [ ] **Step 2: Inserir o bullet "Modos e o que cada um enxerga"** (cobre R1 — escopo de modo), com o texto:
 
 ```markdown
 - **Modos — escolha informada, não default:** `--code-only` entrega AST local por
@@ -46,7 +46,7 @@
   precisa do modo completo — leia o bullet seguinte antes de rodá-lo.
 ```
 
-- [ ] **Step 3: Inserir o bullet "Backend do modo docs"** (cobre R2), com o texto:
+- [ ] **Step 3: Inserir o bullet "Backend do modo docs"** (cobre R1 — backend registrado), com o texto:
 
 ```markdown
 - **Backend do modo docs (exige LLM):** prefira os dois que **não** criam
@@ -58,7 +58,7 @@
   Projeto com `publico.cliente: true`: a escolha é do usuário, sempre.
 ```
 
-- [ ] **Step 4: Inserir o bullet "Arquivo citado que não existe"** (cobre R3), com o texto:
+- [ ] **Step 4: Inserir o bullet "Arquivo citado que não existe"** (cobre R1 — arquivo inexistente), com o texto:
 
 ```markdown
 - **Arquivo citado que não existe:** grafo que indexou documentação cita código
