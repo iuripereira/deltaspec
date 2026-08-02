@@ -8,6 +8,14 @@ O formato segue [Keep a Changelog 1.0.0](https://keepachangelog.com/pt-BR/1.0.0/
 
 ## [Não lançado]
 
+### Adicionado
+
+- **Campo `motores.graphify_backend` no template do `doc-profile.yaml`** (delta-025, [ADR-0022](docs/adrs/ADR-0022-backend-do-graphify-registrado-no-perfil.md)): registra qual backend LLM indexa a documentação quando o graphify roda fora do modo só-código. Vazio com indexação de docs pedida faz a IA **parar e perguntar**, nunca assumir um default; em `--code-only` o campo é dispensável.
+
+### Mudado
+
+- **Contrato do graphify passa a ter pin verificado por execução real** (delta-025, MUDA R44): a primeira adoção real aconteceu em 2026-08-02 no `imex-travelplanner` — 235 documentos indexados, 1.053 nós, 2.752 arestas —, e a política de versões sai de "não testada" para `0.9.32` com verificação datada. A execução confirmou o contrato de proveniência (`EXTRACTED`/`INFERRED`/`AMBIGUOUS` → `confirmado`/`inferido`/`lacuna`, com `arquivo:linha` em toda aresta) e expôs três lacunas que só o uso revela: (1) o `--code-only`, que o contrato preferia sem ressalva, **cega todo arquivo não-código** e nunca produz `AMBIGUOUS` — num projeto-alvo com 210 markdowns e 5 mil linhas de tooling, ele indexava justamente a parte fria; (2) indexar documentação **exige backend LLM**, e os disponíveis não são equivalentes em exposição — `claude-cli` (assinatura, sem API key) e `ollama` (local) passam a ser a primeira escolha, antes de qualquer API paga; (3) grafo de documentação **cita código que ainda não existe** (16 dos 27 arquivos referenciados eram fantasmas: specs descrevendo implementação futura), então claim sobre arquivo inexistente entra como `inferido`, nunca `confirmado`. A proibição de instalador passou a nomear também o alvo por plataforma `graphify claude install`.
+
 ## [1.5.0] - 2026-08-01
 
 ### Mudado

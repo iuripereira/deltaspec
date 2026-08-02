@@ -34,9 +34,9 @@
 - Consumes: nada (task livre).
 - Produces: a seção graphify canônica que a T3 referencia por link, e a linha de pin `0.9.32 · verificado em 2026-08-02` que nenhuma outra task duplica.
 
-- [ ] **Step 1: Reescrever o bullet "Habilitação dupla e manual"** — acrescentar que a proibição vale também para o alvo por plataforma `graphify claude install` (verificado: escreve seção no CLAUDE.md + hook `PreToolUse`), e mover a preferência por `--code-only` para o bullet novo do Step 2.
+- [x] **Step 1: Reescrever o bullet "Habilitação dupla e manual"** — acrescentar que a proibição vale também para o alvo por plataforma `graphify claude install` (verificado: escreve seção no CLAUDE.md + hook `PreToolUse`), e mover a preferência por `--code-only` para o bullet novo do Step 2.
 
-- [ ] **Step 2: Inserir o bullet "Modos e o que cada um enxerga"** (cobre R1 — escopo de modo), com o texto:
+- [x] **Step 2: Inserir o bullet "Modos e o que cada um enxerga"** (cobre R1 — escopo de modo), com o texto:
 
 ```markdown
 - **Modos — escolha informada, não default:** `--code-only` entrega AST local por
@@ -46,7 +46,7 @@
   precisa do modo completo — leia o bullet seguinte antes de rodá-lo.
 ```
 
-- [ ] **Step 3: Inserir o bullet "Backend do modo docs"** (cobre R1 — backend registrado), com o texto:
+- [x] **Step 3: Inserir o bullet "Backend do modo docs"** (cobre R1 — backend registrado), com o texto:
 
 ```markdown
 - **Backend do modo docs (exige LLM):** prefira os dois que **não** criam
@@ -58,7 +58,7 @@
   Projeto com `publico.cliente: true`: a escolha é do usuário, sempre.
 ```
 
-- [ ] **Step 4: Inserir o bullet "Arquivo citado que não existe"** (cobre R1 — arquivo inexistente), com o texto:
+- [x] **Step 4: Inserir o bullet "Arquivo citado que não existe"** (cobre R1 — arquivo inexistente), com o texto:
 
 ```markdown
 - **Arquivo citado que não existe:** grafo que indexou documentação cita código
@@ -67,7 +67,7 @@
   `inferido` (código planejado), nunca `confirmado`.
 ```
 
-- [ ] **Step 5: Atualizar a linha do graphify na tabela de política de dependência** (`:86`), substituindo `— (não testada — contrato definido pela doc upstream)` e a data por:
+- [x] **Step 5: Atualizar a linha do graphify na tabela de política de dependência** (`:86`), substituindo `— (não testada — contrato definido pela doc upstream)` e a data por:
 
 | coluna | valor |
 |---|---|
@@ -75,7 +75,7 @@
 | Faixa aceita | pin na testada — release quase diária, bus factor = 1 |
 | Verificado em | `2026-08-02` (execução real: `imex-travelplanner`, 235 docs, 1.053 nós) |
 
-- [ ] **Step 6: Verificar**
+- [x] **Step 6: Verificar**
 
 Run: `grep -c "graphify_backend\|AMBIGUOUS nunca aparece\|0.9.32" skills/spec-feature/references/adapters.md`
 Expected: ≥ 3 (um por bullet novo + o pin)
@@ -83,7 +83,7 @@ Expected: ≥ 3 (um por bullet novo + o pin)
 Run: `python3 skills/guarding-doc-integrity/scripts/validate_integrity.py .`
 Expected: `RESULTADO: PASS`
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add skills/spec-feature/references/adapters.md
@@ -101,7 +101,7 @@ git commit -m "feat(025-pin-graphify): pin 0.9.32, escopo do --code-only e backe
 - Consumes: nada (task livre — arquivo distinto da T1, paralelizável com ela).
 - Produces: o campo `motores.graphify_backend`, citado pela T1 Step 3 e pela T3.
 
-- [ ] **Step 1: Acrescentar o campo ao bloco `motores`**
+- [x] **Step 1: Acrescentar o campo ao bloco `motores`**
 
 ```yaml
 motores:
@@ -109,12 +109,12 @@ motores:
   graphify_backend: ""     # obrigatório quando a indexação inclui docs (exige LLM): claude-cli | ollama | gemini | openai | ... — vazio com docs pedidos faz a IA parar e perguntar (ADR-0022); dispensável em --code-only
 ```
 
-- [ ] **Step 2: Verificar que o YAML segue válido**
+- [x] **Step 2: Verificar que o YAML segue válido**
 
 Run: `python3 -c "import yaml,sys; d=yaml.safe_load(open('skills/projeto-init/references/templates/doc-profile.yaml')); print(d['motores'])"`
 Expected: `{'graphify': False, 'graphify_backend': ''}`
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add skills/projeto-init/references/templates/doc-profile.yaml
@@ -132,13 +132,13 @@ git commit -m "feat(025-pin-graphify): campo motores.graphify_backend no templat
 - Consumes: a seção graphify da T1 (o texto da regra vive lá; aqui só o ponteiro) e o nome do campo da T2.
 - Produces: nada que outra task consuma.
 
-- [ ] **Step 1: Reescrever a linha 30** — hoje ela cita só `motores.graphify: true`. Passa a citar também o backend e o modo, **sem repetir a regra** (fonte canônica única):
+- [x] **Step 1: Reescrever a linha 30** — hoje ela cita só `motores.graphify: true`. Passa a citar também o backend e o modo, **sem repetir a regra** (fonte canônica única):
 
 ```markdown
 Projeto com graphify habilitado (doc-profile `motores.graphify: true`): as consultas ao grafo de codebase entram como insumo da mineração com fonte `arquivo:linha` e tag mapeada no modelo de confiança. Mineração de **documentação** exige o modo completo e um backend declarado em `motores.graphify_backend` — contrato, escolha de modo, avisos de instalação e fallback na seção graphify de `spec-feature/references/adapters.md`. Ausente → mineração atual, com 1 linha de aviso.
 ```
 
-- [ ] **Step 2: Verificar que a skill aponta, não duplica**
+- [x] **Step 2: Verificar que a skill aponta, não duplica**
 
 Run: `grep -c "claude-cli\|ollama\|0.9.32" skills/descoberta/SKILL.md`
 Expected: `0` — nenhum valor concreto materializado fora do dono
@@ -146,7 +146,7 @@ Expected: `0` — nenhum valor concreto materializado fora do dono
 Run: `python3 skills/guarding-doc-integrity/scripts/validate_integrity.py .`
 Expected: `RESULTADO: PASS`
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add skills/descoberta/SKILL.md
@@ -165,7 +165,7 @@ git commit -m "docs(025-pin-graphify): ponte da descoberta cita modo e backend d
 - Consumes: as mudanças das T1–T3.
 - Produces: nada.
 
-- [ ] **Step 1: Registrar sob `## [Não lançado]`**
+- [x] **Step 1: Registrar sob `## [Não lançado]`**
 
 ```markdown
 ### Adicionado
@@ -175,18 +175,18 @@ git commit -m "docs(025-pin-graphify): ponte da descoberta cita modo e backend d
 - Contrato do graphify em `adapters.md`: pin verificado por execução real (0.9.32, 2026-08-02), escopo do `--code-only` explícito (cega arquivos não-código), backend de docs recomendado e registrado, e regra do arquivo citado inexistente (delta-025).
 ```
 
-- [ ] **Step 2: Registrar no `HANDOFF.md`** — uma linha no diário de bordo, no topo da lista datada, no padrão das deltas anteriores:
+- [x] **Step 2: Registrar no `HANDOFF.md`** — uma linha no diário de bordo, no topo da lista datada, no padrão das deltas anteriores:
 
 ```markdown
 - 2026-08-02 — **delta-025 (pin do graphify)**: primeira adoção real do motor (0.9.32, `imex-travelplanner`, 235 docs indexados via `claude-cli`). MUDA R44 (pin verificado + `--code-only` cega documentação), ADICIONA backend registrado em `motores.graphify_backend` e a regra do arquivo citado inexistente; renúncias na ADR-0022. Clarify entrevistado com o usuário — perfil `completo` aprovado.
 ```
 
-- [ ] **Step 3: Verificar**
+- [x] **Step 3: Verificar**
 
 Run: `python3 skills/spec-feature/scripts/check_cycle.py specs/025-pin-graphify`
 Expected: sem CRÍTICO; C2 com todos os Rn cobertos
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add CHANGELOG.md HANDOFF.md
