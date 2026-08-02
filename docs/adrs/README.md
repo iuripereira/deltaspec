@@ -29,6 +29,7 @@ Escreva uma ADR quando a **renúncia de uma alternativa** precisa registrar o *p
 | [0019](ADR-0019-status-pmo-site-de-status.md) | status-pmo — site de status PMO como skill do framework | Accepted | 2026-07-31 |
 | [0020](ADR-0020-modelo-de-divida-tecnica.md) | Dívida técnica com score determinístico, derivado e nunca gravado | Accepted | 2026-08-01 |
 | [0021](ADR-0021-projecao-de-tickets.md) | Ferramenta de ticket é projeção do arquivo — ida mecânica, volta aprovada | Accepted | 2026-08-01 |
+| [0022](ADR-0022-backend-do-graphify-registrado-no-perfil.md) | Backend de docs do graphify recomendado e registrado no perfil, não mecanizado no gate | Accepted | 2026-08-02 |
 
 > ADR-0002 a 0006 são **backfill** (2026-07-19): decisões que já vigiam, registradas retroativamente na varredura de registros do repo. A data de cada uma aproxima a decisão real pelo histórico disponível — o histórico pré-plugin foi reescrito (`filter-repo`), então decisões anteriores podem ser mais antigas do que a data registrada.
 
