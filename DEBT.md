@@ -230,6 +230,16 @@ O `exportar --projeto` emite o lote do `acli jira workitem create-bulk`, mas nen
 - **Origem:** pergunta do Iuri em sessão, 2026-07-30 · aberto em 2026-07-30
 - **Ticket:** [#93](../../issues/93)
 
+### DT-023 · débito · aberto
+**Clarify fecha sem canal humano — o grill se auto-responde e se auto-aprova**
+
+O contrato do clarify é satisfazível sem uma única resposta do usuário: a verificação pós-fase dos adapters só confere formato de ADR e o critério de saída do `cycle.md` diz "ambiguidades resolvidas" sem distinguir *resolvida pelo usuário* de *resolvida por mim*. Somado à regra do próprio `grill-me` ("explore instead of asking" — no deltaspec o TRUTH/ADRs respondem quase tudo), ao auto-score de quem escreveu a spec e ao template do specify já cobrir as cinco dimensões, a entrevista degenera em relatório. Observado nas deltas 004, 005, 006 e 015 — agregados 0.05–0.10, sempre abaixo do limiar na primeira passada, portão nunca disparado; a [delta-004](specs/_archive/004-exclude-portavel/spec.md) admite em comentário "dúvidas resolvidas por exploração do código, sem entrevista". Correção candidata: clarify sem resposta humana registrada não fecha, e sem canal humano o relatório sai marcado `auto-avaliado`
+
+- **Fila:** `P3·J3·Pr9`
+- **Local:** [adapters.md](skills/spec-feature/references/adapters.md) (seção grill-me/grill-with-docs) · [cycle.md](skills/spec-feature/references/cycle.md) (critério de saída do clarify)
+- **Gatilho:** Próxima delta que tocar o contrato do clarify — ou a delta-017, que já reavalia o pin do max ([ADR-0012](docs/adrs/ADR-0012-recontratacao-motores.md)) e abre os mesmos arquivos
+- **Origem:** pergunta do Iuri em sessão, 2026-08-02 · aberto em 2026-08-02
+
 ## Lições
 <!-- post-mortems datados, com desfecho; sem ação pendente — ação pendente é DT -->
 
