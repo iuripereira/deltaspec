@@ -54,16 +54,33 @@ Camada de contexto para as fases que leem código em projeto-alvo grande/brownfi
 **Não** é motor de grafo de tarefas — o `tasks.md` continua dono das arestas (ADR-0014).
 
 - **Habilitação dupla e manual:** binário instalado **e** `motores.graphify: true` no
-  `doc-profile.yaml` do projeto-alvo. **Nunca rode `graphify install`** — o instalador
-  escreve hook `PreToolUse` e CLAUDE.md do projeto, interferindo no harness (renúncia:
-  ADR-0014). Instalação manual consciente; preferir `--code-only` (AST local
-  determinístico, zero LLM).
+  `doc-profile.yaml` do projeto-alvo. **Nunca rode `graphify install`** — nem o alvo
+  por plataforma `graphify claude install`: os dois escrevem hook `PreToolUse` e seção
+  no CLAUDE.md do projeto, interferindo no harness (renúncia:
+  [ADR-0014](../../../docs/adrs/ADR-0014-harness-paralelismo-e-graphify.md)).
+  Instalação manual consciente.
+- **Modos — escolha informada, não default:** `--code-only` entrega AST local por
+  tree-sitter (determinístico, zero LLM, nada sai da máquina) e **cega todo arquivo
+  não-código** — `.md`, PDF, DOCX, XLSX e imagem são pulados, e a tag `AMBIGUOUS`
+  nunca aparece. Projeto-alvo cujo valor está na documentação precisa do modo
+  completo. (A preferência normativa por `--code-only` da ADR-0014 caiu aqui:
+  [ADR-0022](../../../docs/adrs/ADR-0022-backend-do-graphify-registrado-no-perfil.md).)
+- **Backend do modo docs (exige LLM):** prefira `claude-cli` ou `ollama` — nenhum dos
+  dois cria fronteira nova de confiança
+  ([ADR-0022](../../../docs/adrs/ADR-0022-backend-do-graphify-registrado-no-perfil.md)).
+  API paga só como decisão consciente. A escolha é **registrada** em
+  `motores.graphify_backend` do `doc-profile.yaml`; campo vazio com indexação de docs
+  pedida → **pare e pergunte**, nunca assuma um default. Em `--code-only` o campo é
+  dispensável.
 - **Invocação:** `graphify query`/`path`/`explain` como insumo fundamentado — toda
   aresta citada entra com `arquivo:linha`. Tags de confiança mapeiam no modelo da
   descoberta (R25): `EXTRACTED` → `confirmado` · `INFERRED` → `inferido` ·
   `AMBIGUOUS` → `lacuna` (requer validação humana).
 - **Verificação pós-fase:** claim vindo do graphify sem fonte `arquivo:linha` + tag
   mapeada não entra no artefato (mesma regra do R25).
+- **Arquivo citado que não existe:** antes de o claim entrar em artefato do ciclo,
+  confira a existência do arquivo — inexistente marca o claim como `inferido`
+  (código planejado, descrito em spec e ainda não escrito), nunca `confirmado`.
 - **Fallback (ausente ou desabilitado):** fluxo atual (grep/Explore) com no máximo
   1 linha de aviso — degradação graciosa (RNF2).
 
@@ -83,7 +100,7 @@ Materializa o `.mmd` fonte como diagrama editorial **HTML+SVG autocontido e bran
 | `max@max4c-skills` | 0.8.0 | **fork deliberado** — pin na testada ([ADR-0012](../../../docs/adrs/ADR-0012-recontratacao-motores.md)) | 2026-07-28 | Upstream divergiu (detalhe: ADR-0012); o plugin distribuído mantém a API contratada. **Reavaliar na delta-017** ou em breaking do fork. Forkável: em último caso copiar a SKILL.md para o diretório de skills pessoais do usuário e apontar este adapter |
 | `superpowers@claude-plugins-official` | 6.1.1 | faixa 6.x | 2026-07-28 (upstream 6.2.0 de 2026-07-24 — dentro da faixa, não testada) | **não forkável** — dependência real; mitigação = fallbacks acima |
 | `ponytail@ponytail` | 4.8.4 | faixa 4.x | 2026-07-28 | forkável (ruleset markdown + hook simples) |
-| `graphify` (CLI externo) | — (não testada — contrato definido pela doc upstream) | pin por tag na primeira adoção real | 2026-07-28 (release quase diária, bus factor = 1) | opcional com degradação total: ausente, nada do ciclo quebra; a primeira adoção real define o pin e valida o contrato |
+| `graphify` (CLI externo, PyPI `graphifyy`) | 0.9.32 | pin na testada — release quase diária, bus factor = 1 | 2026-08-02 (execução real no `imex-travelplanner`: 235 docs, 1.053 nós; contrato de proveniência confirmado, `AMBIGUOUS` só aparece fora do `--code-only`) | opcional com degradação total: ausente, nada do ciclo quebra |
 | `diagram-design` (plugin de terceiro) | — (não testada — contrato pela doc upstream) | pin por commit/tag na primeira adoção real (mesmo padrão do graphify) | 2026-07-30 (MIT, bus factor = 1) | opcional com degradação total: ausente, o render CLI cobre; a primeira adoção real define o pin e valida o contrato |
 | `design-sync` (ferramenta do harness + serviço claude.ai) | n/a — serviço remoto, sem versão pinável | acompanhar o fluxo list → plan → write na doc da ferramenta | 2026-07-30 (contrato pela doc da ferramenta) | opcional com degradação total: sem login/escopo design, a camada fica local (HTML versionado em git) |
 

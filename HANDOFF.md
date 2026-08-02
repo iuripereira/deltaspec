@@ -2,9 +2,10 @@
 
 > Andamento contínuo do trabalho: o que está em curso **agora**, o que acabou de ser feito, os problemas do momento e os próximos passos imediatos. Atualize com frequência dentro da própria sessão. **Janela rolante:** entrada antiga sai — histórico permanente é [CHANGELOG](CHANGELOG.md) + git; débito/pendência/lição é [DEBT.md](DEBT.md); decisão com renúncia é [docs/adrs/](docs/adrs/); o que vige é [specs/TRUTH.md](specs/TRUTH.md). Em conflito de merge, mantenha a **união das verdades** — nunca sobrescreva o progresso de outra sessão.
 
-**Atualizado em:** 2026-07-31
+**Atualizado em:** 2026-08-02
 
 ## Agora
+- **delta-025 (pin do graphify) em review** — branch `feat/025-pin-graphify`, analyze LIBERADO. Primeira adoção real do motor: `graphify 0.9.32` rodado no `imex-travelplanner` em 2026-08-02, backend `claude-cli`. MUDA R44 num bloco único; achados e renúncias em [ADR-0022](docs/adrs/ADR-0022-backend-do-graphify-registrado-no-perfil.md), que **supersede a ADR-0014 na cláusula "`--code-only` preferido"**. Vale lembrar do dogfood: o repo-alvo é 97% documentação, e o grafo cita 16 arquivos de código que não existem — as specs descrevem implementação ainda não escrita.
 - **delta-021 (skill `status-pmo`) arquivada** (#81 + PR de archive): R48–R49 no TRUTH, ADR-0019, templates extraídos do caso imex (deltas 002/003), `v1.2.0`. Perfil enxuto (3º dogfood), test-plan dispensado no cabeçalho.
 - **Rename concluído no framework, faltando consumidores.** delta-019 arquivada, `v1.0.0` publicada, plugin local reinstalado sob o nome novo (9 skills, `deltaspec@deltaspec`) e, em 2026-07-29, os **6 PRs de migração mergeados** — mas o inventário real é de **10 consumidores**: a delta-003 do `~/code/imex` (branch `feat/003-site-status`, 2026-07-31, ainda não mergeada) corrige o CLAUDE.md do umbrella; seguem em `sdd-iuri` o `radar-financeiro` e o `imex-nao-conformidade` (detalhe nos próximos passos). Entre os 6 ia o conserto de um gate que o rename tinha quebrado em silêncio (`validate_docs.sh` resolvia o validador por `marketplaces/sdd-iuri/`, caía no AVISO e saía 0, deixando todo commit passar sem validação).
 - Do plano de upgrade resta só a **Fase 4 (delta-017, Jira/tickets.md — número reservado, R5)**, adiada por decisão do usuário (2026-07-28: "não será necessária agora"). Inclui o gatilho de reavaliação do fork do max (ADR-0012).

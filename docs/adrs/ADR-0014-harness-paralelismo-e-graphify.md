@@ -3,7 +3,7 @@
 - **Status:** Accepted (2026-07-28, delta-016)
 - **Data:** 2026-07-28
 - **Supersedes:** —
-- **Superseded by:** —
+- **Superseded by:** [ADR-0022](ADR-0022-backend-do-graphify-registrado-no-perfil.md) (2026-08-02, delta-025) — **apenas na cláusula "`--code-only` preferido"** da decisão 4-b: a primeira execução real mostrou que esse modo cega todo arquivo não-código, então a escolha de modo passa a ser informada pelo perfil do projeto-alvo, sem preferência normativa. O resto da decisão 4-b (instalação manual consciente, proibição do auto-install, pin com verificação datada, toggle no doc-profile) e as decisões 1-b, 2-c e 3-b seguem vigentes e continuam sendo referenciadas.
 
 ## Context
 

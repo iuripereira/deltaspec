@@ -8,6 +8,15 @@ O formato segue [Keep a Changelog 1.0.0](https://keepachangelog.com/pt-BR/1.0.0/
 
 ## [Não lançado]
 
+### Adicionado
+
+- **Campo `motores.graphify_backend` no template do `doc-profile.yaml`** (delta-025, [ADR-0022](docs/adrs/ADR-0022-backend-do-graphify-registrado-no-perfil.md)): registra qual backend LLM indexa a documentação quando o graphify roda fora do modo só-código. Vazio com indexação de docs pedida faz a IA **parar e perguntar**, nunca assumir um default; em `--code-only` o campo é dispensável.
+
+### Mudado
+
+- **Contrato do graphify passa a ter pin verificado por execução real** (delta-025, MUDA R44 — [ADR-0022](docs/adrs/ADR-0022-backend-do-graphify-registrado-no-perfil.md)): a primeira adoção real aconteceu em 2026-08-02 no `imex-travelplanner`, e a política de versões sai de "não testada" para `0.9.32` com verificação datada. O contrato de proveniência se confirmou; o uso expôs o que a doc upstream não dizia, e o adapter agora declara: o que cada modo entrega **e o que cega**, quais backends indexam documentação sem criar fronteira nova de confiança, e que claim sobre arquivo inexistente entra como `inferido`. A proibição de instalador passou a nomear também o alvo por plataforma `graphify claude install`.
+- **A ADR-0022 supersede a ADR-0014 na cláusula "`--code-only` preferido"** (delta-025): a preferência normativa foi gravada a partir da doc upstream, antes de o modo ser exercido; a execução real mostrou que ele cega todo arquivo não-código. A escolha de modo passa a seguir o perfil do projeto-alvo. O resto da ADR-0014 — proibição de auto-install, pin datado, toggle no doc-profile, `tasks.md` dono do grafo — segue vigente.
+
 ## [1.5.0] - 2026-08-01
 
 ### Mudado
