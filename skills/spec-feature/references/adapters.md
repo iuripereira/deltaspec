@@ -56,30 +56,31 @@ Camada de contexto para as fases que leem código em projeto-alvo grande/brownfi
 - **Habilitação dupla e manual:** binário instalado **e** `motores.graphify: true` no
   `doc-profile.yaml` do projeto-alvo. **Nunca rode `graphify install`** — nem o alvo
   por plataforma `graphify claude install`: os dois escrevem hook `PreToolUse` e seção
-  no CLAUDE.md do projeto, interferindo no harness (renúncia: ADR-0014). Instalação
-  manual consciente.
+  no CLAUDE.md do projeto, interferindo no harness (renúncia:
+  [ADR-0014](../../../docs/adrs/ADR-0014-harness-paralelismo-e-graphify.md)).
+  Instalação manual consciente.
 - **Modos — escolha informada, não default:** `--code-only` entrega AST local por
   tree-sitter (determinístico, zero LLM, nada sai da máquina) e **cega todo arquivo
   não-código** — `.md`, PDF, DOCX, XLSX e imagem são pulados, e a tag `AMBIGUOUS`
   nunca aparece. Projeto-alvo cujo valor está na documentação precisa do modo
-  completo; leia o bullet seguinte antes de rodá-lo.
-- **Backend do modo docs (exige LLM):** prefira os dois que **não** criam fronteira
-  nova de confiança — `claude-cli` (roteia pelo CLI já autenticado, cobrado na
-  assinatura, sem API key) e `ollama` (`localhost`, nada sai da máquina). API paga só
-  como decisão consciente. A escolha é **registrada** em `motores.graphify_backend`
-  do `doc-profile.yaml` (ADR-0022); campo vazio com indexação de docs pedida →
-  **pare e pergunte**, nunca assuma um default. Em `--code-only` o campo é
-  dispensável. Projeto com `publico.cliente: true`: a escolha é do usuário, sempre.
+  completo. (A preferência normativa por `--code-only` da ADR-0014 caiu aqui:
+  [ADR-0022](../../../docs/adrs/ADR-0022-backend-do-graphify-registrado-no-perfil.md).)
+- **Backend do modo docs (exige LLM):** prefira `claude-cli` ou `ollama` — nenhum dos
+  dois cria fronteira nova de confiança
+  ([ADR-0022](../../../docs/adrs/ADR-0022-backend-do-graphify-registrado-no-perfil.md)).
+  API paga só como decisão consciente. A escolha é **registrada** em
+  `motores.graphify_backend` do `doc-profile.yaml`; campo vazio com indexação de docs
+  pedida → **pare e pergunte**, nunca assuma um default. Em `--code-only` o campo é
+  dispensável.
 - **Invocação:** `graphify query`/`path`/`explain` como insumo fundamentado — toda
   aresta citada entra com `arquivo:linha`. Tags de confiança mapeiam no modelo da
   descoberta (R25): `EXTRACTED` → `confirmado` · `INFERRED` → `inferido` ·
   `AMBIGUOUS` → `lacuna` (requer validação humana).
 - **Verificação pós-fase:** claim vindo do graphify sem fonte `arquivo:linha` + tag
   mapeada não entra no artefato (mesma regra do R25).
-- **Arquivo citado que não existe:** grafo que indexou documentação cita código
-  descrito em spec mas ainda não escrito. Antes de o claim entrar em artefato do
-  ciclo, confira a existência do arquivo — inexistente marca o claim como `inferido`
-  (código planejado), nunca `confirmado`.
+- **Arquivo citado que não existe:** antes de o claim entrar em artefato do ciclo,
+  confira a existência do arquivo — inexistente marca o claim como `inferido`
+  (código planejado, descrito em spec e ainda não escrito), nunca `confirmado`.
 - **Fallback (ausente ou desabilitado):** fluxo atual (grep/Explore) com no máximo
   1 linha de aviso — degradação graciosa (RNF2).
 

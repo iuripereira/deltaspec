@@ -43,7 +43,7 @@ artefatos:
 # spec-feature/references/adapters.md, seção graphify — instalação manual, ADR-0014).
 motores:
   graphify: false        # true = descoberta/specify/plan/review consultam o grafo de codebase (requer binário instalado; NUNCA use `graphify install` nem `graphify claude install`)
-  graphify_backend: ""   # obrigatório quando a indexação inclui docs (exige LLM): claude-cli | ollama | gemini | openai | ... — vazio com docs pedidos faz a IA parar e perguntar (ADR-0022); dispensável em `--code-only`, que só lê código
+  graphify_backend: ""   # obrigatório se a indexação incluir docs; vazio = pare e pergunte (ADR-0022). Prefira claude-cli ou ollama
 
 # Lido só quando publico.cliente: true — insumo da skill doc-entregavel.
 entregaveis:

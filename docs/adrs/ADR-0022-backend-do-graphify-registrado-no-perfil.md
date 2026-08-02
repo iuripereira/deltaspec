@@ -2,7 +2,7 @@
 
 - **Status:** Accepted (2026-08-02, delta-025)
 - **Data:** 2026-08-02
-- **Supersedes:** —
+- **Supersedes:** [ADR-0014](ADR-0014-harness-paralelismo-e-graphify.md) (apenas na cláusula "`--code-only` preferido" da decisão 4-b; a proibição de auto-install, o pin datado, o toggle no doc-profile e o `tasks.md` dono do grafo permanecem vigentes)
 - **Superseded by:** —
 
 ## Context
@@ -15,7 +15,9 @@ A primeira adoção real, em 2026-08-02 no `imex-travelplanner` (graphify 0.9.32
 2. **Indexar docs exige backend LLM**, e os nove disponíveis não são equivalentes em exposição. Dois não introduzem fronteira nova de confiança: `claude-cli` (roteia pelo CLI já autenticado, cobrado na assinatura, sem API key) e `ollama` (`localhost`, nada sai da máquina). Os demais mandam o corpus para um terceiro — no projeto-alvo em questão, `publico.cliente: true`, isso incluiria contrato, proposta comercial e relatório de custos.
 3. **O grafo cita código que não existe.** Dos 27 arquivos de código referenciados, 16 são fantasmas (`apps/api/src/imex/core/policy.py`, ...): as specs descrevem implementação ainda não escrita, e o extrator criou o nó do alvo citado. Não é defeito do motor — é retrato fiel de um projeto documentado à frente do código.
 
-Duas decisões tinham alternativa real.
+Três decisões tinham alternativa real.
+
+**0 — A preferência normativa por `--code-only`.** A decisão 4-b da ADR-0014 gravou "`--code-only` preferido" a partir da doc upstream, quando o modo ainda não tinha sido exercido. Alternativas: (a) manter a preferência e apenas documentar o que ela cega — coerente com o registro, mas mantém como default o modo que ignora 97% de um projeto-alvo documentado; (b) derrubar a preferência normativa e substituí-la por escolha informada pelo perfil do projeto.
 
 **1 — Postura sobre backends.** (a) Só documentar que o modo docs exige LLM e listar os backends, sem eleger nenhum — neutro, não envelhece recomendando ferramenta que muda; (b) recomendar `claude-cli`/`ollama` como primeira escolha; (c) recomendar **e** exigir que a escolha fique registrada no `doc-profile.yaml` do projeto-alvo.
 
@@ -23,7 +25,9 @@ Duas decisões tinham alternativa real.
 
 ## Decision
 
-Decididas com o usuário em 2026-08-02 (clarify da delta-025): **1-c e 2-b.**
+Decididas com o usuário em 2026-08-02 (clarify da delta-025): **0-b, 1-c e 2-b.**
+
+A preferência normativa por `--code-only` cai. Esta ADR **supersede a ADR-0014 nessa cláusula, e só nela** — o modo continua sendo o certo para projeto cujo valor está no código, mas deixa de ser o default recomendado: o adapter passa a declarar o que cada modo entrega e o que cega, e a escolha segue o perfil do projeto-alvo. Renunciamos a (0-a) porque manter a preferência com uma ressalva ao lado é o pior dos dois mundos — quem segue o contrato pelo caminho de menor esforço lê "preferido" e para de ler.
 
 O adapter recomenda `claude-cli` e `ollama` antes de qualquer API paga, e o `doc-profile.yaml` ganha `motores.graphify_backend` — obrigatório quando a indexação inclui não-código, dispensável em `--code-only`. Campo vazio com indexação de docs pedida faz a IA **parar e perguntar**, nunca assumir default. Renunciamos à neutralidade (1-a) porque o silêncio do contrato é que produziu o risco: sem recomendação nomeada, o caminho de menor esforço é a primeira API key que estiver no ambiente, e o dado do cliente vaza por omissão. Renunciamos a (1-b) puro porque recomendação sem registro não sobrevive à troca de sessão — o próximo agente não sabe o que foi decidido.
 

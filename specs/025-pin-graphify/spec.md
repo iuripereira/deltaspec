@@ -14,16 +14,14 @@ A execução confirmou o contrato de proveniência e expôs três lacunas que s�
 - DADO o contrato do adapter QUANDO a delta consolida ENTÃO a tabela de `adapters.md` tem a linha do graphify com instalação manual consciente (nunca deixar `graphify install` — nem o alvo por plataforma `graphify claude install` — escrever hook `PreToolUse`/CLAUDE.md, o que conflita com o harness) e pin na política de versões com verificação datada (R34)
 - DADO a escolha do modo de indexação QUANDO o adapter é lido ENTÃO ele declara o que `--code-only` entrega (AST local por tree-sitter, determinístico, zero LLM, nada sai da máquina) **e o que ele cega** (todo arquivo não-código — `.md`, PDF, DOCX, XLSX, imagem — é pulado, e a tag `AMBIGUOUS` nunca aparece), para que projeto-alvo cujo valor está na documentação não escolha o modo cego por default
 - DADO que a indexação inclui arquivos não-código QUANDO o backend LLM é escolhido ENTÃO o adapter nomeia como primeira escolha os dois que não criam fronteira nova de confiança — `claude-cli` (CLI já autenticado, cobrado na assinatura, sem API key) e `ollama` (`localhost`, nada sai da máquina) — a escolha fica registrada em `motores.graphify_backend` do `doc-profile.yaml`, e campo vazio com indexação de docs pedida faz a IA **parar e perguntar**, nunca assumir default; em `--code-only` o campo é dispensável
-- DADO um projeto-alvo com `publico.cliente: true` QUANDO a indexação de documentação é proposta ENTÃO a escolha do backend é decisão explícita do usuário registrada no perfil, nunca default da IA
 - DADO um grafo que indexou documentação QUANDO uma aresta cita um arquivo de código ENTÃO a existência do arquivo é conferida antes de o claim entrar em artefato do ciclo; arquivo inexistente marca o claim como `inferido` (código planejado descrito em spec), nunca `confirmado`
 - DADO graphify presente e habilitado QUANDO o eixo Spec do review roda ENTÃO pode consultar o impacto do diff (`graphify query`) como insumo do confronto Rn×diff — mesmo contrato e mesma degradação dos demais cenários
 - DADO graphify ausente ou desabilitado QUANDO as fases rodam ENTÃO o fluxo atual (grep/Explore) segue com no máximo 1 linha de aviso — degradação graciosa (RNF2)
 
 ## Fora de escopo
 - Tornar o graphify obrigatório ou habilitá-lo por default — segue opcional, `motores.graphify: false` no template (ADR-0014).
-- **Mecanizar a regra do arquivo inexistente** num check do `check_cycle.py` — renúncia decidida no clarify: acoplaria o gate determinístico a artefato de motor externo opcional, o oposto do que a ADR-0014 fixou (registro: ADR-0022).
-- **Postura neutra sobre backends** ("só documentar, sem eleger") — renunciada no clarify em favor de recomendar + registrar (ADR-0022).
-- **Requisitos próprios para backend e arquivo fantasma** — renunciados no analyze: o contrato do motor é um requisito só, e Rn novo é artefato a mais para gerenciar sem ganho de verificabilidade.
+- Mecanizar a regra do arquivo inexistente num check do `check_cycle.py` (ADR-0022).
+- Postura neutra sobre backends — "só documentar, sem eleger" (ADR-0022).
 - Reavaliar o pin do `max` (gatilho próprio: delta-017, ADR-0012).
 
 ## Dependências e riscos
