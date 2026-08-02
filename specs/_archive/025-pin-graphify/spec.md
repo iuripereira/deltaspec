@@ -1,5 +1,5 @@
 # delta-025 — pin do graphify verificado por execução real
-Estado: proposta · Data: 2026-08-02 · Branch: feat/025-pin-graphify · Perfil: completo — o R44 é requisito citado por projeto-alvo e a delta mexe no schema do `doc-profile.yaml`; errar aqui propaga (aprovado: 2026-08-02)
+Estado: arquivada · Data: 2026-08-02 · Branch: feat/025-pin-graphify · Perfil: completo — o R44 é requisito citado por projeto-alvo e a delta mexe no schema do `doc-profile.yaml`; errar aqui propaga (aprovado: 2026-08-02)
 
 ## Contexto (≤3 linhas)
 A primeira adoção real do graphify ocorreu em 2026-08-02 no `imex-travelplanner`: 235 documentos indexados, 1.053 nós, 2.752 arestas.
