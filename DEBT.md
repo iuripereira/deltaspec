@@ -125,16 +125,15 @@ Referências a `STATE.md` em `specs/_archive/**`, ADRs Accepted (0001/0007/0008)
 - **Gatilho:** — (guarda permanente; cai se esses registros deixarem de ser imutáveis)
 - **Origem:** [delta-010](specs/_archive/010-handoff-renomeia-state/) · aberto em 2026-07-24
 
-### DT-013 · pendência · aberto
+### DT-013 · pendência · quitado
 **doc-profile.yaml não tem check mecânico de presença nem de schema**
 
 Check mecânico do doc-profile (presença + schema do `doc-profile.yaml`) no `check_cycle.py` — adiado pelo perímetro do ADR-0006: mecanizar heurística antes do formato estabilizar produziria falso LIBERADO. A ADR-0009 foi promovida sem ele
 
-- **Fila:** `P3·J3·Pr9`
-- **Local:** [check_cycle.py](skills/spec-feature/scripts/check_cycle.py)
 - **Gatilho:** Formato do perfil estabilizado por uma delta real com o gate do specify num projeto externo (a mesma do gatilho do DT-004)
 - **Origem:** [delta-013](specs/_archive/013-higiene/) · aberto em 2026-07-28
 - **Ticket:** [#89](../../issues/89)
+- **Encerrado:** 2026-08-02, [delta-026](specs/_archive/026-gate-perfil-e-clarify/)/[#105](../../pull/105) — o C11 exige o núcleo (`version`, `decisao`, `publico`, `artefatos` com as 4 categorias) e tolera a cauda, desenho que saiu de medir 7 perfis reais em vez de supor: o gatilho já tinha disparado havia semanas e ninguém tinha varrido (lição de 2026-08-02). Rodado contra os 7 perfis + o template: zero falso ALTO. O parser é PyYAML, dependência admitida por [ADR-0023](docs/adrs/ADR-0023-pyyaml-como-dependencia-admitida.md) — parser próprio foi recusado porque o modo de falha dele é o falso LIBERADO que manteve este débito aberto
 
 ### DT-014 · pendência · quitado
 Reavaliar a camada de apresentação Figma (categoria `apresentacao`, ADR-0015) quando o preço do `generate_diagram` for anunciado — o motor é beta e "will eventually be a usage-based paid feature"; fora do caminho crítico por design, então a reavaliação é de custo/benefício, não de quebra. Na mesma revisão, verificar o claim não confirmado do export FigJam sem SVG (fonte única, 2026-07-28)
@@ -230,15 +229,14 @@ O `exportar --projeto` emite o lote do `acli jira workitem create-bulk`, mas nen
 - **Origem:** pergunta do Iuri em sessão, 2026-07-30 · aberto em 2026-07-30
 - **Ticket:** [#93](../../issues/93)
 
-### DT-023 · débito · aberto
+### DT-023 · débito · quitado
 **Clarify fecha sem canal humano — o grill se auto-responde e se auto-aprova**
 
 O contrato do clarify é satisfazível sem uma única resposta do usuário: a verificação pós-fase dos adapters só confere formato de ADR e o critério de saída do `cycle.md` diz "ambiguidades resolvidas" sem distinguir *resolvida pelo usuário* de *resolvida por mim*. Somado à regra do próprio `grill-me` ("explore instead of asking" — no deltaspec o TRUTH/ADRs respondem quase tudo), ao auto-score de quem escreveu a spec e ao template do specify já cobrir as cinco dimensões, a entrevista degenera em relatório. Observado nas deltas 004, 005, 006 e 015 — agregados 0.05–0.10, sempre abaixo do limiar na primeira passada, portão nunca disparado; a [delta-004](specs/_archive/004-exclude-portavel/spec.md) admite em comentário "dúvidas resolvidas por exploração do código, sem entrevista". Correção candidata: clarify sem resposta humana registrada não fecha, e sem canal humano o relatório sai marcado `auto-avaliado`
 
-- **Fila:** `P3·J3·Pr9`
-- **Local:** [adapters.md](skills/spec-feature/references/adapters.md) (seção grill-me/grill-with-docs) · [cycle.md](skills/spec-feature/references/cycle.md) (critério de saída do clarify)
 - **Gatilho:** Próxima delta que tocar o contrato do clarify — ou a delta-017, que já reavalia o pin do max ([ADR-0012](docs/adrs/ADR-0012-recontratacao-motores.md)) e abre os mesmos arquivos
 - **Origem:** pergunta do Iuri em sessão, 2026-08-02 · aberto em 2026-08-02
+- **Encerrado:** 2026-08-02, [delta-026](specs/_archive/026-gate-perfil-e-clarify/)/[#105](../../pull/105) — o clarify passa a declarar `entrevistado`/`auto-avaliado` no cabeçalho, o C12 exige a trilha e o contrato registra que exploração do repositório não conta como resposta do usuário e que quem redige a spec é quem pontua o relatório. O próprio review da delta demonstrou o débito que ela fecha: dois eixos cegos derrubaram três afirmações que o `analyze.md` fazia sobre si mesmo — promessa órfã no `SECURITY.md`, contagem de linhas inventada e fixtures que não cobriam o que declaravam. **O que a delta não mecaniza** está na spec, seção Fora de escopo: qualidade da entrevista e leitura do `<N>` de decisões continuam juízo
 
 ### DT-024 · pendência · aberto
 **O deltaspec não tem `doc-profile.yaml` e o próprio C11 acusa**
@@ -249,6 +247,26 @@ O C11, criado na delta-026, reporta BAIXO na primeira execução contra este rep
 - **Local:** [check_cycle.py](skills/spec-feature/scripts/check_cycle.py) (C11 — o acusador; o alvo é a raiz do repo)
 - **Gatilho:** Já disparado — o C11 reporta em toda execução do gate; some quando o perfil existir
 - **Origem:** [delta-026](specs/026-gate-perfil-e-clarify/) · aberto em 2026-08-02
+
+### DT-025 · pendência · aberto
+**Nenhum dono para propagar mudança de schema aos `doc-profile.yaml` já existentes**
+
+O C11 nasceu tolerando a cauda opcional exatamente porque categoria acrescentada ao template **nunca propaga retroativamente** — e a varredura de 2026-08-02 mostrou o efeito: dos 7 perfis reais, um declara `version: 2` sem migração documentada em lugar nenhum, e **nenhum** declara o `motores.graphify_backend` que a delta-025 criou. O template evolui, os perfis instalados não, e a `version` não é lida por ninguém. Decidir se `version` passa a significar algo (o C11 hoje não fixa valor) e quem propaga: passo idempotente no `projeto-init`, check que avisa quando o perfil está atrás do template, ou aceitar a divergência por escrito
+
+- **Fila:** `P3·J3·Pr9`
+- **Local:** [check_cycle.py](skills/spec-feature/scripts/check_cycle.py) (C11) · [projeto-init](skills/projeto-init/) (dono do template)
+- **Gatilho:** Próxima categoria ou chave nova no `doc-profile.yaml` — ou a primeira vez que a divergência de `version` causar erro real
+- **Origem:** [delta-026](specs/_archive/026-gate-perfil-e-clarify/) (pendência da seção Dependências e riscos) · aberto em 2026-08-02
+
+### DT-026 · débito · aberto
+**O RNF6 verifica espelho com `grep` no CI, ignorando o mecanismo de espelho do próprio repo**
+
+A política de dependência (PyYAML nomeado com link para a ADR-0023 nos quatro espelhos) é verificada por um loop de `grep` no job `ci`. É exatamente o problema que o `deps.toml` + `validate_integrity.py` resolvem — o C1 é *"valor presente no arquivo dono e em cada espelho"* —, então o framework reimplementa à mão o que ele próprio oferece aos projetos-alvo. Trocar por um `[[owner]]` com `pattern = 'ADR-0023'` também leva a checagem para o pré-commit, e não só para o CI. Achado do eixo Qualidade do review da delta-026, adiado por ser troca de mecanismo depois da spec consolidada
+
+- **Fila:** `P3·J1·Pr9`
+- **Local:** [ci.yml](.github/workflows/ci.yml) (step do RNF1/RNF6) · [deps.toml](deps.toml)
+- **Gatilho:** Já disparado — some quando a verificação migrar; a consolidação do RNF6 no `TRUTH.md` acrescentou um quinto espelho, que o grep atual não cobre
+- **Origem:** [delta-026](specs/_archive/026-gate-perfil-e-clarify/) (review em dois eixos) · aberto em 2026-08-02
 
 ## Lições
 <!-- post-mortems datados, com desfecho; sem ação pendente — ação pendente é DT -->

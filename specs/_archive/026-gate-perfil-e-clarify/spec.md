@@ -1,5 +1,5 @@
 # delta-026 — gate do doc-profile e canal humano no clarify
-Estado: proposta · Data: 2026-08-02 · Branch: feat/026-gate-perfil-e-clarify · Perfil: completo — mexe no gate determinístico (código novo + selftest), no contrato de uma fase e num princípio canônico do repo; errar propaga para todo projeto-alvo (aprovado: 2026-08-02)
+Estado: arquivada · Data: 2026-08-02 · Branch: feat/026-gate-perfil-e-clarify · Perfil: completo — mexe no gate determinístico (código novo + selftest), no contrato de uma fase e num princípio canônico do repo; errar propaga para todo projeto-alvo (aprovado: 2026-08-02)
 
 Clarify: entrevistado (2026-08-02) — 3 decisões do usuário
 <!-- trilha do clarify (R2 desta delta): âncora canônica no cabeçalho, lida pelo C12 -->
@@ -46,4 +46,4 @@ O DT-023 foi observado nas deltas 004/005/006/015; a delta-025 o contrariou à m
 ## Dependências e riscos
 - Evidência do gatilho do DT-013 (varredura local, 2026-08-02): 7 perfis em `~/code`, 3 deles em projeto com delta real.
 - A dependência dura de PyYAML é decisão do usuário no clarify (2026-08-02) e exige ADR própria, por renunciar a um princípio canônico vigente.
-- [ ] Um dos 7 perfis declara `version: 2` sem migração documentada, e nenhum declara o `motores.graphify_backend` criado pela delta-025 — sem dono de propagação; roteia como DT no archive se não for resolvido aqui.
+- [x] Um dos 7 perfis declara `version: 2` sem migração documentada, e nenhum declara o `motores.graphify_backend` criado pela delta-025 — sem dono de propagação; roteia como DT no archive se não for resolvido aqui. → roteado como **DT-025** no archive (2026-08-02).
