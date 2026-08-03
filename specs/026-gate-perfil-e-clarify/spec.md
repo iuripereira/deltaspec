@@ -34,8 +34,9 @@ O DT-023 foi observado nas deltas 004/005/006/015; a delta-025 o contrariou à m
 ## Requisitos não funcionais
 
 ### RNF1 — ADICIONA: política de dependência externa dos gates, declarada e verificável
-- Métrica: **exatamente uma** dependência externa admitida nos scripts do framework (`PyYAML`), nomeada com link para a ADR que a admite nos três espelhos vivos da política — `CLAUDE.md`, `README.md` e `README.en.md` — e nenhum deles prometendo "só a biblioteca padrão"; dependência nova exige ADR própria, nunca herança desta
-- Verificação: step no job `ci` rodando `! grep -rn "só a biblioteca padrão\|just the Python 3.11+ standard library\|zero pacote externo" CLAUDE.md README.md README.en.md` e conferindo `ADR-0023` citada nos três; o mesmo job instala a dependência explicitamente antes dos selftests, sem depender do que o runner traz pré-instalado
+- Métrica: **exatamente uma** dependência externa admitida nos scripts do framework (`PyYAML`), nomeada com link para a ADR que a admite em **todos** os espelhos vivos da política — `CLAUDE.md`, `README.md`, `README.en.md` e `SECURITY.md`, que a usa como argumento de modelo de ameaça — e nenhum deles prometendo "só a biblioteca padrão"; dependência nova exige ADR própria, nunca herança desta
+- Verificação: step no job `ci` rodando o grep negativo das frases de zero-dep sobre os quatro espelhos e conferindo `ADR-0023` citada em cada um; o mesmo job instala a dependência **antes do primeiro step que importa `yaml`**, sem depender do que o runner traz pré-instalado
+- Ausente a dependência na máquina do usuário, o gate termina com mensagem acionável nomeando o pacote e a ADR — nunca com traceback do interpretador; o comando de instalação aparece na seção de instalação do README, não só no CI
 
 ## Fora de escopo
 - Mecanizar a **qualidade** da entrevista (número de perguntas, profundidade) — juízo, perímetro do ADR-0006. O C12 verifica presença de âncora, não mérito.

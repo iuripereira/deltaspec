@@ -80,6 +80,14 @@ curl -fsSL https://raw.githubusercontent.com/iuripereira/deltaspec/main/scripts/
 
 (Com o repositório clonado, chame [scripts/instala-motores.sh](scripts/instala-motores.sh) direto.)
 
+### 2.3 Os gates — 1 dependência
+
+```bash
+pip install pyyaml
+```
+
+Única dependência externa do framework, para validar o `doc-profile.yaml` ([ADR-0023](docs/adrs/ADR-0023-pyyaml-como-dependencia-admitida.md)). Sem ela os gates param com a mensagem pedindo este comando; o resto é biblioteca padrão do Python 3.11+.
+
 ```mermaid
 %%{init: {'theme':'base','themeVariables':{'lineColor':'#5b6472','primaryTextColor':'#1f2937','primaryBorderColor':'#2b2b2b','edgeLabelBackground':'#ffffff'}}}%%
 flowchart LR

@@ -32,7 +32,10 @@ import subprocess
 import sys
 from pathlib import Path
 
-import yaml  # única dependência externa admitida nos gates (ADR-0023)
+try:
+    import yaml  # única dependência externa admitida nos gates (ADR-0023)
+except ModuleNotFoundError:  # mensagem acionável em vez de traceback cru (review da delta-026)
+    sys.exit("ERRO: PyYAML ausente — rode 'pip install pyyaml' (ADR-0023)")
 
 TRUTH_LIMITE = 800
 PR_LIMITE = 500  # espelho da regra canônica de tamanho de PR (dono: canonical-rules.md; sancionado no deps.toml)
@@ -87,6 +90,12 @@ def campo(texto: str, nome: str):
         return None
     v = m.group(1).strip()
     return None if not v or "{{" in v else v
+
+
+def eh_bugfix(cab: str) -> bool:
+    """Tipo da delta lido do cabeçalho — um dono só para o predicado que o C8, o C12 e o
+    checar() consultam (review da delta-026: estava em três cópias)."""
+    return (campo(cab, "Tipo") or "").lower() == "bugfix"
 
 
 def cabecalho(spec_txt: str) -> str:
@@ -283,7 +292,7 @@ def c8_testplan(delta: Path, bs, spec_txt: str, v: list) -> None:
     tp = delta / "test-plan.md"
     if not tp.is_file():
         dispensa = campo(cab, "Test-plan")
-        bugfix = (campo(cab, "Tipo") or "").lower() == "bugfix" and not (delta / "tasks.md").is_file()
+        bugfix = eh_bugfix(cab) and not (delta / "tasks.md").is_file()
         if dispensa and "dispensado" in dispensa.lower():
             v.append(("BAIXO", "test-plan.md", f"dispensado no cabeçalho: {dispensa}", "ok se o perfil enxuto foi aprovado (R1, delta-015)"))
         elif bugfix:
@@ -366,8 +375,8 @@ def c11_perfil(root: Path, v: list) -> None:
                   "usar o template do projeto-init"))
         return
     for chave in NUCLEO_TOPO:
-        if chave not in d:
-            v.append(("ALTO", "doc-profile.yaml", f"chave de núcleo ausente: {chave}",
+        if d.get(chave) is None:  # chave declarada sem valor vira None em YAML — vale por ausente
+            v.append(("ALTO", "doc-profile.yaml", f"chave de núcleo ausente ou vazia: {chave}",
                       "copiar do template do projeto-init"))
     dec = d.get("decisao") if isinstance(d.get("decisao"), dict) else {}
     for sub in ("data", "justificativa"):
@@ -384,7 +393,7 @@ def c11_perfil(root: Path, v: list) -> None:
         if cat not in art:
             v.append(("ALTO", "doc-profile.yaml", f"categoria de núcleo ausente: {cat}",
                       "copiar do template — a cauda é opcional, o núcleo não"))
-    obrigatorios = [k for k, s in art.items() if isinstance(s, dict) and s.get("obrigatorio")]
+    obrigatorios = [k for k, s in art.items() if isinstance(s, dict) and s.get("obrigatorio") is True]
     justificativa = str(dec.get("justificativa") or "").strip()
     if not obrigatorios and not justificativa:
         v.append(("ALTO", "doc-profile.yaml", "nenhum artefato obrigatório e decisao.justificativa vazia",
@@ -402,9 +411,9 @@ def c12_clarify(spec_txt: str, v: list) -> None:
     cab = cabecalho(spec_txt)
     if (campo(cab, "Perfil") or "").lower().startswith("enxuto"):
         return
-    if (campo(cab, "Tipo") or "").lower() == "bugfix":
+    if eh_bugfix(cab):
         return
-    if not CLARIFY.search(spec_txt):
+    if not CLARIFY.search(cab):  # cabeçalho, não o documento: linha no corpo não é trilha (review da delta-026)
         v.append(("ALTO", "spec.md", "sem a trilha do clarify no cabeçalho",
                   "declarar 'Clarify: entrevistado (AAAA-MM-DD) — <N> decisões do usuário' "
                   "ou 'Clarify: auto-avaliado (AAAA-MM-DD) — sem canal humano' (R8)"))
@@ -416,7 +425,7 @@ def checar(root: Path, delta: Path) -> list:
         die(f"spec.md não encontrado em {delta}")
     spec_txt = spec.read_text(encoding="utf-8")
     bs = blocos(spec_txt)
-    bugfix = (campo(cabecalho(spec_txt), "Tipo") or "").lower() == "bugfix"
+    bugfix = eh_bugfix(cabecalho(spec_txt))
     v: list = []
     if not bs and not bugfix:
         v.append(("ALTO", "spec.md", "nenhum bloco '### Rn — ADICIONA|MUDA|REMOVE'", "usar templates/delta-spec.md"))
@@ -667,6 +676,13 @@ def selftest_c11() -> None:
         (nucleo + "  prototipo: { obrigatorio: false }\n  apresentacao: { obrigatorio: false }\n", 0,
          "cauda inteira presente é aceita"),
         (nucleo.replace("version: 1\n", ""), 1, "chave de núcleo ausente acusa ALTO"),
+        (nucleo.replace("version: 1", "version:"), 1, "chave de núcleo declarada sem valor acusa ALTO"),
+        (nucleo.replace('decisao: { data: "2026-01-01", justificativa: "" }', 'decisao: { data: "2026-01-01" }'), 1,
+         "decisao.justificativa ausente acusa ALTO"),
+        (nucleo.replace("publico: { interno: true", 'publico: { interno: "true"'), 1,
+         "publico.interno não booleano acusa ALTO"),
+        (nucleo.replace("obrigatorio: true", 'obrigatorio: "false"'), 1,
+         "obrigatorio como string não conta como obrigatório"),
         (nucleo.replace("  casos-de-uso: { obrigatorio: false }\n", ""), 1, "categoria de núcleo ausente acusa ALTO"),
         (nucleo.replace("obrigatorio: true", "obrigatorio: false"), 1,
          "nenhum obrigatório com justificativa vazia acusa ALTO"),
@@ -713,6 +729,10 @@ def selftest_c12() -> None:
     v_bugfix: list = []
     c12_clarify("# delta-999 — x\nEstado: proposta · Tipo: bugfix · Perfil: completo\n\n## Contexto\n", v_bugfix)
     assert v_bugfix == [], f"delta bugfix dispensa a trilha — clarify sob demanda (cycle.md): {v_bugfix}"
+    v_corpo: list = []  # trilha fora do cabeçalho não conta (review da delta-026)
+    c12_clarify("# delta-999 — x\nEstado: proposta · Perfil: completo\n\n## Contexto\n"
+                "Clarify: entrevistado (2026-08-02) — 3 decisões do usuário\n", v_corpo)
+    assert len(v_corpo) == 1, f"linha no corpo não é trilha — a âncora é o cabeçalho: {v_corpo}"
     for perfil, trilha, esperado, desc in casos:
         v: list = []
         c12_clarify(base.format(perfil=perfil, trilha=trilha), v)
