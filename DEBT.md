@@ -288,6 +288,7 @@ O `EXCLUDE_LINKS_PADRAO` da delta-027 protege `_archive/` e `docs/adrs/` porque 
 - **Local:** [validate_integrity.py](skills/guarding-doc-integrity/scripts/validate_integrity.py) (`EXCLUDE_LINKS_PADRAO` e o laço do C3)
 - **Gatilho:** Já disparado — bloqueia a replicação da v1.7.1 nos consumidores; some quando o recorte por seção existir
 - **Origem:** varredura de replicação durante o review da [delta-028](specs/_archive/028-propagacao-e-espelhos/) · aberto em 2026-08-03
+- **Em curso:** corrigido na delta-029, quita no archive dela — o C3 passou a parar na primeira seção `## [X.Y.Z]` e a ignorar link em crase ou bloco cercado, os dois pelo **conteúdo** do arquivo e nunca pelo nome. Medido no repo que originou o débito: **96 → 3** links mortos, e os 3 que sobram são rot real do README de lá (`docs/implantacao/auditorias/`, `docs/reunioes/`) — o gate acusá-los é o gate funcionando. Neste repo o C3 caiu de 174 para 162 links verificados, e os 12 que saíram são **todos** de seções lançadas do próprio CHANGELOG, nenhum de crase em outro arquivo
 
 ## Lições
 <!-- post-mortems datados, com desfecho; sem ação pendente — ação pendente é DT -->

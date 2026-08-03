@@ -30,6 +30,12 @@ EXCLUDE_LINKS_PADRAO = ["**/_archive/**/*.md", "docs/adrs/**/*.md"]
 # classe que apodrece em rename (achado ALTO do review da delta-027).
 ATALHO_GITHUB = re.compile(r"\.\./\.\./(issues|pull|discussions)/")
 
+# Onde um link deixa de ser referência e vira citação (delta-029), pelo conteúdo e nunca
+# pelo nome do arquivo — repo que chame o changelog de outro jeito recebe a mesma proteção.
+CORTE_LANCADO = re.compile(r"^## \[\d+\.\d+\.\d+\]")  # Keep a Changelog: release publicado é imutável
+CODE_SPAN = re.compile(r"`[^`]*`")                    # `[x](y.md)` é sintaxe citada
+CERCA = re.compile(r"^\s*```")
+
 
 def die(msg: str) -> None:
     print(f"ERRO: {msg}")
@@ -53,6 +59,25 @@ def collect(root: Path, globs: list[str]) -> set[Path]:
     for g in globs:
         files.update(x for x in root.glob(g) if x.is_file())
     return files
+
+
+def linhas_vivas(texto: str) -> list[tuple[int, str]]:
+    """(nº, linha) onde um link é referência de verdade — pura, sem I/O (delta-029).
+
+    Para na primeira seção de versão lançada, e devolve cada linha sem os trechos em
+    crase; linha dentro de bloco cercado não sai. O que fica é o que o C3 deve cobrar.
+    """
+    vivas: list[tuple[int, str]] = []
+    dentro_de_cerca = False
+    for n, linha in enumerate(texto.splitlines(), 1):
+        if CORTE_LANCADO.match(linha):
+            break
+        if CERCA.match(linha):
+            dentro_de_cerca = not dentro_de_cerca
+            continue
+        if not dentro_de_cerca:
+            vivas.append((n, CODE_SPAN.sub("", linha)))
+    return vivas
 
 
 def main() -> None:
@@ -92,7 +117,7 @@ def main() -> None:
 
     checked = 0
     for path in sorted(scan_links):
-        for i, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+        for i, line in linhas_vivas(path.read_text(encoding="utf-8")):
             for target in MD_LINK.findall(line):
                 if target.startswith(("http://", "https://", "mailto:", "#", "/")) \
                         or "{" in target or ATALHO_GITHUB.match(target):
@@ -200,7 +225,40 @@ mirrors = ["CLAUDE.md"]
     # conta a linha de violação, não o prefixo "[C3]" — a linha de resumo também o carrega
     assert declarado.stdout.count("[C3] link morto") == 2, f"os dois links do histórico:\n{declarado.stdout}"
 
-    print("selftest: OK (6 fixtures, C1/C2/C3 detectados; C3 com conjunto próprio)")
+    # delta-029: seção lançada é histórico imutável (Keep a Changelog); [Não lançado] é viva
+    notas = ("# Notas\n\n"
+             "## [Não lançado]\n\nVer [vivo](sumiu-vivo.md).\n\n"
+             "## [1.1.0] - 2026-01-02\n\nVer [antigo](sumiu-antigo.md).\n\n"
+             "## [1.0.0] - 2026-01-01\n\nVer [mais antigo](sumiu-mais.md).\n")
+    lancado = rodar({
+        "PRD.md": "Limite de R$ 2.000.\n", "CLAUDE.md": "Limite: R$ 2.000.\n", "NOTAS.md": notas,
+    })
+    assert lancado.returncode == 1, f"o link da seção viva tem de acusar:\n{lancado.stdout}"
+    assert lancado.stdout.count("[C3] link morto") == 1, \
+        f"só o da seção [Não lançado] — o recorte para na 1ª versão lançada:\n{lancado.stdout}"
+    assert "sumiu-vivo.md" in lancado.stdout, f"o acusado é o da seção viva:\n{lancado.stdout}"
+
+    # delta-029: arquivo sem seção lançada segue varrido inteiro
+    comum = rodar({
+        "PRD.md": "Limite de R$ 2.000.\n", "CLAUDE.md": "Limite: R$ 2.000.\n",
+        "NOTAS.md": "# Notas\n\nTexto e [morto](sumiu.md) no fim.\n",
+    })
+    assert comum.returncode == 1 and "sumiu.md" in comum.stdout, \
+        f"sem seção lançada, nada muda:\n{comum.stdout}"
+
+    # delta-029: sintaxe citada não é referência — crase e bloco cercado
+    citado = rodar({
+        "PRD.md": "Limite de R$ 2.000.\n", "CLAUDE.md": "Limite: R$ 2.000.\n",
+        "NOTAS.md": ("Escreva assim: `[texto](citado.md)`.\n\n"
+                     "```\n[exemplo](cercado.md)\n```\n\n"
+                     "Mas [este](de-verdade.md) é referência.\n"),
+    })
+    assert citado.returncode == 1, f"o link fora da crase tem de acusar:\n{citado.stdout}"
+    assert citado.stdout.count("[C3] link morto") == 1, \
+        f"só o de verdade; crase e cerca são sintaxe citada:\n{citado.stdout}"
+    assert "de-verdade.md" in citado.stdout, f"o acusado é o de fora:\n{citado.stdout}"
+
+    print("selftest: OK (9 fixtures, C1/C2/C3 detectados; C3 com conjunto próprio, recorte e sintaxe citada)")
 
 
 if __name__ == "__main__":
