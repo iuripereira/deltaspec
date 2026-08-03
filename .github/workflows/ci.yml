@@ -45,6 +45,17 @@ jobs:
             echo "RNF5: caminho absoluto de maquina encontrado acima"; exit 1
           fi
           echo "RNF5: OK"
+      - name: Dependencia admitida dos gates (ADR-0023)
+        run: python3 -m pip install --quiet pyyaml
+      - name: RNF1 - politica de dependencia declarada nos tres espelhos
+        run: |
+          if grep -rn "só a biblioteca padrão\|just the Python 3.11+ standard library\|zero pacote externo" CLAUDE.md README.md README.en.md; then
+            echo "RNF1: espelho ainda promete zero dependencia — atualizar (ADR-0023)"; exit 1
+          fi
+          for f in CLAUDE.md README.md README.en.md; do
+            grep -q "ADR-0023" "$f" || { echo "RNF1: $f nao cita a ADR-0023"; exit 1; }
+          done
+          echo "RNF1: OK"
       - name: Selftest dos gates
         run: |
           set -e

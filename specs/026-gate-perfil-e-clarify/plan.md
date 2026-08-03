@@ -34,7 +34,7 @@
 - Consumes: nada (task livre).
 - Produces: `c11_perfil(root: Path, v: list) -> None` e as constantes `NUCLEO_TOPO`, `NUCLEO_ARTEFATOS`, que a T2 não usa mas o selftest referencia.
 
-- [ ] **Step 1: Escrever o selftest que falha**
+- [x] **Step 1: Escrever o selftest que falha**
 
 Acrescentar em `selftest()`, no padrão das fixtures existentes (`tmp_path` com perfil escrito à mão):
 
@@ -77,12 +77,12 @@ def selftest_c11() -> None:
     print("selftest C11: OK (núcleo exigido, cauda tolerada, YAML inválido tratado)")
 ```
 
-- [ ] **Step 2: Rodar e confirmar que falha**
+- [x] **Step 2: Rodar e confirmar que falha**
 
 Run: `python3 skills/spec-feature/scripts/check_cycle.py --selftest`
 Expected: `NameError: name 'c11_perfil' is not defined`
 
-- [ ] **Step 3: Escrever o mínimo que passa**
+- [x] **Step 3: Escrever o mínimo que passa**
 
 Constantes junto das outras regex do topo:
 
@@ -141,21 +141,21 @@ def c11_perfil(root: Path, v: list) -> None:
 
 Import no topo, junto dos demais: `import yaml`.
 
-- [ ] **Step 4: Rodar e confirmar que passa**
+- [x] **Step 4: Rodar e confirmar que passa**
 
 Run: `python3 skills/spec-feature/scripts/check_cycle.py --selftest`
 Expected: `selftest C11: OK (núcleo exigido, cauda tolerada, YAML inválido tratado)`
 
-- [ ] **Step 5: Ligar no `checar()` e atualizar a docstring do cabeçalho**
+- [x] **Step 5: Ligar no `checar()` e atualizar a docstring do cabeçalho**
 
 Em `checar()`, junto dos que recebem `root`: `c11_perfil(root, v)`. Na docstring do topo, acrescentar a linha `C11 doc-profile — núcleo ausente, YAML inválido, obrigatório sem justificativa (delta-026)`.
 
-- [ ] **Step 6: Rodar contra os 7 perfis reais** (validação de campo, não teste)
+- [x] **Step 6: Rodar contra os 7 perfis reais** (validação de campo, não teste)
 
 Run: `for p in ~/code/*/doc-profile.yaml ~/code/imex/*/doc-profile.yaml; do echo "$p"; done`
 Expected: o C11 acusa os desvios já medidos (justificativa vazia é aceita porque há obrigatório; `version: 2` passa — o check não fixa o valor) e **nenhum falso ALTO** em perfil íntegro.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add skills/spec-feature/scripts/check_cycle.py
@@ -173,7 +173,7 @@ git commit -m "feat(026-gate-perfil-e-clarify): C11 valida o schema do doc-profi
 - Consumes: o arquivo já editado pela T1 (mesmo arquivo → sequencial, não paralelizável).
 - Produces: `c12_clarify(spec_txt: str, v: list) -> None`.
 
-- [ ] **Step 1: Escrever o selftest que falha**
+- [x] **Step 1: Escrever o selftest que falha**
 
 ```python
 def selftest_c12() -> None:
@@ -195,12 +195,12 @@ def selftest_c12() -> None:
     print("selftest C12: OK (trilha exigida no completo, dispensada no enxuto, prosa não engana)")
 ```
 
-- [ ] **Step 2: Rodar e confirmar que falha**
+- [x] **Step 2: Rodar e confirmar que falha**
 
 Run: `python3 skills/spec-feature/scripts/check_cycle.py --selftest`
 Expected: `NameError: name 'c12_clarify' is not defined`
 
-- [ ] **Step 3: Escrever o mínimo que passa**
+- [x] **Step 3: Escrever o mínimo que passa**
 
 ```python
 # C12 (delta-026): trilha do clarify. `match` com âncora de início de linha — a mesma
@@ -222,19 +222,19 @@ def c12_clarify(spec_txt: str, v: list) -> None:
                   "ou 'Clarify: auto-avaliado (AAAA-MM-DD) — sem canal humano' (R8)"))
 ```
 
-- [ ] **Step 4: Rodar e confirmar que passa**
+- [x] **Step 4: Rodar e confirmar que passa**
 
 Run: `python3 skills/spec-feature/scripts/check_cycle.py --selftest`
 Expected: `selftest C12: OK (trilha exigida no completo, dispensada no enxuto, prosa não engana)`
 
-- [ ] **Step 5: Ligar no `checar()`** — `c12_clarify(spec_txt, v)`, junto do C8 que também consome `spec_txt`. Docstring do topo ganha `C12 trilha do clarify — perfil completo sem canal humano declarado (delta-026)`.
+- [x] **Step 5: Ligar no `checar()`** — `c12_clarify(spec_txt, v)`, junto do C8 que também consome `spec_txt`. Docstring do topo ganha `C12 trilha do clarify — perfil completo sem canal humano declarado (delta-026)`.
 
-- [ ] **Step 6: Rodar o gate na própria delta**
+- [x] **Step 6: Rodar o gate na própria delta**
 
 Run: `python3 skills/spec-feature/scripts/check_cycle.py specs/026-gate-perfil-e-clarify`
 Expected: sem achado do C12 — a spec desta delta já carrega a linha.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add skills/spec-feature/scripts/check_cycle.py
@@ -254,13 +254,13 @@ git commit -m "feat(026-gate-perfil-e-clarify): C12 exige a trilha do clarify no
 - Consumes: nada (task livre — arquivos distintos da T1/T2, paralelizável).
 - Produces: a prosa que o C12 mecaniza; nenhuma outra task consome.
 
-- [ ] **Step 1: `cycle.md`** — a coluna "Saída (critério de pronto)" da linha `clarify` ganha, ao final: `; trilha do clarify no cabeçalho declarando se houve canal humano (C12)`. A tabela "Trilha de auditoria de aprovação" ganha a linha:
+- [x] **Step 1: `cycle.md`** — a coluna "Saída (critério de pronto)" da linha `clarify` ganha, ao final: `; trilha do clarify no cabeçalho declarando se houve canal humano (C12)`. A tabela "Trilha de auditoria de aprovação" ganha a linha:
 
 ```markdown
 | Trilha do clarify (R8) | cabeçalho do `spec.md` | `Clarify: entrevistado (AAAA-MM-DD) — <N> decisões do usuário` · `Clarify: auto-avaliado (AAAA-MM-DD) — sem canal humano` |
 ```
 
-- [ ] **Step 2: `adapters.md`**, seção grill-me/grill-with-docs — a verificação pós-fase passa a exigir a trilha e a registrar o viés:
+- [x] **Step 2: `adapters.md`**, seção grill-me/grill-with-docs — a verificação pós-fase passa a exigir a trilha e a registrar o viés:
 
 ```markdown
 - **Verificação pós-fase:** ADRs novos conformes ao template **e** a trilha do clarify no
@@ -271,14 +271,14 @@ git commit -m "feat(026-gate-perfil-e-clarify): C12 exige a trilha do clarify no
   escolha o mais ambíguo (regra do próprio `grill-me`).
 ```
 
-- [ ] **Step 3: `templates/delta-spec.md`** — abaixo da linha de Estado:
+- [x] **Step 3: `templates/delta-spec.md`** — abaixo da linha de Estado:
 
 ```markdown
 Clarify: {{entrevistado|auto-avaliado}} ({{AAAA-MM-DD}}) — {{<N> decisões do usuário | sem canal humano}}
 <!-- trilha do clarify (R8): âncora canônica lida pelo C12; perfil enxuto dispensa -->
 ```
 
-- [ ] **Step 4: Verificar**
+- [x] **Step 4: Verificar**
 
 Run: `python3 skills/guarding-doc-integrity/scripts/validate_integrity.py .`
 Expected: `RESULTADO: PASS`
@@ -286,7 +286,7 @@ Expected: `RESULTADO: PASS`
 Run: `grep -c "auto-avaliado" skills/spec-feature/references/cycle.md skills/spec-feature/references/adapters.md skills/spec-feature/references/templates/delta-spec.md`
 Expected: ≥ 1 em cada
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/spec-feature/references/
@@ -306,37 +306,37 @@ git commit -m "docs(026-gate-perfil-e-clarify): contrato do clarify exige trilha
 - Consumes: nada (task livre, paralelizável com T1–T3).
 - Produces: nada que outra task consuma.
 
-- [ ] **Step 1: `CLAUDE.md`** — a linha passa a:
+- [x] **Step 1: `CLAUDE.md`** — a linha passa a:
 
 ```markdown
 - **Zero dependência supérflua (YAGNI/DRY):** prefira stdlib e recursos nativos; não adicione framework/lib onde uma função resolve. Os gates usam stdlib (`re`, `pathlib`, `subprocess`, `tomllib`, `sys`) mais **uma única dependência externa admitida: `PyYAML`**, necessária para validar o `doc-profile.yaml` — a renúncia ao parser próprio está na [ADR-0023](docs/adrs/ADR-0023-pyyaml-como-dependencia-admitida.md). Dependência nova exige o mesmo grau de justificativa, nunca um aceno para essa ADR.
 ```
 
-- [ ] **Step 2: `README.md`** — a frase de `:311` passa a:
+- [x] **Step 2: `README.md`** — a frase de `:311` passa a:
 
 ```markdown
 Tudo roda **na sua máquina** — na fase analyze, no arquivamento e no pré-commit ([ADR-0001](docs/adrs/ADR-0001-gates-rodam-local.md)). Uma única dependência externa: `pip install pyyaml`, para validar o `doc-profile.yaml` ([ADR-0023](docs/adrs/ADR-0023-pyyaml-como-dependencia-admitida.md)); o resto é biblioteca padrão do Python 3.11+.
 ```
 
-- [ ] **Step 3: `README.en.md`** — a frase de `:312`, nos mesmos termos:
+- [x] **Step 3: `README.en.md`** — a frase de `:312`, nos mesmos termos:
 
 ```markdown
 Everything runs **on your machine** — at the analyze phase, at archive time and on pre-commit ([ADR-0001](docs/adrs/ADR-0001-gates-rodam-local.md)). A single external dependency: `pip install pyyaml`, to validate `doc-profile.yaml` ([ADR-0023](docs/adrs/ADR-0023-pyyaml-como-dependencia-admitida.md)); everything else is the Python 3.11+ standard library.
 ```
 
-- [ ] **Step 4: `.github/workflows/ci.yml`** — antes do passo que roda os selftests:
+- [x] **Step 4: `.github/workflows/ci.yml`** — antes do passo que roda os selftests:
 
 ```yaml
       - name: Instala a dependência dos gates (ADR-0023)
         run: python3 -m pip install --quiet pyyaml
 ```
 
-- [ ] **Step 5: Verificar que nenhum espelho segue prometendo zero-dep**
+- [x] **Step 5: Verificar que nenhum espelho segue prometendo zero-dep**
 
 Run: `grep -rn "só a biblioteca padrão\|just the Python 3.11+ standard library\|zero pacote externo" CLAUDE.md README.md README.en.md`
 Expected: nenhuma linha
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add CLAUDE.md README.md README.en.md .github/workflows/ci.yml
@@ -353,7 +353,7 @@ git commit -m "docs(026-gate-perfil-e-clarify): declara PyYAML como dependência
 **Interfaces:**
 - Consumes: T1–T4.
 
-- [ ] **Step 1: `CHANGELOG.md`** sob `[Não lançado]`:
+- [x] **Step 1: `CHANGELOG.md`** sob `[Não lançado]`:
 
 ```markdown
 ### Adicionado
@@ -364,14 +364,14 @@ git commit -m "docs(026-gate-perfil-e-clarify): declara PyYAML como dependência
 - **`PyYAML` passa a ser dependência externa admitida dos gates** (delta-026, [ADR-0023](docs/adrs/ADR-0023-pyyaml-como-dependencia-admitida.md)): a única. Renunciamos ao parser próprio porque o modo de falha dele é silencioso — um `LIBERADO` falso —, e à degradação graciosa porque ela é contrato para motor opcional, não para o gate. Os três espelhos da promessa e o CI foram atualizados.
 ```
 
-- [ ] **Step 2: `HANDOFF.md`** — linha em "Feito recentemente" citando os dois DTs quitados e o achado da varredura (7 perfis, núcleo estável, cauda nunca propagada).
+- [x] **Step 2: `HANDOFF.md`** — linha em "Feito recentemente" citando os dois DTs quitados e o achado da varredura (7 perfis, núcleo estável, cauda nunca propagada).
 
-- [ ] **Step 3: Verificar**
+- [x] **Step 3: Verificar**
 
 Run: `python3 skills/spec-feature/scripts/check_cycle.py specs/026-gate-perfil-e-clarify`
 Expected: sem CRÍTICO; C2 com todos os Rn cobertos
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add CHANGELOG.md HANDOFF.md

@@ -309,7 +309,7 @@ The tenth is not a command: [`eu-tenho-tdah`](skills/eu-tenho-tdah/SKILL.md) is 
 
 The idea: **integrity can't depend on whoever is tired.** A human forgets, an optimistic AI does too. The script doesn't.
 
-Everything runs **on your machine** — at the analyze phase, at archive time and on pre-commit ([ADR-0001](docs/adrs/ADR-0001-gates-rodam-local.md)). No external dependencies: just the Python 3.11+ standard library.
+Everything runs **on your machine** — at the analyze phase, at archive time and on pre-commit ([ADR-0001](docs/adrs/ADR-0001-gates-rodam-local.md)). A single external dependency: `pip install pyyaml`, to validate `doc-profile.yaml` ([ADR-0023](docs/adrs/ADR-0023-pyyaml-como-dependencia-admitida.md)); everything else is the Python 3.11+ standard library.
 
 ```bash
 # the delta's cycle: acceptance, coverage, state, lossless archiving,
