@@ -38,4 +38,4 @@ Na dúvida se algo está na fronteira, reporte — a triagem é responsabilidade
 
 ## Práticas do repositório
 
-As práticas que sustentam esta política têm dono no [CLAUDE.md, seção Segurança](CLAUDE.md#segurança): GitHub Actions pinadas por SHA, gates com superfície de cadeia de dependências Python de **um** pacote (`PyYAML`, admitido por decisão registrada — dependência nova exige ADR própria) e secrets fora do versionamento.
+As práticas que sustentam esta política têm dono no [CLAUDE.md](CLAUDE.md) — Segurança para as práticas abaixo, Clean Code para a política de dependência: GitHub Actions pinadas por SHA, gates com superfície de cadeia de dependências Python de **um** pacote (`PyYAML`, admitido por decisão registrada — dependência nova exige ADR própria) e secrets fora do versionamento.

@@ -21,14 +21,10 @@ exclude_globs = ["CHANGELOG.md", "HANDOFF.md", "DEBT.md", "docs/adrs/**/*.md", "
 # histórico imutável de fora —, que é exatamente o recorte deste repo. Declare a chave
 # só para divergir dele; o porquê está no comentário do templates/deps.toml da skill.
 
-# ── Limiar de particionamento do TRUTH.md ─────────────────────────────────────
 # ── Política de dependência externa dos gates (delta-028) ─────────────────────
 # Dono: a regra vive no CLAUDE.md, seção Clean Code. Espelhos: os dois READMEs
 # (o leitor precisa do comando de instalação) e o TRUTH.md (o requisito cita a
-# decisão que o originou). O SECURITY.md afirma o fato e aponta para o dono, sem
-# repetir o identificador — é o que mantém isto dentro do teto de 2-3 espelhos.
-# A metade negativa (nenhum arquivo promete zero-dep) segue no job `ci`: este
-# validador não tem check de padrão proibido.
+# decisão que o originou). A metade negativa da política fica no job `ci`.
 [[owner]]
 file = "CLAUDE.md"
 mirrors = ["README.md", "README.en.md", "specs/TRUTH.md"]

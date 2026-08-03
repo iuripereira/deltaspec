@@ -5,10 +5,6 @@
 # qualquer artefato fora do perfil exige pergunta explícita ao usuário antes.
 # Arquivo ausente = comportamento sem gate, com warning sugerindo criá-lo.
 #
-# O campo `version` foi retirado na delta-028: nenhum consumidor o lia e o template
-# contradizia o próprio campo. Perfil que ainda o traga continua válido (o C11 só
-# exige o núcleo; chave fora dele nunca é erro).
-#
 # Ferramentas (diagram-as-code, CLIs — setup no README do deltaspec):
 #   mermaid     fluxogramas/sequência/ERD rápido; renderiza nativo no GitHub/Obsidian  [obrigatória]
 #   dbml        modelo de dados canônico (schema.dbml → dbml-renderer)                 [opcional]
@@ -21,8 +17,6 @@
 # A ferramenta segue a CATEGORIA do diagrama (tabela do ADR-0009) — não reaproveite
 # um diagrama pronto de outra categoria/ferramenta: arquitetura C4 em Mermaid, por
 # exemplo, migra para Structurizr DSL; Mermaid fica para fluxos/sequência/ERD.
-
-
 decisao:
   data: "{{AAAA-MM-DD}}"
   # Obrigatória quando NENHUM artefato é declarado obrigatório (perfil "sem diagramas"):

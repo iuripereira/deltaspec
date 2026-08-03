@@ -12,7 +12,7 @@ retomável entre sessões. Termos canônicos:
 - **Agente incremental** — sessão que executa exatamente uma delta (1 feature =
   1 delta spec); deltas pequenas são o ponto crítico validado do padrão.
 - **Gate determinístico** — verificação mecânica versionada no repo com selftest
-  (`check_cycle.py` C1–C10, `validate_integrity.py`), distinta de gate por prompt:
+  (`check_cycle.py` C1–C12, `validate_integrity.py`), distinta de gate por prompt:
   o que é juízo permanece humano (ADR-0006, ADR-0014).
 - **Degradação graciosa** — motor externo ausente → fallback com aviso, nunca
   quebra (ADR-0004; RNF2; contratos em adapters.md).

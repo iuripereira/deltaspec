@@ -674,7 +674,6 @@ def selftest_c11() -> None:
         (nucleo + "  explicativos: { obrigatorio: false }\n", 0, "cauda presente é aceita"),
         (nucleo + "  prototipo: { obrigatorio: false }\n  apresentacao: { obrigatorio: false }\n", 0,
          "cauda inteira presente é aceita"),
-        (nucleo, 0, "perfil sem `version` é válido — campo morto, retirado na delta-028"),
         ("version: 2\n" + nucleo, 0, "perfil que ainda traga `version` continua válido, em qualquer valor"),
         (nucleo.replace('publico: { interno: true, cliente: false }', "publico:"), 3,
          "chave de núcleo declarada sem valor acusa ALTO (a chave e os dois booleanos)"),
@@ -695,7 +694,7 @@ def selftest_c11() -> None:
         (nucleo + "motores: { graphify: true, graphify_backend: claude-cli }\n", 0,
          "graphify ligado com backend declarado é válido"),
         (nucleo + "motores: { graphify: false }\n", 0, "graphify desligado dispensa o backend"),
-        ("version: 1\n  isto: : não é yaml\n", 1, "YAML inválido acusa ALTO, sem exceção"),
+        ("isto: : não é yaml\n", 1, "YAML inválido acusa ALTO, sem exceção"),
         ("- isto é uma lista, não um mapa\n", 1, "raiz que não é mapa acusa ALTO"),
     ]
     for texto, esperado, desc in casos:

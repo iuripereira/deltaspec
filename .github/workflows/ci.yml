@@ -48,11 +48,7 @@ jobs:
             echo "RNF5: caminho absoluto de maquina encontrado acima"; exit 1
           fi
           echo "RNF5: OK"
-      # Metade NEGATIVA da politica de dependencia (delta-028). A metade positiva
-      # — a ADR citada no dono e nos espelhos — saiu daqui: e o C1 do
-      # validate_integrity.py, que roda no step abaixo e tambem no pre-commit.
-      # Esta ficou porque o validador nao tem check de padrao proibido; criar um
-      # e delta propria, registrada como fora de escopo na delta-028.
+      # Metade negativa; a positiva e o C1 do deps.toml. Excecao registrada na delta-028.
       - name: Politica de dependencia - nenhum arquivo promete zero-dep
         run: |
           if grep -rn "só a biblioteca padrão\|just the Python 3.11+ standard library\|zero pacote externo\|stdlib pura\|zero dependência externa" CLAUDE.md README.md README.en.md SECURITY.md; then
