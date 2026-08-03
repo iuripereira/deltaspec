@@ -238,15 +238,14 @@ O contrato do clarify é satisfazível sem uma única resposta do usuário: a ve
 - **Origem:** pergunta do Iuri em sessão, 2026-08-02 · aberto em 2026-08-02
 - **Encerrado:** 2026-08-02, [delta-026](specs/_archive/026-gate-perfil-e-clarify/)/[#105](../../pull/105) — o clarify passa a declarar `entrevistado`/`auto-avaliado` no cabeçalho, o C12 exige a trilha e o contrato registra que exploração do repositório não conta como resposta do usuário e que quem redige a spec é quem pontua o relatório. O próprio review da delta demonstrou o débito que ela fecha: dois eixos cegos derrubaram três afirmações que o `analyze.md` fazia sobre si mesmo — promessa órfã no `SECURITY.md`, contagem de linhas inventada e fixtures que não cobriam o que declaravam. **O que a delta não mecaniza** está na spec, seção Fora de escopo: qualidade da entrevista e leitura do `<N>` de decisões continuam juízo
 
-### DT-024 · pendência · aberto
+### DT-024 · pendência · quitado
 **O deltaspec não tem `doc-profile.yaml` e o próprio C11 acusa**
 
 O C11, criado na delta-026, reporta BAIXO na primeira execução contra este repositório: `perfil ausente na raiz`. O framework exige dos projetos-alvo uma decisão registrada de documentação visual (ADR-0009) e não registrou a sua — os 7 projetos externos varridos em 2026-08-02 têm perfil, o dono da regra não. Não é falso positivo: é dogfood faltando. Decidir e declarar quais artefatos são obrigatórios aqui, com `decisao.justificativa` preenchida (o repo é ferramenta, então "nenhum obrigatório + justificativa" é resposta legítima)
 
-- **Fila:** `P1·J1·Pr9`
-- **Local:** [check_cycle.py](skills/spec-feature/scripts/check_cycle.py) (C11 — o acusador; o alvo é a raiz do repo)
 - **Gatilho:** Já disparado — o C11 reporta em toda execução do gate; some quando o perfil existir
-- **Origem:** [delta-026](specs/026-gate-perfil-e-clarify/) · aberto em 2026-08-02
+- **Origem:** [delta-026](specs/_archive/026-gate-perfil-e-clarify/) · aberto em 2026-08-02
+- **Encerrado:** 2026-08-02, [#107](../../pull/107) — [`doc-profile.yaml`](doc-profile.yaml) na raiz com **nenhum artefato obrigatório e justificativa preenchida** (decisão do usuário): o repo é plugin de skills mais gates, sem UI, sem persistência e sem entregável de cliente, e os fluxos do ciclo vivem como Mermaid inline no README, que é o artefato de fato mantido. `graphify: false`. Com ele o gate deste repo passa a sair **LIBERADO** limpo
 
 ### DT-025 · pendência · aberto
 **Nenhum dono para propagar mudança de schema aos `doc-profile.yaml` já existentes**

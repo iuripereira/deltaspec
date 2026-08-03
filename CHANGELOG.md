@@ -8,6 +8,10 @@ O formato segue [Keep a Changelog 1.0.0](https://keepachangelog.com/pt-BR/1.0.0/
 
 ## [Não lançado]
 
+### Adicionado
+
+- **`doc-profile.yaml` na raiz deste repositório** (DT-024): o framework exigia dos projetos-alvo a decisão registrada de documentação visual ([ADR-0009](docs/adrs/ADR-0009-documentacao-visual-gate-configuravel.md)) e não tinha registrado a sua — dogfood faltando que o próprio C11 acusou na primeira execução. Perfil sem artefato obrigatório, com justificativa preenchida: plugin de skills mais gates, sem UI, sem persistência e sem entregável de cliente; os fluxos do ciclo vivem como Mermaid inline no README.
+
 ## [1.7.0] - 2026-08-02
 
 ### Adicionado
