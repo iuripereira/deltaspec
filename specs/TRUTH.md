@@ -162,10 +162,15 @@
   - DADO este repositório com `core.hooksPath` configurado para `.githooks/` QUANDO um commit toca arquivo `.md` ou o `deps.toml` ENTÃO o hook `pre-commit` roda `validate_integrity.py .` e bloqueia o commit quando o validador sai com código ≠ 0
   - DADO um projeto de usuário com `deps.toml` QUANDO a `guarding-doc-integrity` faz o bootstrap ENTÃO ela oferece a instalação do hook (template versionado + `git config core.hooksPath`), sem sobrescrever hook existente (RNF3) e sem quebrar quando o usuário recusa
   - DADO os cinco arquivos promissores do DT-005 (`deps.toml`, SKILL da `guarding-doc-integrity`, `canonical-rules.md`, `README.md`, TRUTH.md) QUANDO a delta consolida ENTÃO a promessa descrita bate com o mecanismo real (hook versionado opt-in + CI), sem prometer validação que não existe
-- R13 (delta-005) — valor de negócio duplicado entre arquivos é governado por manifesto e validado por script.
+- R13 (delta-027) — valor de negócio duplicado entre arquivos é governado por manifesto e validado por script, e o check de links tem escopo próprio.
   - DADO um repo com `deps.toml` QUANDO `validate_integrity.py` roda ENTÃO verifica espelhos em sincronia (C1), materialização fora dos sancionados (C2) e links relativos vivos (C3), saindo 1 em qualquer violação
   - DADO uma delta ainda aberta propondo valor novo QUANDO o validador roda ENTÃO ela não é acusada — as deltas abertas (`specs/NNN-*/`) ficam fora dos `scan_globs`; dentro de `specs/`, só o `TRUTH.md` consolidado (e `truth/`) entra na varredura
   - DADO o `templates/deps.toml` da skill QUANDO um `exclude_globs` mira conteúdo de diretório ENTÃO o glob termina em `**/*.md` (nunca em `**` solto), com comentário no template explicando o porquê — `pathlib` ≤ 3.12 casa só diretórios num `**` final e o exclude viraria no-op
+  - DADO um arquivo dispensado de citar valor pelo `exclude_globs` QUANDO o C3 roda ENTÃO ele **é varrido mesmo assim** — a dispensa é de materialização (C2), nunca de link vivo; os dois checks passam a ter conjuntos próprios
+  - DADO um registro imutável — `specs/_archive/**` e `docs/adrs/**` — QUANDO o C3 roda ENTÃO ele fica fora, por chave própria `exclude_links_globs` no `deps.toml`: são registro de época (R47) e apontar rot que a política proíbe corrigir seria ruído
+  - DADO um `deps.toml` sem a chave `exclude_links_globs` QUANDO o C3 roda ENTÃO vale o **default nomeado do script** — os dois globs de histórico imutável acima —, nunca lista vazia e nunca o `exclude_globs` do C2: vazia despejaria os achados do archive num projeto que nunca pediu (26 só neste repo), e herdar o do C2 manteria o ponto cego em todo projeto que não migrar o manifesto (DT-025)
+  - DADO um link no formato `../../issues/N`, `../../pull/N` ou `../../discussions/N` QUANDO o C3 o encontra ENTÃO ele o ignora como já ignora `http://` e `/` — é atalho relativo ao repositório do GitHub, não caminho de arquivo, e resolvê-lo como caminho acusaria 19 links vivos do `DEBT.md`
+  - DADO um link que apenas sobe dois níveis ou mais (`../../docs/...`, `../../../docs/...`) QUANDO o C3 o encontra ENTÃO ele **é verificado normalmente** — o corte casa a **forma** do atalho, nunca o prefixo `../../`; cortar por prefixo silenciava 10 links de `SKILL.md`/`references` para ADR neste repo, a classe que mais apodrece em rename
 
 ## Revisão
 

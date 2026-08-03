@@ -1,5 +1,5 @@
 # delta-027 — o C3 verifica link nos registros vivos
-Estado: proposta · Data: 2026-08-02 · Branch: fix/027-c3-links-nos-registros · Perfil: enxuto — separa dois conjuntos numa função e trata um formato de link; diff previsto em dezenas de linhas, sem contrato novo (aprovado: 2026-08-02)
+Estado: arquivada · Data: 2026-08-02 · Branch: fix/027-c3-links-nos-registros · Perfil: enxuto — separa dois conjuntos numa função e trata um formato de link; diff previsto em dezenas de linhas, sem contrato novo (aprovado: 2026-08-02)
 
 Clarify: entrevistado (2026-08-02) — 2 decisões do usuário
 Test-plan: dispensado — perfil enxuto; um requisito com 8 cenários que mapeiam 1:1 nas fixtures do `--selftest`, e um test-plan aqui seria transcrição delas
