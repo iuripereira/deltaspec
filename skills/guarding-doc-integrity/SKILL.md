@@ -54,6 +54,7 @@ Exit 1 = corrigir antes de commitar. Nunca commitar com FAIL; reporte o resultad
 | Valor citado em CR/changelog/arquivo morto | Adicionar caminho a `exclude_globs` — que dispensa do C2 e **não** do C3 |
 | Link morto (C3) | Corrigir o alvo; ao arquivar um doc, varrer e reescrever toda referência |
 | Link em registro imutável (archive, ADR) | Fora do C3 por `exclude_links_globs`, que tem esse default quando a chave é omitida — é registro de época, não se corrige |
+| Link em seção lançada do changelog, em crase ou em bloco cercado | Fora do C3 por desenho (delta-029): release publicado é imutável e link em crase é sintaxe citada. **Contrapartida:** referência de verdade dentro de bloco cercado (docstring, pseudocódigo) deixa de ser vigiada — tire-a da cerca se quiser cobertura |
 
 ## Erros comuns
 
