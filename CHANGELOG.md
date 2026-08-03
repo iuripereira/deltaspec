@@ -8,6 +8,8 @@ O formato segue [Keep a Changelog 1.0.0](https://keepachangelog.com/pt-BR/1.0.0/
 
 ## [Não lançado]
 
+## [1.7.0] - 2026-08-02
+
 ### Adicionado
 
 - **C11 e C12 no gate determinístico** (delta-026): o **C11** valida o schema do `doc-profile.yaml` — exige o núcleo (`version`, `decisao`, `publico`, `artefatos` com as quatro categorias presentes em 7/7 dos perfis reais) e **tolera a cauda opcional**, porque categoria que uma delta acrescenta ao template nunca propaga retroativamente aos projetos já inicializados; também acusa YAML inválido, perfil sem obrigatório e sem justificativa, e `motores.graphify` ligado sem backend. O **C12** exige a trilha do clarify no perfil completo, lida por âncora de início de linha. Nenhum dos dois é CRÍTICO: reportam, não bloqueiam (ADR-0006). Quita **DT-013** e **DT-023**.

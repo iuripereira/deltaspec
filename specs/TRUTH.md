@@ -77,8 +77,11 @@
 - R7 (delta-006) — a delta percorre os estados proposta → aplicada → arquivada, e o archive faz parte do "pronto".
   - DADO um PR mergeado QUANDO o archive roda ENTÃO o spec.md vira `Estado: arquivada`, o requisito é consolidado no `TRUTH.md` com sufixo `(delta-NNN)` e o diretório move para `specs/_archive/NNN-nome/`
   - DADO um bloco MUDA QUANDO o archive consolida ENTÃO o requisito vigente é substituído **integralmente** pelo bloco da delta — a consolidação é mecânica, não infere intenção
-- R8 (delta-000) — as fases do pipeline são delegadas a motores de terceiros por contrato.
+- R8 (delta-026) — as fases do pipeline são delegadas a motores por contrato, e o clarify declara se teve canal humano.
   - DADO a fase clarify/plan/implement/review QUANDO ela roda ENTÃO o motor é o declarado em `adapters.md`, invocado com o contrato de formato/destino e verificado após a fase
+  - DADO uma delta cujo perfil manda o clarify rodar QUANDO a fase encerra ENTÃO o `spec.md` carrega a linha citável `Clarify: entrevistado (AAAA-MM-DD) — <N> decisões do usuário` ou `Clarify: auto-avaliado (AAAA-MM-DD) — sem canal humano`, e a fase não fecha sem ela — a verificação pós-fase de `adapters.md` passa a exigir a linha além da conformidade de ADR
+  - DADO um clarify sem nenhuma resposta do usuário — harness sem canal humano, ou ambiguidades todas resolvidas por exploração do repositório — QUANDO o relatório de ambiguidade é gravado ENTÃO ele sai marcado `auto-avaliado`, tornando visível o que hoje passa silencioso, e o critério de saída do `cycle.md` distingue ambiguidade resolvida **pelo usuário** de resolvida **pelo agente**
+  - DADO que o agente que redige a spec é o mesmo que pontua o relatório QUANDO o contrato do clarify é lido ENTÃO ele registra esse viés e manda escolher o grau mais ambíguo em caso de dúvida — regra que o `grill-me` já enuncia e que o contrato do deltaspec não repetia
 - R9 (delta-000) — plugin ausente degrada a fase, nunca quebra o ciclo.
   - DADO um plugin não instalado QUANDO a fase que depende dele roda ENTÃO o fallback documentado em `adapters.md` assume e o usuário recebe aviso explícito de qual fase degradou
 - R10 (delta-001) — o ciclo aplicável varia por tipo.
@@ -142,13 +145,17 @@
 - R11 (delta-000) — o gate analyze roda sempre no ciclo completo e é read-only.
   - DADO uma delta com spec, plan e tasks QUANDO o analyze roda ENTÃO grava `specs/NNN-nome/analyze.md` com veredito, **inclusive quando não há achados** — o relatório é o registro de que o gate rodou
   - DADO um achado CRÍTICO QUANDO o veredito é emitido ENTÃO é BLOQUEADO e o implement não começa até correção
-- R12 (delta-016) — a metade mecânica do analyze é um script, não diligência.
-  - DADO uma delta QUANDO `check_cycle.py` roda ENTÃO ele verifica aceite (C1), cobertura spec↔tasks (C2), estado × localização (C3), archive sem perda (C4), tamanho do TRUTH (C5), pendência roteada (C6), medição do split de PR (C7), cobertura do plano de testes (C8), validade do grafo de tasks (C9) e convergência mínima no archive (C10), e sai 1 se houver ALTO ou CRÍTICO
+- R12 (delta-026) — a metade mecânica do analyze é um script, agora com o perfil e a trilha do clarify.
+  - DADO uma delta QUANDO `check_cycle.py` roda ENTÃO ele verifica aceite (C1), cobertura spec↔tasks (C2), estado × localização (C3), archive sem perda (C4), tamanho do TRUTH (C5), pendência roteada (C6), medição do split de PR (C7), cobertura do plano de testes (C8), validade do grafo de tasks (C9), convergência mínima no archive (C10), schema do `doc-profile.yaml` (C11) e trilha do clarify (C12), e sai 1 se houver ALTO ou CRÍTICO
   - DADO um requisito removido do `TRUTH.md` resultante sem MUDA/REMOVE que o declare QUANDO o gate roda ENTÃO acusa CRÍTICO e o veredito é BLOQUEADO — comparando o `TRUTH.md` contra o merge-base da branch com a main (fallback `HEAD`, com aviso, quando não há base), para que consolidação já commitada não crie janela cega; sufixo reescrito cujo ID permanece no arquivo não é perda
   - DADO uma delta cujo diff acumulado de `specs/NNN-nome/` contra o merge-base excede o limiar de PR da regra canônica QUANDO o C7 roda ENTÃO reporta BAIXO recomendando o split dos artefatos (regra em `cycle.md`), sem alterar o código de saída — a medição informa, o split é decisão do ciclo; sem git ou sem merge-base o C7 se omite, como o C4
   - DADO um `test-plan.md` presente QUANDO o C8 roda ENTÃO acusa ALTO para Rn/RNFn da spec sem caso que o cubra e para caso citando requisito inexistente (espelho do C2); `test-plan.md` ausente sem dispensa declarada → ALTO; ausente com dispensa (R38) ou delta `bugfix` sem tasks → BAIXO informativo
   - DADO um `tasks.md` com `dep:` citando task inexistente ou formando ciclo QUANDO o C9 roda ENTÃO acusa ALTO (grafo inválido); nenhum `dep:` no arquivo → válido (cadeia linear implícita, R40)
   - DADO uma delta arquivada (`Estado: arquivada` em `_archive/`) com task `- [ ]` remanescente no `tasks.md` QUANDO o C10 roda ENTÃO acusa ALTO — o archive não fecha com trabalho declarado e não concluído; a auditoria semântica codebase×spec permanece juízo humano do review (renúncia por design, ADR-0014)
+  - DADO um projeto cujo tipo tem ciclo QUANDO o C11 roda ENTÃO reporta BAIXO se o `doc-profile.yaml` estiver ausente na raiz — mesma severidade do warning que o specify já emite, sem quebrar projeto anterior à ADR-0009
+  - DADO um `doc-profile.yaml` presente QUANDO o C11 o valida ENTÃO exige o **núcleo estável** — `version`; `decisao.data` e `decisao.justificativa` como chaves; `publico.interno` e `publico.cliente` booleanos; `artefatos` com `arquitetura`, `modelo-dados`, `fluxos` e `casos-de-uso` — e acusa ALTO nomeando a chave ausente; categoria fora do núcleo é opcional (ausência não é erro, categoria desconhecida no máximo BAIXO), porque a cauda do template nunca propaga retroativamente
+  - DADO um perfil sem nenhum artefato `obrigatorio: true` e com `decisao.justificativa` vazia, ou com `motores.graphify: true` e `motores.graphify_backend` vazio/ausente, ou que não seja YAML válido QUANDO o C11 roda ENTÃO acusa ALTO citando a causa — e nenhuma severidade do C11 é CRÍTICO: perfil malformado reporta, não bloqueia o implement (perímetro do ADR-0006)
+  - DADO uma delta cujo perfil manda o clarify rodar QUANDO o C12 roda ENTÃO acusa ALTO se o `spec.md` não tiver a linha de trilha do clarify na âncora canônica do cabeçalho; a linha é lida por âncora de início de linha, nunca por busca de texto solto, e o C12 se omite quando o perfil dispensa o clarify
   - DADO a saída do script QUANDO impressa ENTÃO se declara parcial — nomeia os checks mecânicos cobertos e avisa que os checks 3 e 5 do `analyze.md` (scope creep, regra canônica) são humanos e não rodaram
   - DADO um `TRUTH.md` com sufixos na notação legada `(ΔNNN)` ou na nova `(delta-NNN)` QUANDO o gate lê os alvos ENTÃO reconhece as duas formas, sem exigir migração dos projetos existentes
 - R32 (delta-013) — gate pré-commit real por hooks versionados.
@@ -246,6 +253,11 @@
 - RNF5 (delta-002) — portabilidade: nenhum artefato do framework depende de caminho de máquina.
   - Métrica: zero ocorrências de caminho de instalação legado em `skills/**` e `.github/**` — cobrindo as variantes `~/.claude/skills`, `$HOME/.claude/skills` e `/home/<user>/.claude/skills`; toda invocação de script do framework resolve por `${CLAUDE_PLUGIN_ROOT}`
   - Verificação: step no job `ci` rodando `! grep -rnE '(~|\$HOME|/home/[^/ ]+)/[.]claude/skills' skills/ .github/`
+
+- RNF6 (delta-026) — política de dependência externa dos gates, declarada e verificável.
+  - Métrica: **exatamente uma** dependência externa admitida nos scripts do framework (`PyYAML`), nomeada com link para a ADR que a admite em **todos** os espelhos vivos da política — `CLAUDE.md`, `README.md`, `README.en.md` e `SECURITY.md`, que a usa como argumento de modelo de ameaça — e nenhum deles prometendo "só a biblioteca padrão"; dependência nova exige ADR própria, nunca herança desta
+  - Verificação: step no job `ci` rodando o grep negativo das frases de zero-dep sobre os quatro espelhos e conferindo `ADR-0023` citada em cada um; o mesmo job instala a dependência **antes do primeiro step que importa `yaml`**, sem depender do que o runner traz pré-instalado
+  - Ausente a dependência na máquina do usuário, o gate termina com mensagem acionável nomeando o pacote e a ADR — nunca com traceback do interpretador; o comando de instalação aparece na seção de instalação do README, não só no CI
 
 ## Não implementado
 <!-- visão conhecida que ainda não vige; não é delta e não tem número -->
