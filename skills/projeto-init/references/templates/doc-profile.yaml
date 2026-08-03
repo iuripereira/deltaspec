@@ -17,9 +17,6 @@
 # A ferramenta segue a CATEGORIA do diagrama (tabela do ADR-0009) — não reaproveite
 # um diagrama pronto de outra categoria/ferramenta: arquitetura C4 em Mermaid, por
 # exemplo, migra para Structurizr DSL; Mermaid fica para fluxos/sequência/ERD.
-
-version: 1
-
 decisao:
   data: "{{AAAA-MM-DD}}"
   # Obrigatória quando NENHUM artefato é declarado obrigatório (perfil "sem diagramas"):

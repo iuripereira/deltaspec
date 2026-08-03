@@ -21,6 +21,18 @@ exclude_globs = ["CHANGELOG.md", "HANDOFF.md", "DEBT.md", "docs/adrs/**/*.md", "
 # histórico imutável de fora —, que é exatamente o recorte deste repo. Declare a chave
 # só para divergir dele; o porquê está no comentário do templates/deps.toml da skill.
 
+# ── Política de dependência externa dos gates (delta-028) ─────────────────────
+# Dono: a regra vive no CLAUDE.md, seção Clean Code. Espelhos: os dois READMEs
+# (o leitor precisa do comando de instalação) e o TRUTH.md (o requisito cita a
+# decisão que o originou). A metade negativa da política fica no job `ci`.
+[[owner]]
+file = "CLAUDE.md"
+mirrors = ["README.md", "README.en.md", "specs/TRUTH.md"]
+
+  [[owner.value]]
+  name = "politica-dependencia-externa"
+  pattern = 'ADR-0023'
+
 # ── Limiar de particionamento do TRUTH.md ─────────────────────────────────────
 # Dono: RNF1 do TRUTH.md. Espelhos: a constante que aplica o limiar
 # (TRUTH_LIMITE em check_cycle.py) e os docs do ciclo que o citam. O espelho

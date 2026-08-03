@@ -25,6 +25,7 @@ Arquivo já existe? **Não** clobber.
 - `CLAUDE.md` existente → escreva `CLAUDE.generated.md` ao lado e mostre o diff; o usuário decide.
 - Outros arquivos de scaffold → só crie os que faltam.
 - `.gitignore` → **append** o trecho de secrets, nunca substitua.
+- `doc-profile.yaml` existente → **relate, não escreva.** Compare as categorias de `artefatos` e a presença do bloco `motores` com os do template e diga em uma linha o que falta ("seu perfil não tem as categorias `prototipo` e `apresentacao` nem o bloco `motores`"). Só escreva com **aprovação explícita** do usuário, e mesmo então acrescente apenas chave ausente com o default do template — `decisao`, `publico` e qualquer `obrigatorio` já declarado são decisão registrada do projeto e **nunca** são tocados. Recusa não vira reescrita nem pergunta insistente: o relato é informativo e a 2ª execução continua não alterando arquivo versionado (RNF3). O perfil de um projeto está *atrás* do template por padrão — categoria que uma delta acrescenta não propaga retroativamente, e o C11 tolera a cauda ausente por desenho.
 
 ## Adaptação por tipo (resumo — detalhe em detection.md)
 
