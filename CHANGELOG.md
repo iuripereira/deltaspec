@@ -8,6 +8,11 @@ O formato segue [Keep a Changelog 1.0.0](https://keepachangelog.com/pt-BR/1.0.0/
 
 ## [Não lançado]
 
+### Mudado
+
+- **O `version` saiu do `doc-profile.yaml`** (delta-028, MUDA R12): nenhum consumidor lia o campo e ele já nascera incoerente — o template declarava `version: 1` com as sete categorias, enquanto o único perfil real que tem as sete declarava `version: 2`. Sai do template distribuído e do núcleo que o C11 exige; perfil que ainda o traga **continua válido**, porque chave fora do núcleo nunca foi erro. O `projeto-init` passa a **relatar** perfil atrás do template — categoria de cauda e bloco `motores` ausentes — e só escreve com aprovação explícita, sem tocar em `decisao`, `publico` ou `obrigatorio` já declarados (RNF3).
+- **A política de dependência passou a ser verificada pelo mecanismo do próprio framework** (delta-028, MUDA RNF6): o `deps.toml` ganhou `[[owner]]` com dono `CLAUDE.md` e três espelhos, conferido pelo C1 do `validate_integrity.py` no CI **e no pré-commit** — antes era um `grep` à mão no CI, enquanto o repo recomendava o manifesto aos projetos. Coube no teto de 2–3 espelhos porque o `SECURITY.md` passou a apontar para o dono em vez de repetir o identificador da ADR. A metade negativa (nenhum arquivo promete zero-dep) continua como `grep`, agora **declarada como exceção**: o validador não tem check de padrão proibido.
+
 ## [1.7.1] - 2026-08-03
 
 ### Corrigido

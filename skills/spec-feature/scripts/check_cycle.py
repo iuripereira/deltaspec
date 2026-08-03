@@ -44,11 +44,10 @@ ORDEM = {"CRÍTICO": 0, "ALTO": 1, "MÉDIO": 2, "BAIXO": 3}
 # C11 (delta-026): núcleo do doc-profile, medido nos 7 perfis reais em 2026-08-02. A cauda
 # (explicativos, prototipo, apresentacao, ...) é opcional por desenho: categoria que uma delta
 # acrescenta ao template nunca propaga retroativamente aos projetos já inicializados.
-NUCLEO_TOPO = ("version", "decisao", "publico", "artefatos")
+NUCLEO_TOPO = ("decisao", "publico", "artefatos")
 NUCLEO_ARTEFATOS = ("arquitetura", "modelo-dados", "fluxos", "casos-de-uso")
 # Perfil mínimo válido — fixture compartilhada pelos selftests (uma fonte, não uma cópia por teste).
 PERFIL_NUCLEO = (
-    'version: 1\n'
     'decisao: { data: "2026-01-01", justificativa: "" }\n'
     'publico: { interno: true, cliente: false }\n'
     'artefatos:\n'
@@ -675,8 +674,10 @@ def selftest_c11() -> None:
         (nucleo + "  explicativos: { obrigatorio: false }\n", 0, "cauda presente é aceita"),
         (nucleo + "  prototipo: { obrigatorio: false }\n  apresentacao: { obrigatorio: false }\n", 0,
          "cauda inteira presente é aceita"),
-        (nucleo.replace("version: 1\n", ""), 1, "chave de núcleo ausente acusa ALTO"),
-        (nucleo.replace("version: 1", "version:"), 1, "chave de núcleo declarada sem valor acusa ALTO"),
+        (nucleo, 0, "perfil sem `version` é válido — campo morto, retirado na delta-028"),
+        ("version: 2\n" + nucleo, 0, "perfil que ainda traga `version` continua válido, em qualquer valor"),
+        (nucleo.replace('publico: { interno: true, cliente: false }', "publico:"), 3,
+         "chave de núcleo declarada sem valor acusa ALTO (a chave e os dois booleanos)"),
         (nucleo.replace('decisao: { data: "2026-01-01", justificativa: "" }', 'decisao: { data: "2026-01-01" }'), 1,
          "decisao.justificativa ausente acusa ALTO"),
         (nucleo.replace("publico: { interno: true", 'publico: { interno: "true"'), 1,

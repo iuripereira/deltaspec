@@ -7,7 +7,6 @@
 # Template e tabela de ferramentas por categoria: skills/projeto-init/references/templates/doc-profile.yaml
 # Schema exigido pelo gate: C11 do check_cycle.py (delta-026).
 
-version: 1
 
 decisao:
   data: "2026-08-02"

@@ -261,6 +261,7 @@ O C11 nasceu tolerando a cauda opcional exatamente porque categoria acrescentada
 - **Local:** [check_cycle.py](skills/spec-feature/scripts/check_cycle.py) (C11) · [projeto-init](skills/projeto-init/) (dono do template)
 - **Gatilho:** Próxima categoria ou chave nova no `doc-profile.yaml` — ou a primeira vez que a divergência de `version` causar erro real
 - **Origem:** [delta-026](specs/_archive/026-gate-perfil-e-clarify/) (pendência da seção Dependências e riscos) · aberto em 2026-08-02
+- **Em curso:** corrigido na delta-028, quita no archive dela — o `version` sai do template e do núcleo do C11 (campo que ninguém lia e já nascera incoerente: template em `1` com 7 categorias, perfil real completo em `2`), e o `projeto-init` passa a **relatar** perfil atrás do template, escrevendo só com aprovação. O que a delta **não** resolve: propagar por conta própria — isso continua sendo decisão de cada projeto, e é o que a medição dos 7 perfis mostra ser o comportamento real
 
 ### DT-026 · débito · aberto
 **O RNF6 verifica espelho com `grep` no CI, ignorando o mecanismo de espelho do próprio repo**
@@ -271,6 +272,7 @@ A política de dependência (PyYAML nomeado com link para a ADR-0023 nos quatro 
 - **Local:** [ci.yml](.github/workflows/ci.yml) (step do RNF1/RNF6) · [deps.toml](deps.toml)
 - **Gatilho:** Já disparado — some quando a verificação migrar; a consolidação do RNF6 no `TRUTH.md` acrescentou um quinto espelho, que o grep atual não cobre
 - **Origem:** [delta-026](specs/_archive/026-gate-perfil-e-clarify/) (review em dois eixos) · aberto em 2026-08-02
+- **Em curso:** corrigido na delta-028, quita no archive dela — `[[owner]]` no `deps.toml` com dono `CLAUDE.md` e espelhos `README.md`, `README.en.md` e `specs/TRUTH.md`, conferido pelo C1 no CI **e no pré-commit**. Coube no teto de 2–3 espelhos porque o `SECURITY.md` passou a apontar em vez de repetir o identificador — a regra de ouro aplicada antes de mecanizar. A metade negativa (nenhum arquivo promete zero-dep) segue no `ci.yml`, agora **declarada como exceção**: o validador não tem check de padrão proibido, e criar um é delta própria
 
 ### DT-027 · débito · quitado
 **O C3 herda a exclusão do C2 e deixa CHANGELOG, HANDOFF, DEBT e ADRs sem verificação de link**

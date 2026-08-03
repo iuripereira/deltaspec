@@ -23,7 +23,7 @@ O que esperar:
 
 ## Modelo de ameaça
 
-O deltaspec é um **plugin local do Claude Code**: skills em Markdown + scripts de gate em Python (biblioteca padrão mais uma única dependência externa admitida, `PyYAML` — [ADR-0023](docs/adrs/ADR-0023-pyyaml-como-dependencia-admitida.md)). Não tem servidor, não abre porta, não envia telemetria e não acessa a rede. Os scripts leem e escrevem apenas no repositório em que você os roda, com as suas permissões de usuário.
+O deltaspec é um **plugin local do Claude Code**: skills em Markdown + scripts de gate em Python (biblioteca padrão mais uma única dependência externa admitida, `PyYAML`; a política e a decisão que a admite têm dono no [CLAUDE.md, seção Clean Code](CLAUDE.md#clean-code)). Não tem servidor, não abre porta, não envia telemetria e não acessa a rede. Os scripts leem e escrevem apenas no repositório em que você os roda, com as suas permissões de usuário.
 
 Isso define o que é e o que não é vulnerabilidade aqui:
 
@@ -38,4 +38,4 @@ Na dúvida se algo está na fronteira, reporte — a triagem é responsabilidade
 
 ## Práticas do repositório
 
-As práticas que sustentam esta política têm dono no [CLAUDE.md, seção Segurança](CLAUDE.md#segurança): GitHub Actions pinadas por SHA, gates com superfície de cadeia de dependências Python de **um** pacote — `PyYAML`, admitido por decisão registrada ([ADR-0023](docs/adrs/ADR-0023-pyyaml-como-dependencia-admitida.md)), e dependência nova exige ADR própria — e secrets fora do versionamento.
+As práticas que sustentam esta política têm dono no [CLAUDE.md, seção Segurança](CLAUDE.md#segurança): GitHub Actions pinadas por SHA, gates com superfície de cadeia de dependências Python de **um** pacote (`PyYAML`, admitido por decisão registrada — dependência nova exige ADR própria) e secrets fora do versionamento.
