@@ -1,5 +1,5 @@
 # delta-028 — o framework usa os próprios mecanismos: perfil sem campo morto, espelho sob manifesto
-Estado: proposta · Data: 2026-08-03 · Branch: feat/028-propagacao-e-espelhos · Perfil: completo — mexe no template distribuído do `doc-profile.yaml`, que propaga para os 7 projetos-alvo, e troca o mecanismo de verificação de um RNF recém-consolidado (aprovado: 2026-08-03)
+Estado: arquivada · Data: 2026-08-03 · Branch: feat/028-propagacao-e-espelhos · Perfil: completo — mexe no template distribuído do `doc-profile.yaml`, que propaga para os 7 projetos-alvo, e troca o mecanismo de verificação de um RNF recém-consolidado (aprovado: 2026-08-03)
 
 Clarify: entrevistado (2026-08-03) — 3 decisões do usuário
 <!-- trilha do clarify (R8): destino do `version`, mecanismo do RNF6 e perfil da delta -->

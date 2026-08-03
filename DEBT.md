@@ -252,27 +252,23 @@ O C11, criado na delta-026, reporta BAIXO na primeira execução contra este rep
 - **Origem:** [delta-026](specs/_archive/026-gate-perfil-e-clarify/) · aberto em 2026-08-02
 - **Encerrado:** 2026-08-02, [#107](../../pull/107) — [`doc-profile.yaml`](doc-profile.yaml) na raiz com **nenhum artefato obrigatório e justificativa preenchida** (decisão do usuário): o repo é plugin de skills mais gates, sem UI, sem persistência e sem entregável de cliente, e os fluxos do ciclo vivem como Mermaid inline no README, que é o artefato de fato mantido. `graphify: false`. Com ele o gate deste repo passa a sair **LIBERADO** limpo
 
-### DT-025 · pendência · aberto
+### DT-025 · pendência · quitado
 **Nenhum dono para propagar mudança de schema aos `doc-profile.yaml` já existentes**
 
 O C11 nasceu tolerando a cauda opcional exatamente porque categoria acrescentada ao template **nunca propaga retroativamente** — e a varredura de 2026-08-02 mostrou o efeito: dos 7 perfis reais, um declara `version: 2` sem migração documentada em lugar nenhum, e **nenhum** declara o `motores.graphify_backend` que a delta-025 criou. O template evolui, os perfis instalados não, e a `version` não é lida por ninguém. Decidir se `version` passa a significar algo (o C11 hoje não fixa valor) e quem propaga: passo idempotente no `projeto-init`, check que avisa quando o perfil está atrás do template, ou aceitar a divergência por escrito
 
-- **Fila:** `P3·J3·Pr9`
-- **Local:** [check_cycle.py](skills/spec-feature/scripts/check_cycle.py) (C11) · [projeto-init](skills/projeto-init/) (dono do template)
 - **Gatilho:** Próxima categoria ou chave nova no `doc-profile.yaml` — ou a primeira vez que a divergência de `version` causar erro real
 - **Origem:** [delta-026](specs/_archive/026-gate-perfil-e-clarify/) (pendência da seção Dependências e riscos) · aberto em 2026-08-02
-- **Em curso:** corrigido na delta-028, quita no archive dela — o `version` sai do template e do núcleo do C11 (campo que ninguém lia e já nascera incoerente: template em `1` com 7 categorias, perfil real completo em `2`), e o `projeto-init` passa a **relatar** perfil atrás do template, escrevendo só com aprovação. O que a delta **não** resolve: propagar por conta própria — isso continua sendo decisão de cada projeto, e é o que a medição dos 7 perfis mostra ser o comportamento real
+- **Encerrado:** 2026-08-03, [delta-028](specs/_archive/028-propagacao-e-espelhos/)/[#111](../../pull/111) — o `version` saiu do template, do núcleo do C11 e do perfil deste repo: campo que ninguém lia e que já nascera incoerente (template em `1` com 7 categorias, único perfil real com as 7 em `2`). O afrouxamento é seguro — os 7 perfis reais passam antes e depois, conferido achado a achado. A propagação ganhou dono no `projeto-init`, que **relata** o que falta e escreve só com aprovação (RNF3). **O que ficou de fora, com data de entrada:** o check mecânico de "perfil atrás do template", que o próprio débito nomeava — 6 dos 7 perfis acusariam na primeira execução, e a varredura de replicação mostrou que o consumidor já vai receber ruído demais
 
-### DT-026 · débito · aberto
+### DT-026 · débito · quitado
 **O RNF6 verifica espelho com `grep` no CI, ignorando o mecanismo de espelho do próprio repo**
 
 A política de dependência (PyYAML nomeado com link para a ADR-0023 nos quatro espelhos) é verificada por um loop de `grep` no job `ci`. É exatamente o problema que o `deps.toml` + `validate_integrity.py` resolvem — o C1 é *"valor presente no arquivo dono e em cada espelho"* —, então o framework reimplementa à mão o que ele próprio oferece aos projetos-alvo. Trocar por um `[[owner]]` com `pattern = 'ADR-0023'` também leva a checagem para o pré-commit, e não só para o CI. Achado do eixo Qualidade do review da delta-026, adiado por ser troca de mecanismo depois da spec consolidada
 
-- **Fila:** `P3·J1·Pr9`
-- **Local:** [ci.yml](.github/workflows/ci.yml) (step do RNF1/RNF6) · [deps.toml](deps.toml)
 - **Gatilho:** Já disparado — some quando a verificação migrar; a consolidação do RNF6 no `TRUTH.md` acrescentou um quinto espelho, que o grep atual não cobre
 - **Origem:** [delta-026](specs/_archive/026-gate-perfil-e-clarify/) (review em dois eixos) · aberto em 2026-08-02
-- **Em curso:** corrigido na delta-028, quita no archive dela — `[[owner]]` no `deps.toml` com dono `CLAUDE.md` e espelhos `README.md`, `README.en.md` e `specs/TRUTH.md`, conferido pelo C1 no CI **e no pré-commit**. Coube no teto de 2–3 espelhos porque o `SECURITY.md` passou a apontar em vez de repetir o identificador — a regra de ouro aplicada antes de mecanizar. A metade negativa (nenhum arquivo promete zero-dep) segue no `ci.yml`, agora **declarada como exceção**: o validador não tem check de padrão proibido, e criar um é delta própria
+- **Encerrado:** 2026-08-03, [delta-028](specs/_archive/028-propagacao-e-espelhos/)/[#111](../../pull/111) — `[[owner]]` no `deps.toml` com dono `CLAUDE.md` e espelhos `README.md`, `README.en.md` e `specs/TRUTH.md`, conferido pelo C1 no CI **e no pré-commit**, com o C2 impedindo materialização fora dos sancionados. Coube no teto de 2–3 espelhos porque o `SECURITY.md` passou a apontar em vez de repetir o identificador — a regra de ouro aplicada **antes** de mecanizar. A metade negativa segue como `grep` no CI, declarada como exceção. **Saldo honesto:** a troca não reduz linhas (saíram 3 de shell, entraram ~10 líquidas); o ganho é cobertura, não economia
 
 ### DT-027 · débito · quitado
 **O C3 herda a exclusão do C2 e deixa CHANGELOG, HANDOFF, DEBT e ADRs sem verificação de link**
@@ -291,10 +287,12 @@ O `EXCLUDE_LINKS_PADRAO` da delta-027 protege `_archive/` e `docs/adrs/` porque 
 - **Fila:** `P1·J9·Pr9`
 - **Local:** [validate_integrity.py](skills/guarding-doc-integrity/scripts/validate_integrity.py) (`EXCLUDE_LINKS_PADRAO` e o laço do C3)
 - **Gatilho:** Já disparado — bloqueia a replicação da v1.7.1 nos consumidores; some quando o recorte por seção existir
-- **Origem:** varredura de replicação durante o review da [delta-028](specs/028-propagacao-e-espelhos/) · aberto em 2026-08-03
+- **Origem:** varredura de replicação durante o review da [delta-028](specs/_archive/028-propagacao-e-espelhos/) · aberto em 2026-08-03
 
 ## Lições
 <!-- post-mortems datados, com desfecho; sem ação pendente — ação pendente é DT -->
+
+- **2026-08-03 — Link relativo escrito numa delta quebra ao ser consolidado, porque o texto muda de profundidade.** No archive da delta-028, o `MUDA RNF6` levou para o `TRUTH.md` um link `../../docs/adrs/ADR-0023-...` que estava **correto** em `specs/028-nome/spec.md` e ficou **errado** em `specs/TRUTH.md` — um nível a menos. A consolidação copia o texto byte a byte de propósito (é o que impede perda silenciosa), e é justamente isso que carrega o caminho relativo errado junto. **Desfecho:** o C3 pegou na mesma execução, porque a delta-027 acabara de pôr o `TRUTH.md` no escopo dele — sem ela, o link morto entraria na fonte da verdade sem ninguém ver. Quem escrever link em bloco ADICIONA/MUDA deve escrevê-lo **relativo ao `TRUTH.md`**, não ao arquivo da delta; a regra vale para qualquer caminho relativo dentro de bloco consolidável.
 
 - **2026-08-02 — A lição de 2026-07-31 reincidiu em 5 semanas: o gatilho do DT-013 já tinha disparado e ninguém varreu.** O DT-013 dizia esperar "formato do perfil estabilizado por uma delta real com o gate do specify num projeto externo", e a leitura corrente era que isso não tinha acontecido — a mesma leitura de memória que a lição de 2026-07-31 já havia proibido. Uma varredura de filesystem de 30 segundos achou **7 `doc-profile.yaml`** em `~/code`, três deles em projeto com delta real; o gatilho estava satisfeito havia semanas. Pior: a varredura não só liberou o débito, ela **desenhou a solução** — medir os 7 perfis mostrou núcleo em 7/7 e cauda (`explicativos` 4/7, `prototipo`/`apresentacao` 1/7) nunca propagada, e é isso que o C11 exige e tolera, respectivamente. Sem a medição, o check teria exigido a cauda e produzido falso ALTO em 6 dos 7. **Desfecho:** a lição anterior tratava a varredura como *conferência* de um débito; ela é também **insumo de desenho**. Débito cujo gatilho fala de "projeto externo" se abre varrendo o filesystem primeiro — e o que a varredura mede entra no design, não só no veredito. Reincidência em 5 semanas sugere que a regra precisa de gatilho mecânico, não de memória: candidato a check que liste débitos cujo gatilho cita projeto externo e cobre a data da última varredura.
 
