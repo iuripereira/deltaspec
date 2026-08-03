@@ -93,9 +93,9 @@ Janela cega residual do C4: consolidação commitada direto na `main` ou `origin
 ### DT-009 · débito · aberto
 **Bloco aninhado em item de lista vira texto solto no PDF do cliente**
 
-`tabela_cliente.py` não trata bloco aninhado em item de lista fora dos §6/§7 (tabela de decisão dentro de um `- RN-NNN` do §5 vira texto com hífen literal no pdf) — `deepen_indents` só aprofunda bullets; o contorno vive na montagem do entregável e no "Erros comuns" do SKILL.md (#34)
+`tabela_cliente.py` não trata bloco aninhado em item de lista fora dos §6/§7 (tabela de decisão dentro de um `- RN-NNN` do §5 vira texto com hífen literal no pdf) — `deepen_indents` só aprofunda bullets; o contorno vive na montagem do entregável e no "Erros comuns" do SKILL.md (#34). **Pr revisto de 1 para 3 em 2026-08-02**: a dívida incide a cada export de PRD de cliente com bloco aninhado, e já mordeu uma vez — "artefato frio" era otimismo. A derivação por churn pede 9, e aí **divergimos**: 4 commits em 6 meses não é "tocado toda semana", é percentil de repo onde quase todo arquivo é frio
 
-- **Fila:** `P1·J3·Pr1`
+- **Fila:** `P1·J3·Pr3`
 - **Local:** [tabela_cliente.py](skills/doc-entregavel/scripts/tabela_cliente.py)
 - **Gatilho:** Próxima delta que toque a `doc-entregavel`: aprofundar blocos (tabela/parágrafo) dentro de item de lista no `deepen_indents`, com caso no selftest
 - **Origem:** rodada de export IMEX 2026-07-20 (PRD estoque, RN-007/008) · aberto em 2026-07-20
@@ -111,9 +111,9 @@ Valores concretos duplicados sem sanção no `deps.toml`: "≤15 linhas" do cabe
 ### DT-011 · pendência · aberto
 **Rodapé CONFIDENCIAL e marca d'água dependem de aplicação manual**
 
-Rodapé `CONFIDENCIAL` e marca d'água em todas as páginas são instrução manual no `references/juridico.md` — o `exporta_entregavel.py` não tem flag para nenhum dos dois, então o entregável `juridico-nda`/`requisitos-cliente` depende de o operador aplicar à mão no DOCX/PDF
+Rodapé `CONFIDENCIAL` e marca d'água em todas as páginas são instrução manual no `references/juridico.md` — o `exporta_entregavel.py` não tem flag para nenhum dos dois, então o entregável `juridico-nda`/`requisitos-cliente` depende de o operador aplicar à mão no DOCX/PDF. **Pr revisto de 1 para 3 em 2026-08-02**, acompanhando a derivação: incide em **todo** entregável jurídico, não eventualmente
 
-- **Fila:** `P1·J3·Pr1`
+- **Fila:** `P1·J3·Pr3`
 - **Local:** [exporta_entregavel.py](skills/doc-entregavel/scripts/exporta_entregavel.py)
 - **Gatilho:** Próxima delta que toque o `exporta_entregavel.py`: flags `--rodape` e `--marca-dagua`, com caso no selftest
 - **Origem:** [delta-011](specs/_archive/011-doc-juridico/) · aberto em 2026-07-26
@@ -170,7 +170,7 @@ Detector de drift código×TRUTH (mudança fora de delta) — o mercado formaliz
 ### DT-017 · pendência · aberto
 **Ciclo sem benchmark próprio de tempo e tokens por delta**
 
-Benchmark próprio (tempo/tokens por delta) num projeto externo — hoje a performance do framework é proxy do quadrante OpenSpec (12 min vs 90 min do Spec Kit vs 5,5 h do BMAD, Reenbit mai/2026); falta número medido do próprio ciclo
+Benchmark próprio (tempo/tokens por delta) num projeto externo — hoje a performance do framework é proxy do quadrante OpenSpec (12 min vs 90 min do Spec Kit vs 5,5 h do BMAD, Reenbit mai/2026); falta número medido do próprio ciclo. **Pr mantido em 1 contra a derivação (2026-08-02):** o churn aponta 9 porque o `cycle.md` é o arquivo mais tocado do repo (16 commits em 6 meses), mas a dívida não incide quando o `cycle.md` muda — incide quando alguém precisa de um número de performance, o que só acontece numa rodada externa medida. É o viés registrado do proxy em estado puro; o `Local` aponta o arquivo mais próximo porque esta dívida não mora em arquivo nenhum
 
 - **Fila:** `P3·J1·Pr1`
 - **Local:** [cycle.md](skills/spec-feature/references/cycle.md)
@@ -201,6 +201,11 @@ O `DEBT.md` deste repo tem as colunas de fila e os estados novos, mas o template
 
 `STALE_DIAS`, `JANELA_CHURN` e os percentis de churn do `debito.py` são escolha de projeto, não calibração — a ADR-0020 admite isso em prosa e a primeira medição real já mostrou o viés do proxy (churn do arquivo ≠ incidência da dívida)
 
+Duas evidências da **primeira revisão completa das marcas** (2026-08-02, 5 divergências olhadas uma a uma):
+
+1. **O percentil mente em repo frio.** `PERCENTIL_QUENTE = 0.10` chamou de "tocado toda semana" um arquivo com **4 commits em 6 meses** (`tabela_cliente.py`, DT-009): num repositório onde quase todo arquivo é tocado uma vez, o top 10% relativo não significa quente em absoluto. Candidato: piso absoluto de commits antes de o percentil valer.
+2. **Divergência justificada não silencia a marca.** Duas divergências foram examinadas e mantidas com motivo escrito (DT-017, DT-021), e a saída do script continua marcando as duas para sempre — "olhei e discordo" fica indistinguível de "ignorei". Uma marca que nunca se resolve deixa de ser cobrança e vira ruído, que é o oposto do desenho. Candidato: campo de divergência aceita com data, no padrão do `aceito` (que também exige gatilho de reavaliação)
+
 - **Fila:** `P1·J1·Pr3`
 - **Local:** [debito.py](skills/handoff/scripts/debito.py)
 - **Gatilho:** Depois de a fila guiar decisões reais por um trimestre: comparar o que o score priorizou com o que de fato foi pago e recalibrar
@@ -210,7 +215,7 @@ O `DEBT.md` deste repo tem as colunas de fila e os estados novos, mas o template
 ### DT-021 · pendência · aberto
 **Dialeto de importação do Jira nunca executado contra projeto real**
 
-O `exportar --projeto` emite o lote do `acli jira workitem create-bulk`, mas nenhum projeto Jira existe para validá-lo — o formato veio da doc e do `--generate-json`, não de execução (a ADR-0021 registra a limitação)
+O `exportar --projeto` emite o lote do `acli jira workitem create-bulk`, mas nenhum projeto Jira existe para validá-lo — o formato veio da doc e do `--generate-json`, não de execução (a ADR-0021 registra a limitação). **Pr mantido em 1 contra a derivação (2026-08-02):** o churn do `debito.py` mede o desenvolvimento do script, não o uso do dialeto Jira — que nunca rodou uma vez e só roda quando existir projeto Jira (delta-017). Frio de verdade
 
 - **Fila:** `P1·J1·Pr1`
 - **Local:** [debito.py](skills/handoff/scripts/debito.py)
@@ -221,9 +226,9 @@ O `exportar --projeto` emite o lote do `acli jira workitem create-bulk`, mas nen
 ### DT-019 · pendência · aberto
 **diagram-design contratado como motor mas fora do caminho de instalação**
 
-`diagram-design` contratado como motor opcional (delta-020/ADR-0018) mas fora do caminho de instalação: nem no `scripts/instala-motores.sh` (só superpowers/ponytail/max) nem na seção 2.2 do README — quem segue o quickstart nunca o instala. Decidir: incluir no instalador (é plugin comum, sem a renúncia de instalador do graphify/ADR-0014) ou documentar a instalação à parte (`/plugin marketplace add cathrynlavery/diagram-design` + `/plugin install diagram-design@diagram-design`)
+`diagram-design` contratado como motor opcional (delta-020/ADR-0018) mas fora do caminho de instalação: nem no `scripts/instala-motores.sh` (só superpowers/ponytail/max) nem na seção 2.2 do README — quem segue o quickstart nunca o instala. Decidir: incluir no instalador (é plugin comum, sem a renúncia de instalador do graphify/ADR-0014) ou documentar a instalação à parte (`/plugin marketplace add cathrynlavery/diagram-design` + `/plugin install diagram-design@diagram-design`). **Pr revisto de 1 para 3 em 2026-08-02**, acompanhando a derivação: incide em **toda** instalação nova que siga o quickstart, e falha em silêncio — o usuário não sabe que ficou sem o motor
 
-- **Fila:** `P1·J1·Pr1`
+- **Fila:** `P1·J1·Pr3`
 - **Local:** [instala-motores.sh](scripts/instala-motores.sh)
 - **Gatilho:** Primeira adoção real da camada `apresentacao` — a mesma que define o pin (R46)
 - **Origem:** pergunta do Iuri em sessão, 2026-07-30 · aberto em 2026-07-30
@@ -266,6 +271,16 @@ A política de dependência (PyYAML nomeado com link para a ADR-0023 nos quatro 
 - **Local:** [ci.yml](.github/workflows/ci.yml) (step do RNF1/RNF6) · [deps.toml](deps.toml)
 - **Gatilho:** Já disparado — some quando a verificação migrar; a consolidação do RNF6 no `TRUTH.md` acrescentou um quinto espelho, que o grep atual não cobre
 - **Origem:** [delta-026](specs/_archive/026-gate-perfil-e-clarify/) (review em dois eixos) · aberto em 2026-08-02
+
+### DT-027 · débito · aberto
+**O C3 herda a exclusão do C2 e deixa CHANGELOG, HANDOFF, DEBT e ADRs sem verificação de link**
+
+O `validate_integrity.py` calcula `scan = scan_globs - exclude_globs` **uma vez** ([linhas 51-52](skills/guarding-doc-integrity/scripts/validate_integrity.py)) e usa o mesmo conjunto no C2 e no C3. O `exclude_globs` existe por um motivo que só vale para o C2 — o próprio `deps.toml` explica: "onde citar valores é legítimo: changelog, diário de bordo, registro de débito, ADRs e deltas arquivadas". Nada disso diz que **link quebrado** ali seja legítimo, e é justamente onde mais se linka: o `DEBT.md` aponta para delta, PR, issue e arquivo em quase todo item, e uma delta que arquiva move os caminhos debaixo dele. Custo observado: em 2026-08-02 o archive da delta-026 deixou dois links apontando para `specs/026-.../` já movido e o `RESULTADO: PASS` saiu limpo; um terceiro (ADR-0009 com nome de arquivo errado no CHANGELOG) também passou. Os três foram pegos à mão, que é exatamente o que o gate existe para não depender. Correção: separar os conjuntos — `exclude_globs` continua valendo para o C2, e o C3 varre tudo que o `scan_globs` casa. **Juros em 1, não 3:** os três links quebrados foram achados na mesma sessão e não atrasaram nada — é incômodo, não bloqueio, e J3 aqui seria o mesmo auto-score generoso que o DT-023 descreve (quem registra o débito é quem o pontua). **Pr em 9 contra a derivação, que pede 1:** o churn olha o `Local` (`validate_integrity.py`, arquivo frio), mas a dívida não incide quando o validador muda — incide quando um dos arquivos **excluídos** muda, e `DEBT.md`/`HANDOFF.md`/`CHANGELOG.md` mudam em toda sessão. Mesmo viés do DT-017, com o sinal trocado
+
+- **Fila:** `P1·J1·Pr9`
+- **Local:** [validate_integrity.py](skills/guarding-doc-integrity/scripts/validate_integrity.py) (`main`, montagem do `scan`) · [deps.toml](deps.toml) (comentário do `exclude_globs`, que passa a valer só para o C2)
+- **Gatilho:** Já disparado — três links quebrados escaparam em 2026-08-02; incide em todo archive daqui em diante
+- **Origem:** archive da [delta-026](specs/_archive/026-gate-perfil-e-clarify/) · aberto em 2026-08-02
 
 ## Lições
 <!-- post-mortems datados, com desfecho; sem ação pendente — ação pendente é DT -->
