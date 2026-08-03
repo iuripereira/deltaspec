@@ -283,6 +283,16 @@ O `validate_integrity.py` calcula `scan = scan_globs - exclude_globs` **uma vez*
 - **Origem:** archive da [delta-026](specs/_archive/026-gate-perfil-e-clarify/) · aberto em 2026-08-02
 - **Encerrado:** 2026-08-03, [delta-027](specs/_archive/027-c3-links-nos-registros/)/[#109](../../pull/109) — o C2 e o C3 passaram a ter conjuntos próprios (`scan_valores` e `scan_links`), com chave `exclude_links_globs` no manifesto e default nomeado, que propaga a correção sem exigir migração. Neste repo o C3 saltou de **105 para 171** links verificados. Dois achados que só a medição deu: o `DEBT.md` tem **19** links no atalho `../../issues/N` do GitHub, que viravam falso FAIL e passaram a ser ignorados como `http://` já era; e `specs/_archive/**` tem **26** links quebrados que ficaram **fora por decisão do usuário** — registro de época (R47), rot que a política proíbe corrigir. O check pegou o primeiro erro dentro da própria delta que o criou: um `Encerrado` apontando para `_archive/` antes do archive existir, bloqueado no pré-commit
 
+### DT-028 · débito · aberto
+**O C3 varre seção lançada de CHANGELOG, que é histórico imutável — e isso trava o commit num consumidor real**
+
+O `EXCLUDE_LINKS_PADRAO` da delta-027 protege `_archive/` e `docs/adrs/` porque são registro de época que a política proíbe corrigir. Seção **lançada** de CHANGELOG é a mesma coisa pelo Keep a Changelog — não se reescreve release publicado —, e ficou de fora da lista. Medição de 2026-08-03 no `imex-travelplanner`: **96 links mortos, 89 deles em `CHANGELOG.md`**, todos em seções lançadas. Pior que ruído: aquele repo tem hook `PreToolUse` em `Bash(git commit *)` que roda o validador pelo cache do plugin e aborta em exit ≠ 0, então **todo commit lá para** no primeiro `/plugin update`. Este repositório só passa no próprio gate porque tem três meses de changelog. Correção decidida com o usuário (2026-08-03): **recorte por seção, não por arquivo** — o C3 varre o CHANGELOG até o primeiro `## [X.Y.Z]` e para; `[Não lançado]` é texto vivo e continua verificado, que é onde estava o link quebrado real que motivou a delta-027
+
+- **Fila:** `P1·J9·Pr9`
+- **Local:** [validate_integrity.py](skills/guarding-doc-integrity/scripts/validate_integrity.py) (`EXCLUDE_LINKS_PADRAO` e o laço do C3)
+- **Gatilho:** Já disparado — bloqueia a replicação da v1.7.1 nos consumidores; some quando o recorte por seção existir
+- **Origem:** varredura de replicação durante o review da [delta-028](specs/028-propagacao-e-espelhos/) · aberto em 2026-08-03
+
 ## Lições
 <!-- post-mortems datados, com desfecho; sem ação pendente — ação pendente é DT -->
 
