@@ -31,10 +31,11 @@ O DT-023 foi observado nas deltas 004/005/006/015; a delta-025 o contrariou à m
 - DADO um clarify sem nenhuma resposta do usuário — harness sem canal humano, ou ambiguidades todas resolvidas por exploração do repositório — QUANDO o relatório de ambiguidade é gravado ENTÃO ele sai marcado `auto-avaliado`, tornando visível o que hoje passa silencioso, e o critério de saída do `cycle.md` distingue ambiguidade resolvida **pelo usuário** de resolvida **pelo agente**
 - DADO que o agente que redige a spec é o mesmo que pontua o relatório QUANDO o contrato do clarify é lido ENTÃO ele registra esse viés e manda escolher o grau mais ambíguo em caso de dúvida — regra que o `grill-me` já enuncia e que o contrato do deltaspec não repetia
 
-### R3 — MUDA RNF do gate: os scripts passam a admitir uma dependência externa declarada
-- DADO os gates do framework QUANDO eles importam bibliotecas ENTÃO `PyYAML` é dependência externa **declarada e admitida** — única exceção ao princípio de stdlib pura, necessária porque o C11 lê YAML e um parser próprio seria código a manter com falso negativo silencioso
-- DADO os três espelhos vivos da promessa de zero dependência (`CLAUDE.md`, `README.md`, `README.en.md`) QUANDO a delta consolida ENTÃO os três declaram a exceção nos mesmos termos, e nenhum segue prometendo "só a biblioteca padrão"
-- DADO o job `ci` QUANDO ele roda os selftests ENTÃO instala a dependência explicitamente, sem depender do que o runner traz pré-instalado
+## Requisitos não funcionais
+
+### RNF1 — ADICIONA: política de dependência externa dos gates, declarada e verificável
+- Métrica: **exatamente uma** dependência externa admitida nos scripts do framework (`PyYAML`), nomeada com link para a ADR que a admite nos três espelhos vivos da política — `CLAUDE.md`, `README.md` e `README.en.md` — e nenhum deles prometendo "só a biblioteca padrão"; dependência nova exige ADR própria, nunca herança desta
+- Verificação: step no job `ci` rodando `! grep -rn "só a biblioteca padrão\|just the Python 3.11+ standard library\|zero pacote externo" CLAUDE.md README.md README.en.md` e conferindo `ADR-0023` citada nos três; o mesmo job instala a dependência explicitamente antes dos selftests, sem depender do que o runner traz pré-instalado
 
 ## Fora de escopo
 - Mecanizar a **qualidade** da entrevista (número de perguntas, profundidade) — juízo, perímetro do ADR-0006. O C12 verifica presença de âncora, não mérito.
