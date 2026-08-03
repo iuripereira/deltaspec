@@ -18,6 +18,8 @@ Metade mecânica: `check_cycle.py specs/026-gate-perfil-e-clarify` → **LIBERAD
 
 **Veredito:** LIBERADO
 
+Ressalvas aceitas: 2026-08-02 — (1) artefatos em 503 linhas contra o limiar de 500: PR único, sem split, porque a branch já passou pelo review adversarial em dois eixos mais verificação independente, que é o que o limiar existe para garantir (decisão do usuário); (2) o C11 acusa BAIXO neste repo até o [DT-024](../../DEBT.md) ser resolvido.
+
 ## Apêndice — review em dois eixos (2026-08-02)
 
 Review: convergentes tratados / recusas justificadas — 2026-08-02
@@ -47,4 +49,4 @@ Depois das correções, 5 mutantes injetados nas regras novas foram todos pegos 
 - *`campo()` pega a primeira ocorrência no cabeçalho* (A8, BAIXO): resíduo pré-existente compartilhado por todos os checks; prosa dentro do cabeçalho mencionando `Perfil: enxuto` dispensaria o C12. Nenhum caso real, e consertar toca todos os checks — ressalva aceita, não DT.
 - *Mover `PERFIL_NUCLEO` para junto do selftest* e *`import tempfile` no topo*: churn sem ganho; o segundo é convenção anterior a esta delta.
 
-**Pendente de decisão do usuário:** o branch tem 714 inserções contra a main, acima do anti-padrão de 500 linhas por PR do `CLAUDE.md`. O C7 não dispara porque mede só `specs/NNN-nome/` (470 < 500). Split em dois PRs (artefatos · implementação) ou ressalva aceita.
+**Tamanho do PR:** o próprio apêndice empurrou os artefatos de 470 para 503 linhas e fez o C7 disparar — o review de uma delta engorda a delta. Decisão do usuário (2026-08-02): **PR único, sem split**, registrado na linha de ressalvas acima. O limiar existe para garantir revisibilidade, e esta branch teve dois eixos adversariais mais verificação independente.
