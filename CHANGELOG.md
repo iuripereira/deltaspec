@@ -10,7 +10,7 @@ O formato segue [Keep a Changelog 1.0.0](https://keepachangelog.com/pt-BR/1.0.0/
 
 ### Corrigido
 
-- **O C3 do `validate_integrity.py` deixava `CHANGELOG.md`, `HANDOFF.md`, `DEBT.md` e as ADRs sem verificação de link** (delta-027, MUDA R13): os dois checks compartilhavam o conjunto varrido, então a dispensa de *citar valor* (motivo do C2) virava dispensa de *link vivo* por tabela. Agora cada um tem o seu — `exclude_links_globs` no `deps.toml`, com default nomeado para o histórico imutável (`_archive/`, ADRs), que propaga sem exigir migração de manifesto. Neste repositório o C3 saltou de **105 para 161** links verificados. Junto: o atalho `../../issues/N` do GitHub passou a ser ignorado como `http://` já era — sem isso, os 19 links de issue e PR do `DEBT.md` virariam falso FAIL na primeira execução.
+- **O C3 do `validate_integrity.py` deixava `CHANGELOG.md`, `HANDOFF.md`, `DEBT.md` e as ADRs sem verificação de link** (delta-027, MUDA R13): os dois checks compartilhavam o conjunto varrido, então a dispensa de *citar valor* (motivo do C2) virava dispensa de *link vivo* por tabela. Agora cada um tem o seu — `exclude_links_globs` no `deps.toml`, com default nomeado para o histórico imutável (`_archive/`, ADRs), que propaga sem exigir migração de manifesto. Neste repositório o C3 saltou de **105 para 171** links verificados. Junto: o atalho `../../issues/N` do GitHub passou a ser ignorado como `http://` já era — sem isso, os 19 links de issue e PR do `DEBT.md` virariam falso FAIL na primeira execução. O corte casa a **forma** do atalho e não o prefixo `../../`: a primeira versão cortava por prefixo e silenciava 10 links de `SKILL.md`/`references` para ADR, trocando o sinal da mesma patologia que a correção ataca — pego no review.
 
 ### Adicionado
 

@@ -5,8 +5,7 @@ Checks:
   C1  espelhos em sincronia — cada pattern presente no arquivo dono E em cada espelho
   C2  materialização — pattern ausente em qualquer outro arquivo (scan_globs - exclude_globs)
   C3  links — todo link markdown relativo resolve para arquivo existente
-      (scan_globs - exclude_links_globs; conjunto PRÓPRIO — dispensa de citar valor
-       não é dispensa de link vivo, delta-027)
+      (scan_globs - exclude_links_globs; conjunto próprio, delta-027)
 
 Uso: validate_integrity.py [DIR | caminho/deps.toml]   (default: ./deps.toml)
 Exit 0 = íntegro; 1 = violações (listadas); 2 = erro de uso/manifesto.
@@ -20,15 +19,16 @@ from pathlib import Path
 # ponytail: alvo sem espaços e anchors não validados; portar github_slugify se doer
 MD_LINK = re.compile(r"\[[^\]]*\]\(([^)\s]+)(?:\s+\"[^\"]*\")?\)")
 
-# Fora do C3 quando o manifesto não declara `exclude_links_globs` (delta-027): histórico
-# imutável é registro de época (R47) e apontar rot que a política proíbe corrigir é ruído.
-# Default, não herança do exclude_globs do C2 — herdar manteria o ponto cego em todo
-# projeto que não migrasse o manifesto.
+# Dono do default do C3 quando o manifesto não declara `exclude_links_globs` (delta-027).
+# Motivo e alternativas renunciadas: comentário da chave em templates/deps.toml.
 EXCLUDE_LINKS_PADRAO = ["**/_archive/**/*.md", "docs/adrs/**/*.md"]
 
 # Atalho relativo ao repositório do GitHub (`../../issues/88`), não caminho de arquivo:
 # resolvê-lo como caminho acusaria os links vivos de issue e PR do DEBT.md (delta-027).
-ATALHO_GITHUB = "../../"
+# Casa a FORMA, nunca só o prefixo `../../`: cortar por prefixo silenciava todo link que
+# sobe dois níveis — 10 deles neste repo, de SKILL.md e references para ADR, justamente a
+# classe que apodrece em rename (achado ALTO do review da delta-027).
+ATALHO_GITHUB = re.compile(r"\.\./\.\./(issues|pull|discussions)/")
 
 
 def die(msg: str) -> None:
@@ -94,9 +94,8 @@ def main() -> None:
     for path in sorted(scan_links):
         for i, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
             for target in MD_LINK.findall(line):
-                if target.startswith(
-                    ("http://", "https://", "mailto:", "#", "/", ATALHO_GITHUB)
-                ) or "{" in target:
+                if target.startswith(("http://", "https://", "mailto:", "#", "/")) \
+                        or "{" in target or ATALHO_GITHUB.match(target):
                     continue  # "{...}" = placeholder de template, não link
                 checked += 1
                 dest = path.parent / target.split("#")[0]
@@ -164,7 +163,8 @@ mirrors = ["CLAUDE.md"]
         "NOTAS.md": "Cópia solta R$ 2.000 e um [link morto](sumiu.md).\n",
     }, limpo_c2)
     assert excluido.returncode == 1, f"link morto em arquivo excluído do C2 deveria falhar:\n{excluido.stdout}"
-    assert "[C3]" in excluido.stdout, f"o C3 tem de varrer o excluído:\n{excluido.stdout}"
+    # "[C3] link morto", não "[C3]": a linha de resumo do C3 sai sempre e o assert seria vácuo
+    assert "[C3] link morto" in excluido.stdout, f"o C3 tem de varrer o excluído:\n{excluido.stdout}"
     assert "[C2]" not in excluido.stdout, f"o C2 continua dispensando o excluído:\n{excluido.stdout}"
 
     # delta-027: `../../issues/N` é atalho do GitHub, não caminho de arquivo
@@ -173,6 +173,16 @@ mirrors = ["CLAUDE.md"]
         "CLAUDE.md": "Limite: R$ 2.000.\n",
     })
     assert atalho.returncode == 0, f"atalho do GitHub não é link morto:\n{atalho.stdout}"
+
+    # delta-027 (review): subir dois níveis não é atalho do GitHub — o corte casa a forma,
+    # nunca o prefixo, senão silencia todo link de SKILL.md/references para ADR
+    sobe = rodar({
+        "PRD.md": "Limite de R$ 2.000.\n",
+        "CLAUDE.md": "Limite: R$ 2.000.\n",
+        "skills/x/references/n.md": "Ver [adr](../../../docs/adrs/SUMIU.md).\n",
+    }, manifesto.replace('scan_globs = ["*.md"]', 'scan_globs = ["**/*.md"]'))
+    assert sobe.returncode == 1, f"link ../../../ para arquivo é link, não atalho:\n{sobe.stdout}"
+    assert "[C3] link morto" in sobe.stdout, f"o C3 tem de acusar:\n{sobe.stdout}"
 
     # delta-027: histórico imutável fora do C3 por default; a chave declarada manda
     hist = {
@@ -190,7 +200,7 @@ mirrors = ["CLAUDE.md"]
     # conta a linha de violação, não o prefixo "[C3]" — a linha de resumo também o carrega
     assert declarado.stdout.count("[C3] link morto") == 2, f"os dois links do histórico:\n{declarado.stdout}"
 
-    print("selftest: OK (5 fixtures, C1/C2/C3 detectados; C3 com conjunto próprio)")
+    print("selftest: OK (6 fixtures, C1/C2/C3 detectados; C3 com conjunto próprio)")
 
 
 if __name__ == "__main__":

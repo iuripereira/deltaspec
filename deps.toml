@@ -16,11 +16,10 @@ scan_globs = ["*.md", "docs/**/*.md", "specs/TRUTH.md", "specs/truth/*.md", "ski
 # viraria no-op.
 exclude_globs = ["CHANGELOG.md", "HANDOFF.md", "DEBT.md", "docs/adrs/**/*.md", "**/_archive/**/*.md"]
 
-# Fora do C3 (links) — chave própria, não o exclude_globs acima (delta-027). Citar
-# valor ao descrever é legítimo; link quebrado não é, e o DEBT.md aponta delta, PR,
-# issue e arquivo em quase todo item. Ficam de fora só os registros imutáveis, que
-# são de época (R47) e a política proíbe corrigir. Omitir a chave vale este valor.
-exclude_links_globs = ["**/_archive/**/*.md", "docs/adrs/**/*.md"]
+# O C3 (links) NÃO usa o exclude_globs acima: dispensa de citar valor não é dispensa
+# de link vivo (delta-027). Sem `exclude_links_globs` aqui, vale o default do script —
+# histórico imutável de fora —, que é exatamente o recorte deste repo. Declare a chave
+# só para divergir dele; o porquê está no comentário do templates/deps.toml da skill.
 
 # ── Limiar de particionamento do TRUTH.md ─────────────────────────────────────
 # Dono: RNF1 do TRUTH.md. Espelhos: a constante que aplica o limiar
