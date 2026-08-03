@@ -8,6 +8,15 @@ O formato segue [Keep a Changelog 1.0.0](https://keepachangelog.com/pt-BR/1.0.0/
 
 ## [Não lançado]
 
+### Adicionado
+
+- **C11 e C12 no gate determinístico** (delta-026): o **C11** valida o schema do `doc-profile.yaml` — exige o núcleo (`version`, `decisao`, `publico`, `artefatos` com as quatro categorias presentes em 7/7 dos perfis reais) e **tolera a cauda opcional**, porque categoria que uma delta acrescenta ao template nunca propaga retroativamente aos projetos já inicializados; também acusa YAML inválido, perfil sem obrigatório e sem justificativa, e `motores.graphify` ligado sem backend. O **C12** exige a trilha do clarify no perfil completo, lida por âncora de início de linha. Nenhum dos dois é CRÍTICO: reportam, não bloqueiam (ADR-0006). Quita **DT-013** e **DT-023**.
+
+### Mudado
+
+- **O clarify não fecha mais sem declarar se teve canal humano** (delta-026, MUDA R8): o `spec.md` passa a carregar `Clarify: entrevistado (data) — N decisões do usuário` ou `Clarify: auto-avaliado (data) — sem canal humano`. Ambiguidade resolvida por exploração do repositório **não conta como resposta do usuário** — o `grill-me` manda explorar em vez de perguntar, e num repo com TRUTH e ADRs isso responde quase tudo, produzindo uma entrevista que nunca acontece. O contrato passou a registrar também o viés de quem redige a spec ser quem pontua o próprio relatório.
+- **`PyYAML` passa a ser dependência externa admitida dos gates** (delta-026, [ADR-0023](docs/adrs/ADR-0023-pyyaml-como-dependencia-admitida.md)) — a única. Renunciamos ao parser próprio porque o modo de falha dele é silencioso (um `LIBERADO` falso, exatamente o risco que manteve o DT-013 aberto por cinco semanas) e à degradação graciosa porque ela é contrato para motor opcional, não para o gate. Os **quatro** espelhos da promessa foram atualizados — o `SECURITY.md`, que usava a superfície de cadeia de dependências igual a zero como argumento de modelo de ameaça, só apareceu no review — e o CI passou a instalar a dependência antes do primeiro step que a importa e a verificar a política nos quatro. Sem o pacote, o gate para com mensagem acionável nomeando o comando e a ADR, nunca com traceback; `pip install pyyaml` entrou na seção de instalação do README.
+
 ## [1.6.0] - 2026-08-02
 
 ### Adicionado

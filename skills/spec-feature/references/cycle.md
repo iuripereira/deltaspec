@@ -15,7 +15,7 @@ proposta ──(analyze LIBERADO + implement + review + merge)──▶ aplicada
 | Fase | Entrada | Saída (critério de pronto) | Motor |
 |---|---|---|---|
 | specify | pedido de feature; `TRUTH.md` lido | `specs/NNN-nome/spec.md` rascunho no template; branch `tipo/NNN-nome` criada | nativo |
-| clarify | spec rascunho | ambiguidades resolvidas; spec consolidada: todo Rn com DADO/QUANDO/ENTÃO; RNFs aplicáveis (desempenho, segurança, acessibilidade, ...) elicitados com métrica; ADRs gravados se grill-with-docs | max:grill-me / max:grill-with-docs |
+| clarify | spec rascunho | ambiguidades resolvidas — distinguindo o que o **usuário** respondeu do que o **agente** resolveu sozinho; spec consolidada: todo Rn com DADO/QUANDO/ENTÃO; RNFs aplicáveis (desempenho, segurança, acessibilidade, ...) elicitados com métrica; ADRs gravados se grill-with-docs; **trilha do clarify no cabeçalho** declarando se houve canal humano (C12) | max:grill-me / max:grill-with-docs |
 | plan | spec consolidada | `plan.md` em `specs/NNN-nome/` com o cabeçalho-resumo (≤15 linhas) prependido | superpowers:writing-plans |
 | tasks | plan.md | `tasks.md`: cada task com arquivos, `cobre:` e verificação, ordenada por dependência, com arestas `(dep: Tn)` explícitas quando há bloqueio (C9 valida) | nativo (template) |
 | test-plan | tasks.md pronto | `test-plan.md` derivado dos cenários da spec e das verificações das tasks (template; C8 valida; dispensável no perfil enxuto — tabela abaixo) | nativo (template) |
@@ -91,6 +91,7 @@ do AI-DLC: ADR-0014). A trilha sobrevive ao archive junto com os artefatos.
 | Aprovação | Artefato (dono) | Sintaxe |
 |---|---|---|
 | Perfil da delta (R36) | cabeçalho do `spec.md` | `Perfil: <perfil> — <justificativa> (aprovado: AAAA-MM-DD)` |
+| Trilha do clarify (R8) | cabeçalho do `spec.md` | `Clarify: entrevistado (AAAA-MM-DD) — <N> decisões do usuário` · `Clarify: auto-avaliado (AAAA-MM-DD) — sem canal humano` |
 | Prototipação (R37) | seção Contexto do `spec.md` | `Protótipo (aprovado: AAAA-MM-DD) — <caminho>` |
 | Ressalvas do analyze | `analyze.md`, linha após o veredito | `Ressalvas aceitas: AAAA-MM-DD — <resumo>` |
 | Achados do review | `analyze.md`, apêndice do review | `Review: convergentes tratados / recusas justificadas — AAAA-MM-DD` |

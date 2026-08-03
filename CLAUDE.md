@@ -58,7 +58,7 @@
 - **Regra fora da orquestração:** as regras canônicas vivem em `references/` (ex.: `skills/projeto-init/references/canonical-rules.md`), consumidas pela `SKILL.md`. A SKILL.md não reimplementa nem duplica o texto da regra — aponta para ele.
 - **Não duplicar lógica:** uma função/módulo-fonte por responsabilidade; todos os chamadores passam por ela.
 - **Zero valor mágico → constantes nomeadas.** Todo limiar vive como constante nomeada no script (ex.: `TRUTH_LIMITE` em `check_cycle.py`) ou como linha única na regra canônica dona; nada de número solto repetido — inclusive aqui, por isso esta linha não os reproduz.
-- **Zero dependência supérflua (YAGNI/DRY):** prefira stdlib e recursos nativos; não adicione framework/lib onde uma função resolve. Os gates usam stdlib pura (`re`, `pathlib`, `subprocess`, `tomllib`, `sys`) — zero pacote externo.
+- **Zero dependência supérflua (YAGNI/DRY):** prefira stdlib e recursos nativos; não adicione framework/lib onde uma função resolve. Os gates usam stdlib (`re`, `pathlib`, `subprocess`, `tomllib`, `sys`) mais **uma única dependência externa admitida: `PyYAML`**, para validar o `doc-profile.yaml` — a renúncia ao parser próprio está na [ADR-0023](docs/adrs/ADR-0023-pyyaml-como-dependencia-admitida.md). Dependência nova exige o mesmo grau de justificativa, nunca um aceno para essa ADR.
 - **Funções puras separadas de I/O** (testáveis sem mock).
 - **Não refatore conteúdo vendored** (skills de terceiros neste diretório) — elas não são do framework. **Nunca edite output de build** (será sobrescrito).
 - **Corrija a causa, não suprima o warning.** Disable de linter é último recurso, sempre com comentário justificando.

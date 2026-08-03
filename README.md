@@ -80,6 +80,14 @@ curl -fsSL https://raw.githubusercontent.com/iuripereira/deltaspec/main/scripts/
 
 (Com o repositório clonado, chame [scripts/instala-motores.sh](scripts/instala-motores.sh) direto.)
 
+### 2.3 Os gates — 1 dependência
+
+```bash
+pip install pyyaml
+```
+
+Única dependência externa do framework, para validar o `doc-profile.yaml` ([ADR-0023](docs/adrs/ADR-0023-pyyaml-como-dependencia-admitida.md)). Sem ela os gates param com a mensagem pedindo este comando; o resto é biblioteca padrão do Python 3.11+.
+
 ```mermaid
 %%{init: {'theme':'base','themeVariables':{'lineColor':'#5b6472','primaryTextColor':'#1f2937','primaryBorderColor':'#2b2b2b','edgeLabelBackground':'#ffffff'}}}%%
 flowchart LR
@@ -308,7 +316,7 @@ A décima não é comando: [`eu-tenho-tdah`](skills/eu-tenho-tdah/SKILL.md) é o
 
 A ideia: **integridade não pode depender de quem está cansado.** Um humano esquece, uma IA otimista também. O script não.
 
-Tudo roda **na sua máquina** — na fase analyze, no arquivamento e no pré-commit ([ADR-0001](docs/adrs/ADR-0001-gates-rodam-local.md)). Sem dependência externa: só a biblioteca padrão do Python 3.11+.
+Tudo roda **na sua máquina** — na fase analyze, no arquivamento e no pré-commit ([ADR-0001](docs/adrs/ADR-0001-gates-rodam-local.md)). Uma única dependência externa: `pip install pyyaml`, para validar o `doc-profile.yaml` ([ADR-0023](docs/adrs/ADR-0023-pyyaml-como-dependencia-admitida.md)); o resto é biblioteca padrão do Python 3.11+.
 
 ```bash
 # o ciclo da delta: aceite, cobertura, estado, arquivamento sem perda,
