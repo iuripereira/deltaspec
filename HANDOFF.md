@@ -40,6 +40,7 @@
 - **Risco que o gate não mede, registrado no analyze da 026:** o núcleo que o C11 exige veio de amostra de 7 perfis, não de teorema. Perfil futuro com núcleo legitimamente diferente vai gerar falso ALTO e exigir nova delta.
 
 ## Próximos passos imediatos
+- **delta-027 (o C3 verifica link nos registros vivos) — implement concluído, review pendente.** Branch `fix/027-c3-links-nos-registros`, perfil `enxuto` aprovado. `MUDA R13`: C2 e C3 com conjuntos próprios, `exclude_links_globs` com default nomeado, atalho `../../` do GitHub ignorado. Selftest com 5 fixtures, 4 mutantes injetados e pegos, C3 de 105 → 161 links neste repo. Quita **DT-027** no archive.
 - **Projetar os débitos abertos sem ticket** (`debito.py diff` aponta DT-025, DT-026 e DT-027): `exportar` + `gh issue create`, e as chaves voltam para o campo `Externo` — a volta é aprovada, nunca automática (ADR-0021).
 - **DT-027 é o candidato natural a próxima correção** (`P1·J1·Pr9`, gatilho já disparado): separar o conjunto do C3 do conjunto do C2 no `validate_integrity.py` são poucas linhas, e o débito incide em todo archive. Como muda o comportamento de um gate, passa pelo ciclo.
 - Fase 4 do plano de upgrade (**delta-017 — número reservado via R5**, adiada por decisão do usuário 2026-07-28): skill `spec-tickets` — `tickets.md` canônico no repo, Jira como projeção (escada acli → Rovo MCP → REST, ADR nova revisando ADR-0007); inclui o gatilho de reavaliação do fork do max (ADR-0012). Abrir só quando o Iuri pedir.

@@ -51,8 +51,9 @@ Exit 1 = corrigir antes de commitar. Nunca commitar com FAIL; reporte o resultad
 |---|---|
 | Valor aparece fora de dono+espelhos (C2) | Substituir por link ao dono; ou promover a espelho no manifesto (decisão consciente) |
 | Grafia variante (`R$2.000` vs `R$ 2.000`) | `pattern` cobre variantes: `R\$ ?2\.000` |
-| Valor citado em CR/changelog/arquivo morto | Adicionar caminho a `exclude_globs` |
+| Valor citado em CR/changelog/arquivo morto | Adicionar caminho a `exclude_globs` — que dispensa do C2 e **não** do C3 |
 | Link morto (C3) | Corrigir o alvo; ao arquivar um doc, varrer e reescrever toda referência |
+| Link em registro imutável (archive, ADR) | Fora do C3 por `exclude_links_globs`, que tem esse default quando a chave é omitida — é registro de época, não se corrige |
 
 ## Erros comuns
 

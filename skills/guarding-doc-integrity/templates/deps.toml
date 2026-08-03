@@ -2,7 +2,8 @@
 # Um assunto tem um arquivo DONO; valor concreto só existe no dono + espelhos
 # sancionados; todo o resto do repo LINKA para o dono.
 
-# Escopo dos checks de materialização (C2) e links (C3).
+# Escopo varrido pelos checks. O C2 e o C3 partem daqui e cada um subtrai a
+# própria exclusão — dispensa de citar valor não é dispensa de link vivo.
 # Globs explícitos — evite '**/*.md' em repos com node_modules/ etc.
 # Em projeto com ciclo deltaspec: o TRUTH.md entra, as deltas ABERTAS não —
 # uma delta propõe valor novo antes de ele virar vigente, e travá-la em C2
@@ -14,6 +15,14 @@ scan_globs = ["*.md", "docs/**/*.md", "specs/TRUTH.md", "specs/truth/*.md"]
 # Globs de diretório terminam em '**/*.md', nunca em '**' solto: pathlib em
 # Python <= 3.12 casa só diretórios num '**' final e o exclude viraria no-op.
 exclude_globs = ["CHANGELOG.md", "DEBT.md", "docs/changes/**/*.md", "**/_archive/**/*.md"]
+
+# Fora do C3 (links). Chave PRÓPRIA, não o exclude_globs acima: o changelog e o
+# registro de débito citam valores de propósito, mas link quebrado neles é
+# quebrado igual — e é onde mais se linka (delta, PR, issue, arquivo).
+# Aqui ficam só os registros IMUTÁVEIS: histórico de época que a política proíbe
+# corrigir, então acusar rot neles é ruído. Omitir a chave vale este mesmo valor.
+# Atalho de repositório do GitHub (`../../issues/88`) é ignorado sempre.
+exclude_links_globs = ["**/_archive/**/*.md", "docs/adrs/**/*.md"]
 
 [[owner]]
 # Projeto com ciclo: o dono das regras de negócio é a fonte da verdade do ciclo.

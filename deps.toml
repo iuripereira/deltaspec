@@ -16,6 +16,12 @@ scan_globs = ["*.md", "docs/**/*.md", "specs/TRUTH.md", "specs/truth/*.md", "ski
 # viraria no-op.
 exclude_globs = ["CHANGELOG.md", "HANDOFF.md", "DEBT.md", "docs/adrs/**/*.md", "**/_archive/**/*.md"]
 
+# Fora do C3 (links) — chave própria, não o exclude_globs acima (delta-027). Citar
+# valor ao descrever é legítimo; link quebrado não é, e o DEBT.md aponta delta, PR,
+# issue e arquivo em quase todo item. Ficam de fora só os registros imutáveis, que
+# são de época (R47) e a política proíbe corrigir. Omitir a chave vale este valor.
+exclude_links_globs = ["**/_archive/**/*.md", "docs/adrs/**/*.md"]
+
 # ── Limiar de particionamento do TRUTH.md ─────────────────────────────────────
 # Dono: RNF1 do TRUTH.md. Espelhos: a constante que aplica o limiar
 # (TRUTH_LIMITE em check_cycle.py) e os docs do ciclo que o citam. O espelho
