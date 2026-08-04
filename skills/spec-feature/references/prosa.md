@@ -25,6 +25,10 @@ Requirements Syntax), tabelas de decisão (DMN), RFC 2119 e guias de technical w
 6. **Estrutura padrão de uma seção de regra:** contexto (1–2 frases de prosa) → regra
    (EARS/tabela) → exceções (explícitas, mesmo formato da regra) → auditoria/verificação
    (como se observa o cumprimento). Nunca misturar as quatro coisas num parágrafo só.
+7. **Número medido entra datado.** Contagem, medição ou estado observado citado como
+   evidência carrega a data (ou a delta) da medição — "19 links (medição de 2026-08-02)"
+   é verdade para sempre; "19 links" apodrece em silêncio. Valor normativo (limiar, teto,
+   versão pinada) não é medição e segue sem data. Norma do ciclo: R6 do TRUTH (delta-030).
 
 ## Padrões EARS (para a frase da regra)
 
@@ -66,3 +70,4 @@ Requirements Syntax), tabelas de decisão (DMN), RFC 2119 e guias de technical w
 - [ ] DEVE/NÃO DEVE/PODE usados de forma consistente; sinônimos soltos eliminados
 - [ ] Todo fluxo > 3 passos tem diagrama da categoria certa (ADR-0009) e passos numerados
 - [ ] Toda regra tem sua verificação/auditoria declarada ao lado, não em outra seção
+- [ ] Nenhum número medido sem a data (ou a delta) da medição — ilustração datada (mandamento 7)
