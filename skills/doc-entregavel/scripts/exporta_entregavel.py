@@ -72,17 +72,21 @@ img { max-width: 100%; break-inside: avoid; }
 .paisagem { page: paisagem; }
 .paisagem.fig-pagina, .paisagem .fig-pagina { height: 6.7in; }
 blockquote { margin-left: 0.5cm; color: #333; }
-/* confidencialidade (delta-031): position:fixed repete em toda página impressa pelo Chrome */
-.rodape-conf { position: fixed; bottom: 0; left: 0; right: 0; text-align: center;
-               font-size: 8pt; letter-spacing: 2pt; color: #666; }
-.marca-dagua { position: fixed; top: 45%; left: 0; right: 0; text-align: center;
-               font-size: 90pt; letter-spacing: 6pt; color: #000; opacity: .08;
-               transform: rotate(-45deg); z-index: -1; white-space: nowrap; }
 .capa { text-align: center; margin-top: 3cm; }
 .capa h1 { font-size: 26pt; color: #17365D; }
 .assin { margin-top: 2.5cm; text-align: left; }
 .linha { margin-top: 1.6cm; border-top: 0.75pt solid #000; width: 11cm; padding-top: 2pt; }
 .quebra { page-break-after: always; }
+'''
+
+# confidencialidade (delta-031): só entra no HTML quando as flags vêm — sem flag, saída idêntica à vigente.
+# position:fixed repete em toda página impressa pelo Chrome — é o que aplica rodapé e marca.
+CSS_CONF = '''
+.rodape-conf { position: fixed; bottom: 0; left: 0; right: 0; text-align: center;
+               font-size: 8pt; letter-spacing: 2pt; color: #666; }
+.marca-dagua { position: fixed; top: 45%; left: 0; right: 0; text-align: center;
+               font-size: 90pt; letter-spacing: 6pt; color: #000; opacity: .08;
+               transform: rotate(-45deg); z-index: -1; white-space: nowrap; }
 '''
 
 
@@ -180,16 +184,18 @@ def exporta_pdf(args, md):
     # lang=pt-BR habilita a hifenização do Chrome (hyphens: auto) no texto justificado
     base = pathlib.Path(args.entrada).resolve().parent.as_uri() + '/'
 
+    import html as _html
     conf = ''
     if args.rodape:
-        conf += f'<div class="rodape-conf">{args.rodape}</div>'
+        conf += f'<div class="rodape-conf">{_html.escape(args.rodape)}</div>'
     if args.marca_dagua:
-        conf += f'<div class="marca-dagua">{args.marca_dagua}</div>'
+        conf += f'<div class="marca-dagua">{_html.escape(args.marca_dagua)}</div>'
+    css = CSS + (CSS_CONF if conf else '')
 
     def monta(sumario):
         return (f"<html lang='pt-BR'><head><meta charset='utf-8'><base href='{base}'>"
                 f"<title>{args.projeto} v{args.versao}</title>"
-                f"<style>{CSS}</style></head><body>{conf}{capa}{sumario}{corpo}</body></html>")
+                f"<style>{css}</style></head><body>{conf}{capa}{sumario}{corpo}</body></html>")
 
     with tempfile.TemporaryDirectory() as tmp:
         h = pathlib.Path(tmp) / 'doc.html'
@@ -309,8 +315,10 @@ def _rodape_docx(d, texto):
 def _marca_dagua_docx(d, texto):
     """Marca d'água diagonal em todas as páginas, no formato nativo do Word (delta-031)."""
     from docx.oxml import parse_xml
+    from xml.sax.saxutils import escape
+    xml = _VML_MARCA.format(texto=escape(texto, {'"': '&quot;'}))
     for sec in d.sections:
-        sec.header._element.append(parse_xml(_VML_MARCA.format(texto=texto)))
+        sec.header._element.append(parse_xml(xml))
 
 
 def exporta_docx(args, md):

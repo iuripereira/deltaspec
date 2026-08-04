@@ -11,3 +11,11 @@ Metade de juízo (checks 3 e 5 do roteiro):
 - **Regras canônicas:** sem dependência nova (python-docx, pypandoc e Chrome já são o pipeline — RNF6 intacto); PT-BR; valores de apresentação (opacidade, corpo da fonte) vivem no bloco CSS/VML do próprio script, como os demais estilos do exportador — não são limiar de negócio.
 
 **Veredito:** LIBERADO
+
+## Apêndice — review fundido (perfil enxuto: eixos Spec + Qualidade num único subagente)
+
+Achados tratados: **M1** a marca d'água no `juridico-nda` ampliava a regra sem respaldo do dono (`juridico.md` só a exigia na Versão B) — parado e perguntado, decisão do usuário (2026-08-04): **o NDA também leva marca**, regra ampliada no dono com o texto `CONFIDENCIAL` nomeado lá; o clarify da delta virou `entrevistado`; **M2** o CSS de confidencialidade entrava incondicionalmente, contrariando a verificação declarada da T2 — movido para `CSS_CONF` condicional: sem flag, o HTML volta a ser idêntico ao vigente; **B1** textos das flags agora escapados (`html.escape` no pdf, `saxutils.escape` no VML). Registrados sem ação: **B2** o assert da marca no pdf é `any()` e não "toda página" — a marca sai em toda página (raster conferido pelo revisor), mas na capa o extrator intercala os glifos rotacionados com o texto; fraqueza declarada na spec; **B3** vermelho e verde chegam no mesmo commit — o vermelho está registrado na mensagem, processo e não produto. Mutações reconferidas após o refactor: pdf sem injeção e docx sem VML seguem quebrando o selftest.
+
+Sem achado: MUDA R21 íntegro byte a byte (conferência por script do revisor); retrocompatibilidade sem flags comprovada por diff do produto (texto extraído idêntico, mesmas páginas); VML canônico mantido inteiro — cortar `<v:handles>`/`<o:lock>` não paga o risco de mexer em artefato vendored do Word.
+
+Review: convergentes tratados — 2026-08-04

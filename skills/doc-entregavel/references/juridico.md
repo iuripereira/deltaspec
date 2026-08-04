@@ -25,7 +25,7 @@ Mercado brasileiro, contratação **privada**. Base jurídica verificada em **20
 A NBR 14724 é norma de **trabalho acadêmico**. Pedido de "seguir ABNT" em instrumento contratual → corrigir a premissa e aplicar isto:
 
 - A4, margens 2,5–3 cm, Arial ou Times New Roman 11–12 pt, espaçamento 1,5.
-- Paginação `X/Y` no rodapé (manual: campo nativo no Word; no pdf, aplicar na versão de assinatura). Rodapé `CONFIDENCIAL` em todas as páginas nos tipos `juridico-nda` e `requisitos-cliente` — sai do export (`--rodape CONFIDENCIAL` do `exporta_entregavel.py`, delta-031).
+- Paginação `X/Y` no rodapé (manual: campo nativo no Word; no pdf, aplicar na versão de assinatura). Rodapé `CONFIDENCIAL` em todas as páginas nos tipos `juridico-nda` e `requisitos-cliente`; marca d'água `CONFIDENCIAL` no `juridico-nda` (decisão de 2026-08-04, delta-031) e na Versão B do `requisitos-cliente`. Rodapé e marca saem do export (`--rodape CONFIDENCIAL --marca-dagua CONFIDENCIAL` do `exporta_entregavel.py`).
 - Cláusulas em caixa alta e negrito, ordinal por extenso: `CLÁUSULA PRIMEIRA – DO OBJETO`. Parágrafos `§1º`, `§2º`; incisos `I`, `II`, `III`; alíneas `a)`, `b)`.
 - Saída em Markdown (versionável no repo) e export para DOCX/PDF na versão de assinatura.
 - Prosa: uma regra por frase, sem aninhamento — ver [../../spec-feature/references/prosa.md](../../spec-feature/references/prosa.md).
