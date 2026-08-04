@@ -288,16 +288,15 @@ O `EXCLUDE_LINKS_PADRAO` da delta-027 protege `_archive/` e `docs/adrs/` porque 
 - **Origem:** varredura de replicação durante o review da [delta-028](specs/_archive/028-propagacao-e-espelhos/) · aberto em 2026-08-03
 - **Encerrado:** 2026-08-03, [delta-029](specs/_archive/029-c3-precisao/)/[#113](../../pull/113) — `linhas_vivas()` para na primeira `## [X.Y.Z]` e ignora crase e bloco cercado, os dois pelo **conteúdo** e nunca pelo nome do arquivo. Medido no repo que originou o débito: **96 → 3**, e os 3 restantes são rot real do README de lá. **Contrapartida declarada, não escondida:** 240 links saíram da varredura naquele repo e **3 são referências vivas** — docstring em ```` ```python ````, pseudocódigo em bloco cercado e crase de tabela —, então a premissa "dentro de cerca é sintaxe citada" é falsa ali. A troca vale (89 falsos positivos por 3 pontos cegos) mas é troca, e está escrita como tal na spec, no `SKILL.md` e no template do `deps.toml`
 
-### DT-029 · débito · aberto
+### DT-029 · débito · quitado
 **Cenário do TRUTH carrega número medido que apodrece, e nada confere**
 
 Requisito consolidado pode citar um número que era verdadeiro no dia da medição e deixa de ser depois, sem que nada acuse. Dois casos vivos, achados pelo review da delta-029: o cenário do atalho do GitHub (`specs/TRUTH.md:175`) diz "acusaria **19** links vivos do `DEBT.md`" — hoje são **23**, porque cada delta acrescenta issues e PRs ao registro; e a delta-028 levou para o TRUTH um "26 achados do archive" que já não reproduzia na consolidação (o `_archive/` nem está nos `scan_globs` deste repo, então o número certo era 0) — esse saiu na consolidação da 029. O agravante é mecânico: o bloco MUDA **repete o cenário vigente byte a byte** por regra do `cycle.md`, que é o que impede perda silenciosa — e é exatamente o que carrega o número defasado adiante, delta após delta. Decidir: número medido vira ilustração datada (`19 em 2026-08-02`), some do cenário e vira nota no analyze da delta que o mediu, ou ganha check que o recalcula
 
-- **Fila:** `P3·J1·Pr3`
-- **Local:** [TRUTH.md](specs/TRUTH.md) (cenários com número medido) · [cycle.md](skills/spec-feature/references/cycle.md) (regra 2 do archive, que manda repetir integralmente)
 - **Gatilho:** Próxima delta que consolidar cenário com número medido — ou a primeira vez que um número defasado do TRUTH induzir decisão errada
 - **Origem:** review da [delta-029](specs/_archive/029-c3-precisao/) · aberto em 2026-08-03
 - **Ticket:** [#117](../../issues/117)
+- **Encerrado:** 2026-08-04, [delta-030](specs/_archive/030-numero-datado/)/[#119](../../pull/119) — número medido passa a entrar em cenário como **ilustração datada** (MUDA R6: "19 links (medição de 2026-08-02)" é fato histórico que não apodrece), os 5 números vivos ganharam data (4 no R13, contagem de skills no R31) e o `prosa.md` carrega o mandamento 7 com item no checklist. Renúncia registrada na spec: sem check que recalcula — caro para 5 ocorrências, reabre se a disciplina falhar. O review da própria delta demonstrou a tese duas vezes: o "hoje são 23" do Contexto já estava defasado (24 em 2026-08-04, o ticket deste DT entrou no meio) e um "só" removido sem declaração sumiria do TRUTH na consolidação byte a byte
 
 ## Lições
 <!-- post-mortems datados, com desfecho; sem ação pendente — ação pendente é DT -->
