@@ -21,7 +21,10 @@ exclude_globs = ["CHANGELOG.md", "DEBT.md", "docs/changes/**/*.md", "**/_archive
 # quebrado igual — e é onde mais se linka (delta, PR, issue, arquivo).
 # Aqui ficam só os registros IMUTÁVEIS: histórico de época que a política proíbe
 # corrigir, então acusar rot neles é ruído. Omitir a chave vale este mesmo valor.
-# Atalho de repositório do GitHub (`../../issues/88`) é ignorado sempre.
+# Atalho de repositório do GitHub (`../../issues/88`) é ignorado sempre. Também ficam
+# fora, por conteúdo e sem configuração: tudo abaixo da primeira seção `## [X.Y.Z]`
+# (release publicado é imutável) e link em crase ou bloco cercado (sintaxe citada) —
+# então referência real dentro de cerca não é vigiada; tire-a da cerca se precisar.
 exclude_links_globs = ["**/_archive/**/*.md", "docs/adrs/**/*.md"]
 
 [[owner]]

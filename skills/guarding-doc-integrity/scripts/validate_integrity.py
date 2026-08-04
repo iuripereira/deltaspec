@@ -4,8 +4,9 @@
 Checks:
   C1  espelhos em sincronia — cada pattern presente no arquivo dono E em cada espelho
   C2  materialização — pattern ausente em qualquer outro arquivo (scan_globs - exclude_globs)
-  C3  links — todo link markdown relativo resolve para arquivo existente
-      (scan_globs - exclude_links_globs; conjunto próprio, delta-027)
+  C3  links — link markdown relativo resolve para arquivo existente, salvo os que
+      `linhas_vivas` exclui: seção de versão lançada, crase e bloco cercado
+      (scan_globs - exclude_links_globs; conjunto próprio, delta-027/029)
 
 Uso: validate_integrity.py [DIR | caminho/deps.toml]   (default: ./deps.toml)
 Exit 0 = íntegro; 1 = violações (listadas); 2 = erro de uso/manifesto.
@@ -30,6 +31,12 @@ EXCLUDE_LINKS_PADRAO = ["**/_archive/**/*.md", "docs/adrs/**/*.md"]
 # classe que apodrece em rename (achado ALTO do review da delta-027).
 ATALHO_GITHUB = re.compile(r"\.\./\.\./(issues|pull|discussions)/")
 
+# Onde um link deixa de ser referência e vira citação (delta-029), pelo conteúdo e nunca
+# pelo nome do arquivo — repo que chame o changelog de outro jeito recebe a mesma proteção.
+CORTE_LANCADO = re.compile(r"^## \[\d+\.\d+\.\d+\]")  # Keep a Changelog: release publicado é imutável
+CODE_SPAN = re.compile(r"`[^`]*`")                    # `[x](y.md)` é sintaxe citada
+CERCA = re.compile(r"^\s*```")
+
 
 def die(msg: str) -> None:
     print(f"ERRO: {msg}")
@@ -53,6 +60,25 @@ def collect(root: Path, globs: list[str]) -> set[Path]:
     for g in globs:
         files.update(x for x in root.glob(g) if x.is_file())
     return files
+
+
+def linhas_vivas(texto: str) -> list[tuple[int, str]]:
+    """(nº, linha) onde um link é referência de verdade — pura, sem I/O (delta-029).
+
+    Para na primeira seção de versão lançada, e devolve cada linha sem os trechos em
+    crase; linha dentro de bloco cercado não sai. O que fica é o que o C3 deve cobrar.
+    """
+    vivas: list[tuple[int, str]] = []
+    dentro_de_cerca = False
+    for n, linha in enumerate(texto.splitlines(), 1):
+        if CORTE_LANCADO.match(linha):
+            break
+        if CERCA.match(linha):
+            dentro_de_cerca = not dentro_de_cerca
+            continue
+        if not dentro_de_cerca:
+            vivas.append((n, CODE_SPAN.sub("", linha)))
+    return vivas
 
 
 def main() -> None:
@@ -92,7 +118,7 @@ def main() -> None:
 
     checked = 0
     for path in sorted(scan_links):
-        for i, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+        for i, line in linhas_vivas(path.read_text(encoding="utf-8")):
             for target in MD_LINK.findall(line):
                 if target.startswith(("http://", "https://", "mailto:", "#", "/")) \
                         or "{" in target or ATALHO_GITHUB.match(target):
@@ -152,8 +178,12 @@ mirrors = ["CLAUDE.md"]
         "OUTRO.md": "Cópia solta: R$ 2.000.\n",                        # C2 fora dos sancionados
     })
     assert sujo.returncode == 1, f"fixture suja deveria falhar:\n{sujo.stdout}"
-    for codigo in ("[C1]", "[C2]", "[C3]"):
-        assert codigo in sujo.stdout, f"não pegou {codigo}:\n{sujo.stdout}"
+    # a forma da VIOLAÇÃO, não o prefixo: "[C1] limite: OK" e "[C3] ... verificados:" saem
+    # sempre, então `"[C1]" in stdout` e `"[C3]" in stdout` eram asserts vácuos (delta-029)
+    for violacao in ("[C1] limite: padrão ausente",
+                     "[C2] limite: valor fora dos sancionados",
+                     "[C3] link morto"):
+        assert violacao in sujo.stdout, f"não pegou `{violacao}`:\n{sujo.stdout}"
 
     # delta-027: o C3 tem conjunto próprio — dispensa de citar valor (C2) não é dispensa de link vivo
     limpo_c2 = manifesto.replace('exclude_globs = []', 'exclude_globs = ["NOTAS.md"]')
@@ -200,7 +230,36 @@ mirrors = ["CLAUDE.md"]
     # conta a linha de violação, não o prefixo "[C3]" — a linha de resumo também o carrega
     assert declarado.stdout.count("[C3] link morto") == 2, f"os dois links do histórico:\n{declarado.stdout}"
 
-    print("selftest: OK (6 fixtures, C1/C2/C3 detectados; C3 com conjunto próprio)")
+    # delta-029: seção lançada é histórico imutável (Keep a Changelog); [Não lançado] é viva
+    notas = ("# Notas\n\n"
+             "## [Não lançado]\n\nVer [vivo](sumiu-vivo.md).\n\n"
+             "## [1.1.0] - 2026-01-02\n\nVer [antigo](sumiu-antigo.md).\n")
+    lancado = rodar({
+        "PRD.md": "Limite de R$ 2.000.\n", "CLAUDE.md": "Limite: R$ 2.000.\n", "NOTAS.md": notas,
+    })
+    assert lancado.returncode == 1, f"o link da seção viva tem de acusar:\n{lancado.stdout}"
+    assert lancado.stdout.count("[C3] link morto") == 1, \
+        f"só o da seção [Não lançado] — o recorte para na 1ª versão lançada:\n{lancado.stdout}"
+    assert "sumiu-vivo.md" in lancado.stdout, f"o acusado é o da seção viva:\n{lancado.stdout}"
+
+    # delta-029: sintaxe citada não é referência — crase e bloco cercado.
+    # A crase e o link real ficam na MESMA linha: em linhas separadas, um CODE_SPAN guloso
+    # (`.*` no lugar de `[^`]*`) passaria no teste e engoliria link real (review da delta-029).
+    citado = rodar({
+        "PRD.md": "Limite de R$ 2.000.\n", "CLAUDE.md": "Limite: R$ 2.000.\n",
+        # o link real fica ENTRE dois trechos em crase: com só um, guloso e não-guloso
+        # casam igual e o mutante passa — o furo apareceu ao rodar a mutação
+        "NOTAS.md": ("Use `[a](citado.md)`, cite [este](de-verdade.md), veja `[b](citado2.md)`.\n"
+                     "```\n[exemplo](cercado.md)\n```\n"),
+    })
+    assert citado.returncode == 1, f"o link fora da crase tem de acusar:\n{citado.stdout}"
+    assert citado.stdout.count("[C3] link morto") == 1, \
+        f"só o de verdade; crase e cerca são sintaxe citada:\n{citado.stdout}"
+    # o número de linha é a parte acionável do achado, e passa por linhas_vivas: prende-o
+    assert "NOTAS.md:1 → de-verdade.md" in citado.stdout, \
+        f"alvo e número de linha da fonte, não da lista filtrada:\n{citado.stdout}"
+
+    print(f"selftest: OK ({9} fixtures, C1/C2/C3 detectados; C3 com conjunto próprio, recorte e sintaxe citada)")
 
 
 if __name__ == "__main__":
