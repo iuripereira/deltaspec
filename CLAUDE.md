@@ -21,6 +21,7 @@
 - **Conventional Commits 1.0.0** — `tipo(escopo): descrição`. Tipos: `feat fix docs refactor chore ci test style perf build revert`. Breaking via `!` ou rodapé `BREAKING CHANGE:`. Escopo = nome da skill (`feat(spec-feature):`, `fix(projeto-init):`); artefatos do ciclo usam o escopo da delta (`feat(001-plugin):`, `docs(006-notacao-delta):`).
 - **Correlação commit → bump:** `fix` = PATCH · `feat` = MINOR · `!`/`BREAKING CHANGE` = MAJOR. O maior vence. **A tag corta no merge que conclui a delta — normalmente o PR de archive, porque o "pronto" inclui o archive. PRs de documentação fora do ciclo não geram tag.**
 - **Release publicado = processo e README revisados:** o mesmo change que corta a tag confere se o `README.md` (e o espelho `README.en.md`, sincronizado junto) ainda descrevem o processo real — comandos, etapas, contagens (skills, checagens). O README **não materializa a versão corrente**: a tag é a fonte; linke a página de tags. (Regra pedida pelo Iuri em 2026-08-04, quando o README foi pego anunciando `v1.3.0` com o repo na `v1.10.1`.)
+- **Tag cortada = Release publicada:** depois do push da tag, `gh release create vX.Y.Z --title "vX.Y.Z" --notes` com a seção correspondente do CHANGELOG. A Release do GitHub é **projeção** da tag (a tag continua a fonte), mas é a vitrine que o visitante lê — sem ela a página anuncia versão velha como "Latest" (decisão do Iuri em 2026-08-04, DT-030; disciplina monitorada pelo DT-031).
 - **Valide no CI:** o job `commits` reprova PR com commits fora do padrão.
 
 ## Fluxo de trabalho Git
