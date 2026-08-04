@@ -1,5 +1,5 @@
 # delta-030 — número medido em cenário entra datado
-Estado: proposta · Data: 2026-08-04 · Branch: docs/030-numero-datado · Perfil: enxuto — mudança de regra de escrita mais datação de números em 3 requisitos, sem código (aprovado: 2026-08-04)
+Estado: arquivada · Data: 2026-08-04 · Branch: docs/030-numero-datado · Perfil: enxuto — mudança de regra de escrita mais datação de números em 3 requisitos, sem código (aprovado: 2026-08-04)
 
 Clarify: entrevistado (2026-08-04) — 2 decisões do usuário
 <!-- trilha do clarify (R8): forma da correção (ilustração datada, contra "número sai do cenário" e "check que recalcula") e perfil da delta -->

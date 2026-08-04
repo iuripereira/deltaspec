@@ -8,6 +8,8 @@ O formato segue [Keep a Changelog 1.0.0](https://keepachangelog.com/pt-BR/1.0.0/
 
 ## [Não lançado]
 
+## [1.9.0] - 2026-08-04
+
 ### Mudado
 
 - **Número medido em cenário do TRUTH passa a entrar como ilustração datada** (delta-030, MUDA R6/R13/R31): cenário que cita contagem ou medição carrega a data junto do valor — "19 links (medição de 2026-08-02)" é fato histórico que permanece verdadeiro, enquanto "19 links" apodrecia em silêncio a cada delta que o MUDA repetia byte a byte ([DT-029](DEBT.md)). Os cinco números vivos ganharam data (quatro no R13, a contagem de skills no R31) e o `prosa.md` ganhou o mandamento 7 com o item correspondente no checklist de congelamento. Renúncia registrada: sem check que recalcula — mecanismo caro para 4 ocorrências, reabre se a disciplina falhar. Quita **DT-029**.
