@@ -25,7 +25,7 @@ Mercado brasileiro, contratação **privada**. Base jurídica verificada em **20
 A NBR 14724 é norma de **trabalho acadêmico**. Pedido de "seguir ABNT" em instrumento contratual → corrigir a premissa e aplicar isto:
 
 - A4, margens 2,5–3 cm, Arial ou Times New Roman 11–12 pt, espaçamento 1,5.
-- Paginação `X/Y` no rodapé. Rodapé `CONFIDENCIAL` em todas as páginas nos tipos `juridico-nda` e `requisitos-cliente`.
+- Paginação `X/Y` no rodapé (manual: campo nativo no Word; no pdf, aplicar na versão de assinatura). Rodapé `CONFIDENCIAL` em todas as páginas nos tipos `juridico-nda` e `requisitos-cliente`; marca d'água `CONFIDENCIAL` no `juridico-nda` (decisão de 2026-08-04, delta-031) e na Versão B do `requisitos-cliente`. Rodapé e marca saem do export (`--rodape CONFIDENCIAL --marca-dagua CONFIDENCIAL` do `exporta_entregavel.py`).
 - Cláusulas em caixa alta e negrito, ordinal por extenso: `CLÁUSULA PRIMEIRA – DO OBJETO`. Parágrafos `§1º`, `§2º`; incisos `I`, `II`, `III`; alíneas `a)`, `b)`.
 - Saída em Markdown (versionável no repo) e export para DOCX/PDF na versão de assinatura.
 - Prosa: uma regra por frase, sem aninhamento — ver [../../spec-feature/references/prosa.md](../../spec-feature/references/prosa.md).
@@ -128,7 +128,7 @@ Ordem fixa: (1) título centralizado em caixa alta; (2) qualificação das parte
 | Quando | pré-NDA / pré-contrato | pós-NDA assinado |
 | Conteúdo | visão, problema, objetivos, macro-funcionalidades, fases em alto nível, **faixa** de investimento, prazo macro | tudo: arquitetura, modelagem de dados, backlog decomposto, decisões técnicas justificadas, orçamento e cronograma detalhados |
 | Não contém | arquitetura detalhada, modelagem de dados, backlog decomposto, justificativa técnica | — |
-| Marcação | validade da proposta | rodapé `CONFIDENCIAL` + marca d'água + nota de titularidade em todas as páginas |
+| Marcação | validade da proposta | rodapé `CONFIDENCIAL` + marca d'água (flags `--rodape`/`--marca-dagua` do export) + nota de titularidade em todas as páginas |
 
 **Estrutura da Versão B** (IDs rastreáveis, compatíveis com o `tabela_cliente.py` da skill):
 
