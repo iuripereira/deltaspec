@@ -1,5 +1,5 @@
 # delta-032 — bloco aninhado em item de lista chega inteiro ao pdf
-Estado: proposta · Data: 2026-08-04 · Branch: fix/032-bloco-aninhado-em-item · Tipo: bugfix
+Estado: arquivada · Data: 2026-08-04 · Branch: fix/032-bloco-aninhado-em-item · Tipo: bugfix
 
 ## Sintoma (≤3 linhas)
 Tabela de decisão dentro de um `- RN-NNN` do §5 vira **texto com hífen literal** no pdf do cliente ([DT-009](../../DEBT.md), rodada IMEX de 2026-07-20, PRD do estoque RN-007/008); parágrafo aninhado **escapa do item** e renderiza como irmão. O contorno é manual, no "Erros comuns" da SKILL.md — depende de o operador lembrar, em documento que vai para cliente.

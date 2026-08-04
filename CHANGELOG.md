@@ -8,6 +8,8 @@ O formato segue [Keep a Changelog 1.0.0](https://keepachangelog.com/pt-BR/1.0.0/
 
 ## [Não lançado]
 
+## [1.10.1] - 2026-08-04
+
 ### Corrigido
 
 - **Bloco aninhado em item de lista chega inteiro ao pdf do cliente** (delta-032, bugfix): tabela de decisão dentro de um `- RN-NNN` virava texto com hífen literal, e parágrafo aninhado escapava do item ([DT-009](DEBT.md), mordida da rodada IMEX de 2026-07-20). O `deepen_indents` do `tabela_cliente.py` tinha três furos independentes: só aprofundava bullets; tabela aninhada sem linha em branco **dos dois lados** virava texto literal (a de cima) ou engolia o item seguinte como célula (a de baixo — achado do review, na forma exata do PRD de origem); e o `splitlines`/`join` comia a linha em branco final da seção, fazendo o heading seguinte ser engolido como linha da tabela — achado do teste fim a fim da própria delta. Bloco cercado (```) permanece intacto. Selftest com os quatro casos e quatro mutações cobertas; o contorno manual saiu do "Erros comuns" da SKILL.md.

@@ -90,16 +90,15 @@ Janela cega residual do C4: consolidação commitada direto na `main` ou `origin
 - **Origem:** [delta-002](specs/_archive/002-gates/) · aberto em 2026-07-18
 - **Ticket:** [#90](../../issues/90)
 
-### DT-009 · débito · aberto
+### DT-009 · débito · quitado
 **Bloco aninhado em item de lista vira texto solto no PDF do cliente**
 
 `tabela_cliente.py` não trata bloco aninhado em item de lista fora dos §6/§7 (tabela de decisão dentro de um `- RN-NNN` do §5 vira texto com hífen literal no pdf) — `deepen_indents` só aprofunda bullets; o contorno vive na montagem do entregável e no "Erros comuns" do SKILL.md (#34). **Pr revisto de 1 para 3 em 2026-08-02**: a dívida incide a cada export de PRD de cliente com bloco aninhado, e já mordeu uma vez — "artefato frio" era otimismo. A derivação por churn pede 9, e aí **divergimos**: 4 commits em 6 meses não é "tocado toda semana", é percentil de repo onde quase todo arquivo é frio
 
-- **Fila:** `P1·J3·Pr3`
-- **Local:** [tabela_cliente.py](skills/doc-entregavel/scripts/tabela_cliente.py)
 - **Gatilho:** Próxima delta que toque a `doc-entregavel`: aprofundar blocos (tabela/parágrafo) dentro de item de lista no `deepen_indents`, com caso no selftest
 - **Origem:** rodada de export IMEX 2026-07-20 (PRD estoque, RN-007/008) · aberto em 2026-07-20
 - **Ticket:** [#91](../../issues/91)
+- **Encerrado:** 2026-08-04, [delta-032](specs/_archive/032-bloco-aninhado-em-item/)/[#123](../../pull/123) — bugfix com **três causas** no `deepen_indents`, duas além da que o DT via: o match só de bullets (a declarada), a tabela aninhada exigindo linha em branco **dos dois lados** — o lado de baixo veio do review, que **reprovou** a 1ª versão porque o item seguinte era engolido como célula, na forma exata do PRD de origem (RNs 007/008 consecutivas) — e o `splitlines`/`join` comendo a linha em branco final da seção (heading engolido pela tabela, achado do fim a fim). Selftest com 4 casos e 4 mutações; cerca intacta; contorno manual removido da SKILL.md. É a segunda vez seguida que o review pega o furo no ponto exato que a delta existia para fechar
 
 ### DT-008 · débito · quitado
 Valores concretos duplicados sem sanção no `deps.toml`: "≤15 linhas" do cabeçalho-resumo do plan (TRUTH RNF1, `cycle.md`, `resumo-plan.md`) e "~10 domínios" do gatilho de particionamento (TRUTH, `cycle.md`, `templates/TRUTH.md`) — o C1 só governa 800 e 500; drift entre esses espelhos passa despercebido
