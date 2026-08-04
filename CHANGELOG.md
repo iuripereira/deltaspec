@@ -8,6 +8,8 @@ O formato segue [Keep a Changelog 1.0.0](https://keepachangelog.com/pt-BR/1.0.0/
 
 ## [Não lançado]
 
+## [1.8.1] - 2026-08-03
+
 ### Corrigido
 
 - **O C3 acusava histórico imutável e sintaxe citada** (delta-029, MUDA R13): o check de links passou a **parar na primeira seção de versão lançada** — release publicado é imutável pelo Keep a Changelog, a mesma razão que já mantinha `_archive/` e ADRs fora — e a **ignorar link dentro de crase ou de bloco cercado**, que é sintaxe citada e não referência. Os dois recortes olham o **conteúdo** do arquivo, nunca o nome, então repositório que chame o changelog de outro jeito recebe a mesma proteção. A seção `[Não lançado]` continua verificada: foi nela que estava o link quebrado real que motivou a delta-027. Medido no `imex-travelplanner`, que originou o débito: **96 → 3** links mortos, e os 3 restantes são rot legítimo daquele repositório. Quita **DT-028**, que bloqueava a replicação nos consumidores.
