@@ -1,6 +1,6 @@
 # HANDOFF.md — diário de bordo
 > Andamento contínuo do trabalho: o que está em curso **agora**, o que acabou de ser feito, os problemas do momento e os próximos passos imediatos. Atualize com frequência dentro da própria sessão. **Janela rolante:** entrada antiga sai — histórico permanente é [CHANGELOG](CHANGELOG.md) + git; débito/pendência/lição é [DEBT.md](DEBT.md); decisão com renúncia é [docs/adrs/](docs/adrs/); o que vige é [specs/TRUTH.md](specs/TRUTH.md). Em conflito de merge, mantenha a **união das verdades** — nunca sobrescreva o progresso de outra sessão.
-**Atualizado em:** 2026-08-03
+**Atualizado em:** 2026-08-04
 ## Agora
 - **delta-030 (número medido datado, quita DT-029) em curso** na branch `docs/030-numero-datado`: analyze LIBERADO, implement feito (prosa.md + registros); na sequência, delta-031 ataca o DT-011 (flags `--rodape`/`--marca-dagua` no export). Decisões do usuário em 2026-08-04: ilustração datada (não "some do cenário" nem "check que recalcula") e perfil enxuto para as duas.
 - **Nenhuma outra delta em curso.** Framework na **`v1.8.1`**; deltas 001–016 e 018–029 arquivadas; TRUTH R1–R52 + RNF1–RNF6. Fila de dívida em 11 itens (`python3 skills/handoff/scripts/debito.py fila .`), nada com gatilho disparado.
