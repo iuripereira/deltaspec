@@ -108,16 +108,15 @@ Valores concretos duplicados sem sanção no `deps.toml`: "≤15 linhas" do cabe
 - **Origem:** verificação final 2026-07-20 · aberto em 2026-07-20
 - **Encerrado:** 2026-07-20, #27 — dois `[[owner]]` novos no `deps.toml` (`resumo-plan-limiar-linhas` pattern `15 linhas`, `truth-limiar-dominios` pattern `10 dom`); C1 os mantém em sincronia
 
-### DT-011 · pendência · aberto
+### DT-011 · pendência · quitado
 **Rodapé CONFIDENCIAL e marca d'água dependem de aplicação manual**
 
 Rodapé `CONFIDENCIAL` e marca d'água em todas as páginas são instrução manual no `references/juridico.md` — o `exporta_entregavel.py` não tem flag para nenhum dos dois, então o entregável `juridico-nda`/`requisitos-cliente` depende de o operador aplicar à mão no DOCX/PDF. **Pr revisto de 1 para 3 em 2026-08-02**, acompanhando a derivação: incide em **todo** entregável jurídico, não eventualmente
 
-- **Fila:** `P1·J3·Pr3`
-- **Local:** [exporta_entregavel.py](skills/doc-entregavel/scripts/exporta_entregavel.py)
 - **Gatilho:** Próxima delta que toque o `exporta_entregavel.py`: flags `--rodape` e `--marca-dagua`, com caso no selftest
 - **Origem:** [delta-011](specs/_archive/011-doc-juridico/) · aberto em 2026-07-26
 - **Ticket:** [#92](../../issues/92)
+- **Encerrado:** 2026-08-04, [delta-031](specs/_archive/031-rodape-marca-dagua/)/[#121](../../pull/121) — flags `--rodape`/`--marca-dagua` no export, aplicadas nos dois formatos (pdf: `position:fixed` repetido na impressão do Chrome; docx: rodapé de seção + marca d'água VML nativa do Word), TDD com caso no selftest e as duas mutações cobertas; sem flags, saída idêntica à vigente. Na mesma delta, decisão do usuário ampliou a regra: **o NDA também leva marca d'água**, registrada no `juridico.md` com o texto nomeado. Fora de escopo declarado: paginação `X/Y` no pdf segue manual (Chrome headless não expõe contador de página)
 
 ### DT-010 · guarda · vigente
 Referências a `STATE.md` em `specs/_archive/**`, ADRs Accepted (0001/0007/0008) e entradas lançadas do CHANGELOG — o arquivo foi renomeado para `HANDOFF.md` (delta-010, ADR-0010), mas esses registros são imutáveis/histórico; **não corrigir, não migrar** (mesmo espírito da DT-006)
