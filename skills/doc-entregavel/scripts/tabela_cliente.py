@@ -119,11 +119,29 @@ def transform_rnf(section: str):
 
 
 def deepen_indents(text: str) -> str:
-    """Duplica a indentação de bullets aninhados (2→4, 4→8) — python-markdown só aninha com 4."""
-    out = []
-    for ln in text.splitlines():
-        m = re.match(r"^( {2,})- ", ln)
+    """Duplica a indentação de todo conteúdo aninhado (2→4, 4→8) — python-markdown só
+    aninha com 4 — e abre linha em branco antes de tabela colada no item, sem a qual as
+    linhas viram texto literal dentro do bullet mesmo com 4 espaços (DT-009, delta-032).
+    Dentro de cerca (```) nada é tocado: indentação lá é literal."""
+    out, cerca = [], False
+    # split("\n"), não splitlines(): splitlines+join come o \n final do arquivo — o seam
+    # entre seção e heading é papel do transform() (delta-032)
+    for ln in text.split("\n"):
+        if ln.lstrip().startswith("```"):
+            cerca = not cerca
+            out.append(ln)
+            continue
+        # tabela aninhada precisa de linha em branco DOS DOIS lados: sem a de cima ela é
+        # continuação literal do item; sem a de baixo ela engole a linha seguinte como célula
+        saiu_da_tabela = (out and out[-1].startswith(" ") and out[-1].lstrip().startswith("|")
+                          and ln.strip() and not ln.lstrip().startswith("|"))
+        if saiu_da_tabela:
+            out.append("")
+        m = None if cerca else re.match(r"^( {2,})\S", ln)
         if m:
+            if (ln.lstrip().startswith("|") and out and out[-1].strip()
+                    and not out[-1].lstrip().startswith("|")):
+                out.append("")
             ln = " " * (2 * len(m.group(1))) + ln.lstrip()
         out.append(ln)
     return "\n".join(out)
@@ -151,9 +169,12 @@ def transform(md: str):
     assert n_scen == n_src_scen, f"cenários perdidos: fonte {n_src_scen}, tabela {n_scen}"
     assert n_rnf == n_src_rnf, f"RNFs perdidos: fonte {n_src_rnf}, tabela {n_rnf}"
     # linha em branco garantida entre cada seção e o heading seguinte — tabela colada em
-    # "## 7."/"## 8." vira linha da tabela no python-markdown (achado da rodada IMEX 20-07)
+    # "## 6."/"## 7."/"## 8." vira linha da tabela no python-markdown (achado da rodada
+    # IMEX 20-07; o seam do before entrou na delta-032, quando o §5 passou a poder
+    # terminar em tabela aninhada)
     t6, t7 = t6.rstrip("\n") + "\n\n", t7.rstrip("\n") + "\n\n"
-    return deepen_indents(before) + t6 + t7 + deepen_indents(after), n_scen, n_rnf
+    b = deepen_indents(before).rstrip("\n") + "\n\n"
+    return b + t6 + t7 + deepen_indents(after), n_scen, n_rnf
 
 
 SELFTEST_MD = """# PRD — Exemplo
@@ -161,6 +182,17 @@ SELFTEST_MD = """# PRD — Exemplo
 ## 5. Regras
 - RN-01 — regra.
   - sub-bullet aninhado fora de RF/RNF
+- RN-02 — regra com tabela de decisão colada no item:
+  | Faixa | Ação |
+  |---|---|
+  | A | repor |
+- RN-03 — regra com parágrafo aninhado:
+
+  Detalhe da regra, aninhado no item.
+
+```text
+  linha indentada dentro de cerca — não tocar
+```
 
 ## 6. Requisitos Funcionais (RF)
 
@@ -191,8 +223,15 @@ def selftest():
     assert "| RNF-01 | **Qualidade um.** Descrição. | limiar X | como medir |" in result
     assert "RNF-02 (removido)" in result
     assert "    - sub-bullet aninhado" in result, "indentação 2→4 fora de RF/RNF"
+    # DT-009: bloco aninhado (tabela/parágrafo) também aprofunda, e tabela colada ganha bloco próprio
+    assert "colada no item:\n\n    | Faixa | Ação |" in result, "tabela colada sem linha em branco ou sem aprofundar"
+    assert "\n    | A | repor |\n\n- RN-03" in result, "item seguinte colado na tabela seria engolido como célula"
+    assert "\n    |---|---|\n    | A | repor |" in result, "linhas da tabela aninhada não aprofundadas"
+    assert "\n    Detalhe da regra, aninhado no item." in result, "parágrafo aninhado não aprofundado"
+    assert "\n  linha indentada dentro de cerca — não tocar\n" in result, "conteúdo de cerca foi alterado"
+    assert result.endswith("\n"), "o \\n final do arquivo foi comido (splitlines em vez de split)"
     assert "- DADO" not in result.split("## 7.")[0].split("## 6.")[1], "cenário sobrou como bullet"
-    assert "\n\n## 7." in result and "\n\n## 8." in result, "heading colado na tabela (linha em branco ausente)"
+    assert "\n\n## 6." in result and "\n\n## 7." in result and "\n\n## 8." in result, "heading colado na tabela (linha em branco ausente)"
     assert "\n---\n" in result.split("## 7.")[1].split("## 8.")[0], "conteúdo após o último RNF foi perdido"
     print("selftest: OK")
 

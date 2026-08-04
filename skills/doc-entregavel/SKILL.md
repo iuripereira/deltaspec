@@ -93,10 +93,9 @@ Identifique o `tipo` antes de qualquer coisa; pergunte **uma** vez, com opções
 | Versão A e Versão B do `requisitos-cliente` no mesmo arquivo | Uma versão por arquivo: a A é pré-NDA e não carrega arquitetura, modelagem nem backlog |
 | `requisitos-cliente` sem orçamento, prazo ou cronograma "porque o valor ainda não fechou" | As três seções são obrigatórias; valor ausente vira placeholder em destaque, nunca omissão |
 | Citar lei, artigo ou julgado que não está no reference | `[VERIFICAR COM ADVOGADO]` no lugar — nunca inventar dispositivo |
-| Tabela de decisão dentro de item de lista (RNs do §5) vira texto com hífen literal no pdf | `deepen_indents` só aprofunda bullets, não blocos aninhados — na montagem, indente o bloco 2→4 e garanta linha em branco antes do item seguinte (achado IMEX 20-07; candidato a fix no script) |
 
 ## Arquivos da skill
 
 - `references/juridico.md` — regras de **conteúdo** dos tipos `juridico-nda`, `juridico-contrato-ti` e `requisitos-cliente`: minuta e disclaimers, formatação de mercado (não ABNT), eficácia executiva (testemunhas, assinatura eletrônica, RTD), estrutura canônica, cláusulas obrigatórias por tipo, duas versões do documento de requisitos (com orçamento, prazo e cronograma obrigatórios) e checklist de eficácia. Base jurídica datada.
 - `scripts/exporta_entregavel.py` — md → docx (pypandoc + python-docx) e md → pdf (markdown → HTML+CSS → chrome headless), capa parametrizada, corpo justificado e Sumário formato contrato (pdf em 2 passadas com nº de página; docx via campo TOC do Word). `--selftest` valida o próprio script (inclui Sumário com nº de página no pdf e justificação no docx).
-- `scripts/tabela_cliente.py` — formato cliente para PRD deltaspec: cenários e RNFs das seções de RF/RNF (localizadas pelo título, independentes da numeração) viram tabelas (Pré-condição · Ação · Resultado esperado; Métrica · Verificação); indentação aninhada corrigida para o caminho pdf. `--selftest` valida o próprio script.
+- `scripts/tabela_cliente.py` — formato cliente para PRD deltaspec: cenários e RNFs das seções de RF/RNF (localizadas pelo título, independentes da numeração) viram tabelas (Pré-condição · Ação · Resultado esperado; Métrica · Verificação); indentação e blocos aninhados em item de lista (tabela, parágrafo) corrigidos para o caminho pdf. `--selftest` valida o próprio script.
