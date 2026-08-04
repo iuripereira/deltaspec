@@ -297,6 +297,7 @@ Requisito consolidado pode citar um número que era verdadeiro no dia da mediç�
 - **Local:** [TRUTH.md](specs/TRUTH.md) (cenários com número medido) · [cycle.md](skills/spec-feature/references/cycle.md) (regra 2 do archive, que manda repetir integralmente)
 - **Gatilho:** Próxima delta que consolidar cenário com número medido — ou a primeira vez que um número defasado do TRUTH induzir decisão errada
 - **Origem:** review da [delta-029](specs/_archive/029-c3-precisao/) · aberto em 2026-08-03
+- **Ticket:** [#117](../../issues/117)
 
 ## Lições
 <!-- post-mortems datados, com desfecho; sem ação pendente — ação pendente é DT -->
