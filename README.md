@@ -8,7 +8,7 @@ Em vez de manter um documento de requisitos gigante que envelhece mal, cada feat
 
 > **É o git, aplicado a requisitos.** Cada feature é um *commit* de spec (ADICIONA / MUDA / REMOVE). O `TRUTH.md` é o *working tree*: o estado atual, com todos os commits já aplicados. As specs antigas vão para `specs/_archive/` — elas são histórico, não verdade.
 
-`v1.3.0` · 10 skills · Licença MIT
+[Versão corrente: tags](https://github.com/iuripereira/deltaspec/tags) · 10 skills · Licença MIT
 
 ---
 
@@ -68,7 +68,7 @@ O que isso te dá:
 /plugin install deltaspec@deltaspec
 ```
 
-Pronto: as 10 skills aparecem com o prefixo `deltaspec:`. Para atualizar depois, `/plugin update deltaspec`.
+Pronto: as 10 skills aparecem com o prefixo `deltaspec:`. Para atualizar depois, `/plugin update deltaspec@deltaspec` — sem o `@deltaspec` do marketplace, o plugin não é encontrado.
 
 ### 2.2 Os motores — 1 comando no terminal
 
@@ -117,7 +117,7 @@ Cada um cobre uma frente: [`superpowers`](https://github.com/anthropics/claude-p
 
 > **Regra de ouro:** plugin faltando **nunca quebra o ciclo**. A fase cai no caminho simples descrito em [`adapters.md`](skills/spec-feature/references/adapters.md) e você recebe um aviso dizendo qual fase perdeu potência.
 
-### 2.3 Mermaid — o único CLI obrigatório
+### 2.4 Mermaid — o único CLI obrigatório
 
 ```bash
 npm install -g @mermaid-js/mermaid-cli
@@ -320,7 +320,7 @@ Tudo roda **na sua máquina** — na fase analyze, no arquivamento e no pré-com
 
 ```bash
 # o ciclo da delta: aceite, cobertura, estado, arquivamento sem perda,
-# tamanho do TRUTH, dependências das tasks (10 checagens)
+# tamanho do TRUTH, dependências das tasks (checagens C1–C12)
 python3 skills/spec-feature/scripts/check_cycle.py specs/NNN-nome
 
 # os valores espelhados entre documentos e os links relativos
