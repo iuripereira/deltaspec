@@ -1,5 +1,5 @@
 # delta-031 — rodapé CONFIDENCIAL e marca d'água saem do export
-Estado: proposta · Data: 2026-08-04 · Branch: feat/031-rodape-marca-dagua · Perfil: enxuto — duas flags opcionais num script estável, comportamento já normatizado no juridico.md; risco coberto por selftest (aprovado: 2026-08-04)
+Estado: arquivada · Data: 2026-08-04 · Branch: feat/031-rodape-marca-dagua · Perfil: enxuto — duas flags opcionais num script estável, comportamento já normatizado no juridico.md; risco coberto por selftest (aprovado: 2026-08-04)
 
 Clarify: entrevistado (2026-08-04) — 1 decisão do usuário
 <!-- trilha do clarify (R8): o review apontou que a marca d'água no juridico-nda ampliava a regra sem respaldo do juridico.md; decisão do usuário: o NDA também leva marca d'água, com a regra ampliada no dono (juridico.md, texto CONFIDENCIAL nomeado lá). Decisões de desenho (elemento fixo no pdf, VML no docx) são do plan; o perfil foi aprovado em entrevista — trilha do R36 no cabeçalho. -->

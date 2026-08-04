@@ -211,10 +211,12 @@
 
 ## Entregáveis para cliente
 
-- R21 (delta-011) — a `doc-entregavel` despacha por tipo de documento.
+- R21 (delta-031) — a `doc-entregavel` despacha por tipo de documento, e a marcação de confidencialidade sai do export.
   - DADO um pedido de entregável QUANDO a skill roda ENTÃO ela identifica o `tipo` entre `prd-cliente` (fluxo vigente), `juridico-nda`, `juridico-contrato-ti` e `requisitos-cliente`, perguntando com opções fechadas apenas quando o pedido for ambíguo
   - DADO um `tipo` `juridico-*` ou `requisitos-cliente` QUANDO a skill monta o conteúdo ENTÃO as regras de conteúdo, estrutura e base legal vêm de `skills/doc-entregavel/references/juridico.md` e o export continua sendo o pipeline vigente da SKILL.md (render de diagramas, capa, Sumário, PDF/DOCX)
   - DADO a SKILL.md QUANDO ela cita uma regra jurídica ENTÃO referencia o reference sem reproduzir o texto da regra (fonte canônica única)
+  - DADO um export com `--rodape TEXTO` e/ou `--marca-dagua TEXTO` QUANDO o `exporta_entregavel.py` roda ENTÃO o rodapé sai em todas as páginas e a marca d'água atravessa cada página, nos dois formatos — no pdf por elemento fixo repetido na impressão, no docx por rodapé de seção e marca d'água de cabeçalho no formato do próprio Word — e a SKILL.md manda usá-los nos tipos que o `juridico.md` marca como confidenciais (`juridico-nda`, `requisitos-cliente` Versão B), sem etapa manual
+  - DADO um export sem as duas flags QUANDO o script roda ENTÃO a saída permanece a vigente — flags opcionais, nenhum entregável existente muda
 - R22 (delta-011) — documento jurídico sai como minuta, com eficácia executiva verificável.
   - DADO um documento de tipo `juridico-*` QUANDO ele é gerado ENTÃO o topo do arquivo traz a nota de minuta ("sujeita a revisão por advogado(a)", gerada por IA, não é aconselhamento jurídico) e o fecho traz bloco de assinaturas com as partes e duas testemunhas identificadas por nome e CPF
   - DADO uma base legal não listada no reference QUANDO o texto precisaria citá-la ENTÃO a skill grava `[VERIFICAR COM ADVOGADO]` no lugar, sem inventar dispositivo, número de lei ou julgado
