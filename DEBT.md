@@ -296,6 +296,17 @@ Requisito consolidado pode citar um número que era verdadeiro no dia da mediç�
 - **Ticket:** [#117](../../issues/117)
 - **Encerrado:** 2026-08-04, [delta-030](specs/_archive/030-numero-datado/)/[#119](../../pull/119) — número medido passa a entrar em cenário como **ilustração datada** (MUDA R6: "19 links (medição de 2026-08-02)" é fato histórico que não apodrece), os 5 números vivos ganharam data (4 no R13, contagem de skills no R31) e o `prosa.md` carrega o mandamento 7 com item no checklist. Renúncia registrada na spec: sem check que recalcula — caro para 5 ocorrências, reabre se a disciplina falhar. O review da própria delta demonstrou a tese duas vezes: o "hoje são 23" do Contexto já estava defasado (24 em 2026-08-04, o ticket deste DT entrou no meio) e um "só" removido sem declaração sumiria do TRUTH na consolidação byte a byte
 
+### DT-030 · débito · aberto
+**A página de Releases do GitHub anuncia v1.0.0 enquanto a tag corrente é v1.10.1**
+
+O fluxo de release corta **tag git** (a fonte da verdade da versão, CLAUDE.md) e nunca cria o objeto **Release** do GitHub — são coisas distintas, e a única Release existente (v1.0.0) foi criada à mão no rename e ficou como "Latest". Medição de 2026-08-04: 30 tags, 1 Release. Nada quebra — o plugin instala pelo clone git do marketplace, não por Release — mas a vitrine pública mente a versão corrente para quem visita, e a abertura à comunidade (DT-015) tornou a página relevante. Decidir: criar Release por tag daqui em diante (notas prontas no CHANGELOG, `gh release create`), backfill das 29 antigas, automatizar (release-please, já coberto pela `projeto-infra`) ou aceitar por escrito que Release não faz parte do fluxo
+
+- **Fila:** `P1·J1·Pr3`
+- **Local:** [CLAUDE.md](CLAUDE.md) (tríade de release, dona do fluxo que não cria Release)
+- **Gatilho:** Próximo release — ou a primeira vez que alguém de fora citar a v1.0.0 como versão corrente
+- **Origem:** pergunta do Iuri em sessão, 2026-08-04 · aberto em 2026-08-04
+- **Ticket:** [#125](../../issues/125)
+
 ## Lições
 <!-- post-mortems datados, com desfecho; sem ação pendente — ação pendente é DT -->
 
