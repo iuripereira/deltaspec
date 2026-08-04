@@ -1,5 +1,5 @@
 # delta-029 — o C3 para de acusar histórico imutável e sintaxe citada
-Estado: proposta · Data: 2026-08-03 · Branch: fix/029-c3-precisao · Perfil: completo — é o gate que destrava a replicação nos 11 consumidores, e um falso positivo aqui trava commit em repo alheio (aprovado: 2026-08-03)
+Estado: arquivada · Data: 2026-08-03 · Branch: fix/029-c3-precisao · Perfil: completo — é o gate que destrava a replicação nos 11 consumidores, e um falso positivo aqui trava commit em repo alheio (aprovado: 2026-08-03)
 
 Clarify: entrevistado (2026-08-03) — 3 decisões do usuário
 <!-- trilha do clarify (R8): recorte por seção em vez de exclusão de arquivo, tratamento das 4 specs consumidoras e perfil da delta -->
