@@ -8,6 +8,10 @@ O formato segue [Keep a Changelog 1.0.0](https://keepachangelog.com/pt-BR/1.0.0/
 
 ## [Não lançado]
 
+### Mudado
+
+- **Release passa a exigir revisão do processo e do README** (regra nova na tríade de release do `CLAUDE.md`, pedida pelo Iuri): o change que corta a tag confere se `README.md`/`README.en.md` ainda descrevem o processo real. A primeira aplicação da regra achou 4 defasagens nos dois READMEs: versão cravada em `v1.3.0` (7 releases atrás — substituída por link para a página de tags, que é a fonte), dois `### 2.3` na numeração, "(10 checagens)" com o gate já em C1–C12, e `/plugin update deltaspec` sem o `@deltaspec` que o Claude Code exige.
+
 ## [1.10.1] - 2026-08-04
 
 ### Corrigido
