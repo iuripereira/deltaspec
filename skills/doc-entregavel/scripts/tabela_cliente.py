@@ -124,13 +124,19 @@ def deepen_indents(text: str) -> str:
     linhas viram texto literal dentro do bullet mesmo com 4 espaços (DT-009, delta-032).
     Dentro de cerca (```) nada é tocado: indentação lá é literal."""
     out, cerca = [], False
-    # split("\n"), não splitlines(): splitlines+join come o \n final — inclusive a linha em
-    # branco que separa a última tabela da seção do heading seguinte (delta-032)
+    # split("\n"), não splitlines(): splitlines+join come o \n final do arquivo — o seam
+    # entre seção e heading é papel do transform() (delta-032)
     for ln in text.split("\n"):
         if ln.lstrip().startswith("```"):
             cerca = not cerca
             out.append(ln)
             continue
+        # tabela aninhada precisa de linha em branco DOS DOIS lados: sem a de cima ela é
+        # continuação literal do item; sem a de baixo ela engole a linha seguinte como célula
+        saiu_da_tabela = (out and out[-1].startswith(" ") and out[-1].lstrip().startswith("|")
+                          and ln.strip() and not ln.lstrip().startswith("|"))
+        if saiu_da_tabela:
+            out.append("")
         m = None if cerca else re.match(r"^( {2,})\S", ln)
         if m:
             if (ln.lstrip().startswith("|") and out and out[-1].strip()
@@ -219,6 +225,7 @@ def selftest():
     assert "    - sub-bullet aninhado" in result, "indentação 2→4 fora de RF/RNF"
     # DT-009: bloco aninhado (tabela/parágrafo) também aprofunda, e tabela colada ganha bloco próprio
     assert "colada no item:\n\n    | Faixa | Ação |" in result, "tabela colada sem linha em branco ou sem aprofundar"
+    assert "\n    | A | repor |\n\n- RN-03" in result, "item seguinte colado na tabela seria engolido como célula"
     assert "\n    |---|---|\n    | A | repor |" in result, "linhas da tabela aninhada não aprofundadas"
     assert "\n    Detalhe da regra, aninhado no item." in result, "parágrafo aninhado não aprofundado"
     assert "\n  linha indentada dentro de cerca — não tocar\n" in result, "conteúdo de cerca foi alterado"
