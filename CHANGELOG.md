@@ -8,6 +8,10 @@ O formato segue [Keep a Changelog 1.0.0](https://keepachangelog.com/pt-BR/1.0.0/
 
 ## [Não lançado]
 
+### Adicionado
+
+- **`--rodape` e `--marca-dagua` no `exporta_entregavel.py`** (delta-031, MUDA R21): o rodapé `CONFIDENCIAL` e a marca d'água do entregável confidencial (`juridico-nda`, `requisitos-cliente` Versão B) saem do próprio export, em todas as páginas e nos dois formatos — no pdf por elemento fixo repetido na impressão do Chrome, no docx por rodapé de seção e pela marca d'água VML nativa do Word. Antes eram instrução manual do `juridico.md`, e o modo de falha era humano e silencioso: documento confidencial circulando sem a marca. Flags opcionais — sem elas, nenhum entregável existente muda. Selftest cobre os dois formatos com textos distintos por assert, e as mutações (pdf sem injeção, docx sem VML) quebram o teste. Quita **DT-011**.
+
 ## [1.9.0] - 2026-08-04
 
 ### Mudado

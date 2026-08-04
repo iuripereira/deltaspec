@@ -72,6 +72,12 @@ img { max-width: 100%; break-inside: avoid; }
 .paisagem { page: paisagem; }
 .paisagem.fig-pagina, .paisagem .fig-pagina { height: 6.7in; }
 blockquote { margin-left: 0.5cm; color: #333; }
+/* confidencialidade (delta-031): position:fixed repete em toda página impressa pelo Chrome */
+.rodape-conf { position: fixed; bottom: 0; left: 0; right: 0; text-align: center;
+               font-size: 8pt; letter-spacing: 2pt; color: #666; }
+.marca-dagua { position: fixed; top: 45%; left: 0; right: 0; text-align: center;
+               font-size: 90pt; letter-spacing: 6pt; color: #000; opacity: .08;
+               transform: rotate(-45deg); z-index: -1; white-space: nowrap; }
 .capa { text-align: center; margin-top: 3cm; }
 .capa h1 { font-size: 26pt; color: #17365D; }
 .assin { margin-top: 2.5cm; text-align: left; }
@@ -174,10 +180,16 @@ def exporta_pdf(args, md):
     # lang=pt-BR habilita a hifenização do Chrome (hyphens: auto) no texto justificado
     base = pathlib.Path(args.entrada).resolve().parent.as_uri() + '/'
 
+    conf = ''
+    if args.rodape:
+        conf += f'<div class="rodape-conf">{args.rodape}</div>'
+    if args.marca_dagua:
+        conf += f'<div class="marca-dagua">{args.marca_dagua}</div>'
+
     def monta(sumario):
         return (f"<html lang='pt-BR'><head><meta charset='utf-8'><base href='{base}'>"
                 f"<title>{args.projeto} v{args.versao}</title>"
-                f"<style>{CSS}</style></head><body>{capa}{sumario}{corpo}</body></html>")
+                f"<style>{CSS}</style></head><body>{conf}{capa}{sumario}{corpo}</body></html>")
 
     with tempfile.TemporaryDirectory() as tmp:
         h = pathlib.Path(tmp) / 'doc.html'
@@ -254,6 +266,53 @@ def _atualiza_campos_ao_abrir(d):
         s.append(u)
 
 
+# VML canônico que o próprio Word grava em Design → Marca-d'água (shapetype 136 + textpath);
+# python-docx não tem API de watermark, então o shape entra por parse_xml no cabeçalho.
+_VML_MARCA = (
+    '<w:p xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" '
+    'xmlns:v="urn:schemas-microsoft-com:vml" '
+    'xmlns:o="urn:schemas-microsoft-com:office:office"><w:r><w:pict>'
+    '<v:shapetype id="_x0000_t136" coordsize="21600,21600" o:spt="136" adj="10800" '
+    'path="m@7,l@8,m@5,21600l@6,21600e">'
+    '<v:formulas><v:f eqn="sum #0 0 10800"/><v:f eqn="prod #0 2 1"/>'
+    '<v:f eqn="sum 21600 0 @1"/><v:f eqn="sum 0 0 @2"/><v:f eqn="sum 21600 0 @3"/>'
+    '<v:f eqn="if @0 @3 0"/><v:f eqn="if @0 21600 @1"/><v:f eqn="if @0 0 @2"/>'
+    '<v:f eqn="if @0 @4 21600"/><v:f eqn="mid @5 @6"/><v:f eqn="mid @8 @5"/>'
+    '<v:f eqn="mid @7 @8"/><v:f eqn="mid @6 @7"/><v:f eqn="sum @6 0 @5"/></v:formulas>'
+    '<v:path textpathok="t" o:connecttype="custom" '
+    'o:connectlocs="@9,0;@10,10800;@11,21600;@12,10800" o:connectangles="270,180,90,0"/>'
+    '<v:textpath on="t" fitshape="t"/>'
+    '<v:handles><v:h position="#0,bottomRight" xrange="6629,14971"/></v:handles>'
+    '<o:lock v:ext="edit" text="t" shapetype="t"/></v:shapetype>'
+    '<v:shape id="MarcaDagua" type="#_x0000_t136" o:allowincell="f" '
+    'style="position:absolute;margin-left:0;margin-top:0;width:527pt;height:131.75pt;'
+    'rotation:315;z-index:-251654144;mso-position-horizontal:center;'
+    'mso-position-horizontal-relative:margin;mso-position-vertical:center;'
+    'mso-position-vertical-relative:margin" fillcolor="silver" stroked="f">'
+    '<v:fill opacity=".3"/>'
+    '<v:textpath style="font-family:&quot;Cambria&quot;;font-size:1pt" string="{texto}"/>'
+    '</v:shape></w:pict></w:r></w:p>'
+)
+
+
+def _rodape_docx(d, texto):
+    """Rodapé de seção em todas as páginas (delta-031)."""
+    from docx.enum.text import WD_ALIGN_PARAGRAPH
+    from docx.shared import Pt
+    for sec in d.sections:
+        p = sec.footer.paragraphs[0]
+        r = p.add_run(texto)
+        r.font.size = Pt(8)
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+
+def _marca_dagua_docx(d, texto):
+    """Marca d'água diagonal em todas as páginas, no formato nativo do Word (delta-031)."""
+    from docx.oxml import parse_xml
+    for sec in d.sections:
+        sec.header._element.append(parse_xml(_VML_MARCA.format(texto=texto)))
+
+
 def exporta_docx(args, md):
     import pypandoc
     from docx import Document
@@ -304,6 +363,10 @@ def exporta_docx(args, md):
         _atualiza_campos_ao_abrir(d)
 
         _tabelas_sem_corte(d)
+        if args.rodape:
+            _rodape_docx(d, args.rodape)
+        if args.marca_dagua:
+            _marca_dagua_docx(d, args.marca_dagua)
         destino = pathlib.Path(args.saida)
         destino.parent.mkdir(parents=True, exist_ok=True)
         d.save(str(destino))
@@ -343,6 +406,33 @@ def selftest():
                 else:
                     print('selftest: nº de página do sumário NÃO VERIFICADO (sem pdftotext/pypdf)')
             print(f'selftest: {fmt} OK ({saida.stat().st_size} bytes)')
+        # flags de confidencialidade (delta-031) — textos distintos para asserts independentes
+        conf = base + ['--rodape', 'CONFIDENCIAL', '--marca-dagua', 'MINUTA']
+        for fmt in ('docx', 'pdf'):
+            if fmt == 'pdf':
+                from shutil import which
+                if not which('google-chrome'):
+                    print('selftest: pdf confidencial PULADO (google-chrome ausente)')
+                    continue
+            saida = tmp / f'conf.{fmt}'
+            main([fmt, str(tmp / 'doc.md'), str(saida)] + conf)
+            if fmt == 'docx':
+                from docx import Document
+                d = Document(str(saida))
+                rodape = '\n'.join(p.text for s in d.sections for p in s.footer.paragraphs)
+                assert 'CONFIDENCIAL' in rodape, 'docx: rodapé ausente do footer'
+                header = ''.join(s.header._element.xml for s in d.sections)
+                assert 'textpath' in header and 'MINUTA' in header, "docx: marca d'água ausente do header"
+            else:
+                paginas = _texto_por_pagina(saida)
+                if paginas:
+                    def _n(s):
+                        return re.sub(r'\s+', '', s)
+                    assert all('CONFIDENCIAL' in _n(p) for p in paginas if _n(p)), 'pdf: rodapé ausente em página'
+                    assert any('MINUTA' in _n(p) for p in paginas), "pdf: marca d'água ausente"
+                else:
+                    print('selftest: confidencialidade no pdf NÃO VERIFICADA (sem pdftotext/pypdf)')
+            print(f'selftest: {fmt} confidencial OK')
     print('selftest: OK')
 
 
@@ -358,6 +448,8 @@ def main(argv):
     ap.add_argument('--anexo', default='')
     ap.add_argument('--local', default='')
     ap.add_argument('--assinatura', action='append', default=[])
+    ap.add_argument('--rodape', default='', help='texto de rodapé em todas as páginas (ex.: CONFIDENCIAL)')
+    ap.add_argument('--marca-dagua', default='', help="texto de marca d'água atravessando cada página")
     args = ap.parse_args(argv)
     md = le_markdown(args.entrada)
     (exporta_docx if args.formato == 'docx' else exporta_pdf)(args, md)
