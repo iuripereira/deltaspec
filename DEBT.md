@@ -317,6 +317,17 @@ As duas regras novas da tríade de release (revisar README/README.en no change d
 - **Origem:** decisão do Iuri em sessão, 2026-08-04 (desdobramento do DT-030) · aberto em 2026-08-04
 - **Ticket:** [#128](../../issues/128)
 
+### DT-032 · pendência · aberto
+**Framework não oferece visão consolidada de arquitetura as-built para entendimento humano**
+
+Pesquisa de 2026-08-06 nos SDDs da comunidade mostrou que todo framework separa o design **durável** do projeto (BMAD `architecture.md`, Agent OS `tech-stack.md`, matklad `ARCHITECTURE.md`) do design **efêmero** da feature (Kiro `design.md`, spec-kit `plan.md`, OpenSpec `design`). O deltaspec cobre o efêmero (`plan.md` por delta), o *porquê* durável (ADRs) e o *o quê* durável (TRUTH.md) — mas não o *como está montado*: quem chega (humano ou agente) re-deriva a arquitetura explorando o repo, e o gargalo de contribuidor é achar **onde** mudar, não escrever código. Proposta desenhada na análise, com quatro regras: **(a)** seção "Arquitetura" no template do TRUTH.md, consolidada no archive junto dos requisitos — **não** um arquivo novo (fundir > fragmentar); **(b)** só as-built: entra o que foi aplicado e arquivado, nunca to-be — to-be é o `plan.md` da delta; **(c)** só o estável (muda 1–2×/ano, régua do matklad) e **referenciando** ADRs/CLAUDE.md em vez de duplicar (regra de ouro); **(d)** promover a `ARCHITECTURE.md` próprio apenas quando a seção passar de ~1 página. Benefício condicionado a três fatores — repo com tamanho que exija mapa, entrada de gente/agente novo, ritual vivo (archive como dono) — sem os três, é cerimônia; por isso não se aplica ao deltaspec em si (CLAUDE.md em camadas já é o mapa), e sim ao template consumido pelos projetos
+
+- **Fila:** `P3·J1·Pr1`
+- **Local:** [TRUTH.md (template)](skills/spec-feature/references/templates/TRUTH.md)
+- **Gatilho:** Primeiro repo consumidor onde o teste "um dev novo saberia onde mexer só com o que existe?" falhar — endereçar via delta pelo ciclo (mudança de template atualiza consumidores e fixtures juntos)
+- **Origem:** pesquisa pedida pelo Iuri em sessão, 2026-08-06 · aberto em 2026-08-06
+- **Ticket:** [#130](../../issues/130)
+
 ## Lições
 <!-- post-mortems datados, com desfecho; sem ação pendente — ação pendente é DT -->
 
