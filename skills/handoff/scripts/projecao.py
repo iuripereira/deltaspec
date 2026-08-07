@@ -59,7 +59,7 @@ def etiquetas(item: dict, entrada: dict) -> list:
 
 
 def emitir_sh_acli(itens: list, projeto: str, saida: Path, epico: str | None = None,
-                    capturar_chaves: bool = False) -> Path:
+                    capturar_chaves: bool = False, epico_existente: str | None = None) -> Path:
     """Emite .sh de creates unitários — decisão da delta-017 (DT-021: bulk rejeita \n).
 
     Args:
@@ -67,6 +67,10 @@ def emitir_sh_acli(itens: list, projeto: str, saida: Path, epico: str | None = N
         projeto: projeto Jira (--project)
         saida: Path onde escrever corpo-<id>.md e tickets-acli.sh
         epico: se presente, cria épico primeiro e usa --parent nas filhas
+        epico_existente: se presente (e `epico` ausente), **não cria** o épico — usa a
+            chave já conhecida (ex.: vinda do `Externo` do tickets.md) como `EPICO=<chave>`
+            literal, e as filhas seguem usando `--parent "$EPICO"`. Idempotência do épico
+            (delta-017, correção pós-review): reexportar não deve duplicar o épico no Jira.
         capturar_chaves: se True, cada create de filha vira `<ID>_KEY=$(... --json | ...)`
             em vez de um `--json` solto — usado pelo tickets.py (T3) para depois emitir
             `acli jira workitem link` entre as chaves capturadas (arestas `dep:`)
@@ -82,11 +86,14 @@ def emitir_sh_acli(itens: list, projeto: str, saida: Path, epico: str | None = N
                    f"--type {TIPO_EPICO} --summary {shlex.quote(epico)} --json "
                    "| python3 -c 'import json,sys; print(json.load(sys.stdin)[\"key\"])')",
                    'echo "épico criado: $EPICO"', ""]
+    elif epico_existente:
+        linhas += [f"EPICO={shlex.quote(epico_existente)}",
+                   'echo "épico reaproveitado: $EPICO"', ""]
     for i in itens:
         corpo = saida / f"corpo-{i['id']}.md"
         corpo.write_text(i["body"], encoding="utf-8")
         rotulos = f" --label {shlex.quote(','.join(i['labels']))}" if i["labels"] else ""
-        pai = ' --parent "$EPICO"' if epico else ""
+        pai = ' --parent "$EPICO"' if (epico or epico_existente) else ""
         comando = (f"acli jira workitem create --project {shlex.quote(projeto)} "
                    f"--type {TIPO_ITEM} --summary {shlex.quote(i['title'])}{rotulos}"
                    f"{pai} --description-file {shlex.quote(str(corpo))} --json")
@@ -129,6 +136,12 @@ def selftest():
         assert "DT-002_KEY=$(acli jira workitem create" in t3
         assert t3.count("_KEY=$(") == 2 and 'echo "DT-001: $DT-001_KEY"' in t3
         assert "create-bulk" not in t3
+        # (f) epico_existente (correção pós-review, delta-017): reexportar não recria o
+        # épico — EPICO vira atribuição literal, sem `--type Epic`, filhas com --parent.
+        sh4 = emitir_sh_acli(itens, "SBX", saida, epico_existente="SBX-1")
+        t4 = sh4.read_text(encoding="utf-8")
+        assert "--type Epic" not in t4, "epico_existente não deveria recriar o épico"
+        assert "EPICO=SBX-1" in t4 and '--parent "$EPICO"' in t4
     print("selftest projecao: OK")
 
 

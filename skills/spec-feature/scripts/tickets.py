@@ -134,7 +134,10 @@ def montar_links_bloqueio(pendentes: list, externos: dict) -> list:
 
     Extremo criado nesta rodada usa a variável capturada pelo `.sh` (`capturar_chaves=True`
     em `emitir_sh_acli`); extremo já exportado usa a chave literal gravada no tickets.md —
-    chave do Jira é sempre `PROJ-NNN` (sem caractere que precise de shlex.quote).
+    chave do Jira é sempre `PROJ-NNN` (sem caractere que precise de shlex.quote). Dep sem
+    chave conhecida (nem pendente nem exportada — não deveria ocorrer no fluxo normal, mas
+    correção pós-review: falha visível, não silêncio) vira aviso de 1 linha no stderr do
+    próprio `.sh`, e o link correspondente não é emitido.
     """
     ids_pendentes = {t["id"] for t in pendentes}
     linhas = []
@@ -146,7 +149,9 @@ def montar_links_bloqueio(pendentes: list, externos: dict) -> list:
             elif externos.get(dep):
                 origem = f'"{externos[dep]}"'
             else:
-                continue  # dep sem chave conhecida ainda (nem pendente nem exportada) — nada a linkar
+                linhas.append(f'echo "aviso: {dep} sem chave conhecida — link {dep} -> {t["id"]} '
+                              'não emitido" >&2')
+                continue
             linhas.append(f"acli jira workitem link --source {origem} --target {destino} --type Blocks")
     return linhas
 
@@ -194,18 +199,21 @@ def cmd_exportar(delta_dir: Path, saida: Path) -> int:
         return 1
     nnn, nome = partir_delta(delta_dir.name)
     caminho_tickets = delta_dir / "tickets.md"
-    externos = {}
+    epico_externo, externos = None, {}
     if caminho_tickets.is_file():
-        externos = parse_tickets_md(caminho_tickets.read_text(encoding="utf-8"))["itens"]
+        existentes = parse_tickets_md(caminho_tickets.read_text(encoding="utf-8"))
+        epico_externo, externos = existentes["epico"], existentes["itens"]
     pendentes = [t for t in tarefas if t["id"] not in externos]
     itens = [{"id": t["id"], "title": f"{t['id']} — {t['acao']}",
               "body": corpo_ticket_tarefa(t, nnn, nome), "labels": [f"delta:{nnn}"]}
              for t in pendentes]
     saida.mkdir(parents=True, exist_ok=True)
-    # ponytail: o épico é sempre (re)criado nesta chamada — só as filhas são idempotentes
-    # via Externo. Idempotência do épico exigiria emitir_sh_acli aceitar uma chave de
-    # épico já existente como --parent literal (fora do escopo testado pelo brief da T3).
-    sh = emitir_sh_acli(itens, projeto, saida, epico=f"[delta-{nnn}] {nome}", capturar_chaves=True)
+    # Épico idempotente (R1: Externo é o que garante idempotência, épico incluso): já
+    # tem chave gravada no tickets.md → reaproveita literal, nunca recria no Jira.
+    if epico_externo:
+        sh = emitir_sh_acli(itens, projeto, saida, epico_existente=epico_externo, capturar_chaves=True)
+    else:
+        sh = emitir_sh_acli(itens, projeto, saida, epico=f"[delta-{nnn}] {nome}", capturar_chaves=True)
     links = montar_links_bloqueio(pendentes, externos)
     if links:
         with sh.open("a", encoding="utf-8") as f:
@@ -326,13 +334,37 @@ def selftest() -> None:
     assert (saida_dir / "corpo-T2.md").read_text(encoding="utf-8") == corpo_ticket_tarefa(
         tarefas[1], "999", "fixture"), "corpo do ticket não bateu com o canônico"
 
+    # épico com Externo preenchido: exportar reaproveita, não recria (correção pós-review —
+    # R1 diz que Externo garante idempotência, e isso vale para o épico também)
+    texto_com_epico = texto_tickets.replace(
+        "Épico: [delta-999] fixture · Externo: —", "Épico: [delta-999] fixture · Externo: SBX-1"
+    ).replace(
+        "- T1 — cria arquivo X · status: aberto · deps: — · Externo: —",
+        "- T1 — cria arquivo X · status: aberto · deps: — · Externo: SBX-9")
+    (delta_dir / "tickets.md").write_text(texto_com_epico, encoding="utf-8")
+    saida_dir2 = delta_dir / "out2"
+    codigo_exp2, _ = quieto(cmd_exportar, delta_dir, saida_dir2)
+    assert codigo_exp2 == 0
+    sh2 = (saida_dir2 / "tickets-acli.sh").read_text(encoding="utf-8")
+    assert "--type Epic" not in sh2, "épico com Externo preenchido não deveria ser recriado"
+    assert "EPICO=SBX-1" in sh2, "épico existente deveria virar EPICO=<chave> literal"
+    assert '--parent "$EPICO"' in sh2, "filhas seguem usando --parent mesmo com épico reaproveitado"
+
+    # link sem chave conhecida em nenhum dos lados: aviso de 1 linha no stderr do .sh,
+    # não silêncio (correção pós-review) — e o link correspondente não é emitido
+    orfa = [{"id": "T9", "deps": ["T0"], "feito": False, "acao": "orfã"}]
+    linhas_aviso = montar_links_bloqueio(orfa, {})
+    assert any("aviso:" in l and ">&2" in l for l in linhas_aviso), "dep sem chave devia virar aviso, não silêncio"
+    assert not any("workitem link" in l for l in linhas_aviso), "link não deveria ser emitido sem chave conhecida"
+
     # exportar sem motores.jira: mesma degradação de gerar (RNF2)
     saida_off2 = delta_off / "out"
     codigo_exp_off, saida_exp_off = quieto(cmd_exportar, delta_off, saida_off2)
     assert codigo_exp_off == 0 and not saida_off2.exists()
     assert len(saida_exp_off.strip().splitlines()) == 1
 
-    print("selftest tickets: OK (parse âncora, deps/status, degradação RNF2, exportar idempotente, links Blocks)")
+    print("selftest tickets: OK (parse âncora, deps/status, degradação RNF2, "
+          "exportar idempotente inclusive épico, links Blocks, aviso de dep órfã)")
 
 
 if __name__ == "__main__":
