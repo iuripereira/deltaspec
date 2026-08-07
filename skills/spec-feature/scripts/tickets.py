@@ -27,6 +27,8 @@ import re
 import sys
 from pathlib import Path
 
+from itens import itens, ITEM  # dono do formato de item (delta-033) — mesmo parser do check_cycle.py (C9)
+
 try:
     import yaml  # única dependência externa admitida nos gates (ADR-0023)
 except ModuleNotFoundError:
@@ -42,11 +44,21 @@ TRACO = "—"
 STATUS_ABERTO = "aberto"
 STATUS_CONCLUIDO = "concluído"
 
-# Âncora de início de linha (regra do R51 — nunca busca de texto). Formato do tasks.md
-# gerado pelo template: "- [ ] T1 — ação · arquivos: X · cobre: Rn · verificação: cmd".
-PADRAO_TASK = re.compile(
-    r"^- \[([ x])\] (T\d+)(?: \(dep: ([^)]+)\))? — (.+?) · arquivos: .+? · cobre: .+? · verificação: .+$"
-)
+# Item ('- [ ] T1 ...', checkbox/id/continuação) vem de itens.py — dono único do formato
+# (R2, delta-033). Daqui pra frente são duas checagens, não uma:
+# 1) PADRAO_CABECA valida a CABEÇA de forma ancorada sobre item["resto"] (o que vem
+#    logo após o ID, só a primeira linha) — "(dep: Tn)" opcional seguido de " — ".
+#    Ancorada de propósito: sem isso, "T1 lixo aqui — ação..." (lixo antes do "—") ou
+#    "T1 sem formato" com os campos jogados numa continuação passavam batido, porque o
+#    PADRAO_CORPO_TASK abaixo é `search`, não `match` (achado do review pós-Task 3). O
+#    grupo capturado é a própria aresta `dep:` — nunca lida de item["texto"] (texto
+#    acumulado), onde "(dep: Tn)" citado na prosa de uma continuação não pode virar
+#    aresta (mesma regra do C9/R40 em check_cycle.py).
+# 2) PADRAO_CORPO_TASK busca os campos ("ação · arquivos: X · cobre: Rn · verificação:
+#    cmd") de forma tolerante sobre item["texto"] — é aqui que mora a tolerância a
+#    task quebrada em duas linhas.
+PADRAO_CABECA = re.compile(r"^(?:\(dep:\s*([^)]*)\))?\s*— ")
+PADRAO_CORPO_TASK = re.compile(r"— (.+?) · arquivos: .+? · cobre: .+? · verificação: .+$")
 LINHA_EPICO = re.compile(r"^Épico: \[delta-(\d+)\] (.+?) · Externo: (.+)$", re.M)
 # LINHA_TICKET casa (tid, externo) — consumidor: parse_tickets_md (idempotência de
 # gerar/exportar). LINHA_TICKET_DIFF casa (tid, status, externo) — consumidor:
@@ -71,21 +83,33 @@ def die(msg: str) -> None:
 # ---------------------------------------------------------------- funções puras
 
 
+LINHA_CHECKBOX = re.compile(r"^\s*-\s*\[[ xX]\]")
+
+
 def parse_tasks(texto: str) -> list:
-    """Tasks do tasks.md por âncora — linha malformada nomeia o número e vira ValueError."""
+    """Tasks do tasks.md via itens.py (R2) — cabeça ancorada + campos tolerantes a
+    multi-linha; item malformado em qualquer uma das duas nomeia a linha e vira ValueError.
+
+    Checagem extra antes de chamar itens.py: itens() filtra por prefixo ("T"), então uma
+    linha `- [ ] ...` sem ID Tn/CTn nunca vira item — sumiria da projeção em silêncio (sozinha)
+    ou seria absorvida como continuação da task anterior. Rejeita as duas pela mesma âncora
+    (ITEM, de itens.py) antes que isso aconteça.
+    """
+    for n, linha in enumerate(texto.splitlines(), 1):
+        if LINHA_CHECKBOX.match(linha) and not ITEM.match(linha):
+            raise ValueError(f"linha {n}: task malformada — {linha!r}")
     tarefas = []
-    for n, linha_txt in enumerate(texto.splitlines(), 1):
-        if not linha_txt.startswith("- ["):
-            continue  # comentário/cabeçalho: não é linha de task
-        m = PADRAO_TASK.match(linha_txt)
-        if not m:
-            raise ValueError(f"linha {n}: task malformada — {linha_txt!r}")
-        feito, tid, deps, acao = m.groups()
+    for item in itens(texto, "T"):
+        cabeca = PADRAO_CABECA.match(item["resto"])
+        corpo = PADRAO_CORPO_TASK.search(item["texto"])
+        if not cabeca or not corpo:
+            raise ValueError(f"linha {item['linha']}: task malformada — {item['texto']!r}")
+        dep_str = cabeca.group(1)
         tarefas.append({
-            "id": tid,
-            "feito": feito == "x",
-            "deps": [d.strip() for d in deps.split(",")] if deps else [],
-            "acao": acao.strip(),
+            "id": item["id"],
+            "feito": item["feito"],
+            "deps": [d.strip() for d in dep_str.split(",")] if dep_str else [],
+            "acao": corpo.group(1).strip(),
         })
     return tarefas
 
@@ -467,6 +491,60 @@ def selftest() -> None:
         assert False, "task malformada não foi rejeitada"
     except ValueError as e:
         assert "linha 6" in str(e), f"erro não nomeia a linha: {e}"
+
+    # checkbox sem ID nenhum (nem Tn nem CTn) não pode sumir em silêncio — itens() filtra
+    # por prefixo, então sem esta checagem a linha nunca vira item (achado do review)
+    sem_id = "- [ ] ação sem ID\n"
+    try:
+        parse_tasks(sem_id)
+        assert False, "checkbox sem ID devia ser rejeitado"
+    except ValueError as e:
+        assert "linha 1" in str(e), f"erro não nomeia a linha: {e}"
+
+    # checkbox sem ID logo após uma task válida não pode ser absorvido como continuação
+    valida_e_sem_id = (
+        "- [ ] T1 — ação · arquivos: a.py · cobre: R1 · verificação: x\n"
+        "- [ ] sem id\n"
+    )
+    try:
+        parse_tasks(valida_e_sem_id)
+        assert False, "checkbox sem ID após task válida devia ser rejeitado, não absorvido"
+    except ValueError as e:
+        assert "linha 2" in str(e), f"erro não nomeia a linha: {e}"
+
+    # task multi-linha: (dep: T1) colada ao ID na primeira linha, 'verificação:' na
+    # continuação — parse_tasks usa itens.py (R2), tickets.md tem que trazer os dois
+    tasks_multi = (
+        "- [ ] T1 — cria arquivo X · arquivos: a.py · cobre: R1 · verificação: pytest a\n"
+        "- [x] T2 (dep: T1) — ajusta Y · arquivos: b.py\n"
+        "      · cobre: R2 · verificação: pytest b\n"
+    )
+    tarefas_multi = parse_tasks(tasks_multi)
+    assert tarefas_multi[1]["deps"] == ["T1"], f"dep na primeira linha não capturada: {tarefas_multi}"
+    assert tarefas_multi[1]["acao"] == "ajusta Y", f"ação da task quebrada em duas linhas: {tarefas_multi}"
+    texto_multi = montar_tickets_md("999-fixture", "SBX", "999", "fixture", tarefas_multi)
+    assert "- T2 — ajusta Y · status: concluído · deps: T1 · Externo: —" in texto_multi, \
+        f"tickets.md não trouxe dep+ação da task multi-linha: {texto_multi}"
+
+    # cabeça malformada não pode passar batido só porque os campos aparecem em algum
+    # ponto do texto acumulado (regressão pega no review pós-Task 3: search() sem
+    # âncora na cabeça aceitava lixo antes do '—' e primeira linha fora de forma)
+    cabeca_com_lixo = "- [ ] T1 lixo aqui — ação · arquivos: a.py · cobre: R1 · verificação: x\n"
+    try:
+        parse_tasks(cabeca_com_lixo)
+        assert False, "lixo antes do '—' na cabeça devia ser rejeitado"
+    except ValueError as e:
+        assert "linha 1" in str(e), f"erro não nomeia a linha: {e}"
+
+    primeira_linha_sem_forma = (
+        "- [ ] T1 blah blah sem formato\n"
+        "      — ação real · arquivos: a.py · cobre: R1 · verificação: x\n"
+    )
+    try:
+        parse_tasks(primeira_linha_sem_forma)
+        assert False, "primeira linha fora de forma não pode ser salva pela continuação"
+    except ValueError as e:
+        assert "linha 1" in str(e), f"erro não nomeia a linha: {e}"
 
     # ler_projeto_jira: presente, desligado, ausente
     root, delta_dir = _montar_delta()

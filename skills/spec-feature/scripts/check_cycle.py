@@ -9,7 +9,8 @@ regra 6), o limiar de particionamento do TRUTH.md, a pendência roteada
 checks 3 e 5 do analyze (scope creep spec×plan, violação de regra canônica)
 continuam com o modelo — são juízo, não regex.
 
-  C1  aceite verificável — Rn com DADO/QUANDO/ENTÃO; RNFn com Métrica + Verificação
+  C1  aceite verificável — Rn com DADO/QUANDO/ENTÃO; RNFn com Métrica + Verificação;
+      heading '###' fora da forma canônica (delta-033)
   C2  cobertura spec ↔ tasks — órfãos nos dois sentidos; task sem verificação
   C3  estado × localização — delta 'aplicada' fora de _archive/ é trabalho inacabado
   C4  archive sem perda — requisito sumido do TRUTH.md sem MUDA/REMOVE que o declare
@@ -31,6 +32,8 @@ import re
 import subprocess
 import sys
 from pathlib import Path
+
+from itens import itens  # dono do formato de item (delta-033) — C2/C8/C9/C10 consomem daqui
 
 try:
     import yaml  # única dependência externa admitida nos gates (ADR-0023)
@@ -64,13 +67,18 @@ PERFIL_NUCLEO = (
 REQ_ID = r"R(?:NF|F)?-?\d+(?:\.\d+)*"
 
 CABECALHO = re.compile(rf"^###\s+({REQ_ID})\s*[—-]\s*(ADICIONA|MUDA|REMOVE)\b(.*)$")
+# Qualquer '###' — usado só para achar o heading que casa isto mas não CABECALHO (delta-033):
+# blocos() descarta esse heading em silêncio, e o requisito some do gate sem nenhum achado.
+HEADING_QUALQUER = re.compile(r"^###\s+(.*)$")
+# Seções que hospedam heading '###' de requisito (R1, delta-033): 'Mudanças' e a segunda
+# leva de RNFn, 'Requisitos não funcionais'. Fora delas, '### algo' é subtítulo comum
+# (ex.: '### Detalhamento' dentro de 'Dependências e riscos') — não é requisito perdido,
+# então HEADING_QUALQUER não se aplica lá. Tolerante a caixa e à falta do acento.
+SECAO_REQUISITO = re.compile(r"^##\s+(mudan[çc]as|requisitos n[ãa]o funcionais)\s*$", re.I)
 ALVO = re.compile(rf"\b({REQ_ID})\s*\((?:Δ\s*|delta-)\d+\)")  # aceita (ΔNNN) legado e (delta-NNN)
-TAREFA = re.compile(r"^\s*-\s*\[[ xX]\]\s*(T\d+)")
-CASO = re.compile(r"^\s*-\s*\[[ xX]\]\s*(CT\d+)")  # caso de teste do test-plan.md (delta-015)
 DEP = re.compile(r"\(dep:\s*([^)]*)\)")  # arestas de bloqueio do tasks.md (delta-016)
 SECAO_RISCOS = re.compile(r"^##\s+Depend[êe]ncias e riscos\s*$(.*?)(?=^##\s|\Z)", re.M | re.S)
 PENDENCIA_ABERTA = re.compile(r"^\s*-\s*\[ \]", re.M)
-TAREFA_ABERTA = re.compile(r"^\s*-\s*\[ \]\s*T\d+", re.M)  # task não concluída (C10, delta-016)
 # C12 (delta-026): trilha do clarify. Âncora de início de linha — a mesma sintaxe citada em
 # prosa é texto, não campo (lições de 2026-07-28 e 2026-08-01, três falsos positivos).
 CLARIFY = re.compile(r"^Clarify:\s*(entrevistado|auto-avaliado)\b", re.M)
@@ -83,7 +91,10 @@ def die(msg: str) -> None:
 
 
 def campo(texto: str, nome: str):
-    """Valor de 'nome: valor' até '·' ou fim de linha. None se ausente ou placeholder."""
+    """Valor de 'nome: valor' até '·' ou fim de `texto`. `texto` pode ser a junção de
+    várias linhas de um item (itens.py) — não é garantido ser uma única linha física;
+    reintroduzir `.splitlines()` aqui quebraria esse contrato (DT-001). None se ausente
+    ou placeholder."""
     m = re.search(rf"{nome}\s*:\s*([^·\n]*)", texto, re.IGNORECASE)
     if not m:
         return None
@@ -104,11 +115,13 @@ def cabecalho(spec_txt: str) -> str:
     return re.sub(r"<!--.*?-->", "", spec_txt, flags=re.S).split("\n## ", 1)[0]
 
 
-def cobre_alvos(linha: str, ids_spec: set, onde: str, cobertos: set, v: list, ignora: tuple = ()):
+def cobre_alvos(texto: str, ids_spec: set, onde: str, cobertos: set, v: list, ignora: tuple = ()):
     """Núcleo comum do C2 (tasks) e do C8 (test-plan): parseia 'cobre:', acumula os
-    alvos em `cobertos` e acusa referência morta (ALTO). Retorna o valor bruto de
-    'cobre:' (None se ausente) para o check de completude de cada chamador."""
-    cobre = campo(linha, "cobre")
+    alvos em `cobertos` e acusa referência morta (ALTO). `texto` é `item["texto"]`
+    (itens.py) — a junção de todas as linhas do item, não uma linha física isolada.
+    Retorna o valor bruto de 'cobre:' (None se ausente) para o check de completude
+    de cada chamador."""
+    cobre = campo(texto, "cobre")
     if not cobre:
         return None
     for alvo in re.split(r"[,/]", cobre):
@@ -141,7 +154,19 @@ def blocos(spec_txt: str) -> list[tuple[str, str, str, str]]:
     return out
 
 
-def c1_aceite(bs, v: list) -> None:
+def c1_aceite(spec_txt: str, bs, v: list) -> None:
+    em_secao_requisito = False
+    for n, line in enumerate(spec_txt.splitlines(), 1):
+        if line.startswith("## "):
+            em_secao_requisito = bool(SECAO_REQUISITO.match(line))
+            continue
+        if not em_secao_requisito:
+            continue  # '### algo' fora de 'Mudanças'/'Requisitos não funcionais' é subtítulo comum, não requisito perdido
+        m = HEADING_QUALQUER.match(line)
+        if m and not CABECALHO.match(line):
+            v.append(("ALTO", f"spec.md l.{n}", f"heading '### {m.group(1)}' fora da forma canônica",
+                      "usar '### Rn — ADICIONA|MUDA|REMOVE' (templates/delta-spec.md) — "
+                      "requisito fora da forma some do gate"))
     for rid, verbo, _, corpo in bs:
         if verbo == "REMOVE":
             continue  # REMOVE não precisa de cenário — está saindo
@@ -163,17 +188,14 @@ def c1_aceite(bs, v: list) -> None:
 def c2_cobertura(bs, tasks_txt: str, v: list) -> None:
     ids_spec = {rid for rid, _, _, _ in bs}
     cobertos: set[str] = set()
-    achou_task = False
-    for line in tasks_txt.splitlines():
-        m = TAREFA.match(line)
-        if not m:
-            continue
-        achou_task, tid = True, m.group(1)
-        if cobre_alvos(line, ids_spec, f"tasks.md {tid}", cobertos, v, ignora=("infra",)) is None:
+    tasks = itens(tasks_txt, "T")
+    for item in tasks:
+        tid, texto = item["id"], item["texto"]
+        if cobre_alvos(texto, ids_spec, f"tasks.md {tid}", cobertos, v, ignora=("infra",)) is None:
             v.append(("MÉDIO", f"tasks.md {tid}", "task sem 'cobre:'", "mapear a um Rn/RNFn ou declarar 'cobre: infra'"))
-        if not campo(line, r"verifica[çc][ãa]o"):
+        if not campo(texto, r"verifica[çc][ãa]o"):
             v.append(("ALTO", f"tasks.md {tid}", "task sem 'verificação:'", "declarar comando ou critério de pronto"))
-    if not achou_task:
+    if not tasks:
         v.append(("ALTO", "tasks.md", "nenhuma task encontrada", "gerar tasks.md a partir do template"))
         return
     for rid in sorted(ids_spec - cobertos):
@@ -301,13 +323,10 @@ def c8_testplan(delta: Path, bs, spec_txt: str, v: list) -> None:
         return
     ids_spec = {rid for rid, _, _, _ in bs}
     cobertos: set[str] = set()
-    for line in tp.read_text(encoding="utf-8").splitlines():
-        m = CASO.match(line)
-        if not m:
-            continue
-        cid = m.group(1)
-        cobre = cobre_alvos(line, ids_spec, f"test-plan.md {cid}", cobertos, v)
-        if not cobre or not campo(line, "tipo") or not campo(line, r"verifica[çc][ãa]o"):
+    for item in itens(tp.read_text(encoding="utf-8"), "CT"):
+        cid, texto = item["id"], item["texto"]
+        cobre = cobre_alvos(texto, ids_spec, f"test-plan.md {cid}", cobertos, v)
+        if not cobre or not campo(texto, "tipo") or not campo(texto, r"verifica[çc][ãa]o"):
             v.append(("MÉDIO", f"test-plan.md {cid}", "caso sem 'cobre:'/'tipo:'/'verificação:' completos", "cobre: Rn · tipo: auto|manual · verificação: comando ou passos"))
     for rid in sorted(ids_spec - cobertos):
         v.append(("ALTO", f"spec.md {rid}", "requisito sem caso no test-plan.md", f"adicionar caso com 'cobre: {rid}' (manual roteirizado conta)"))
@@ -318,16 +337,13 @@ def c9_grafo(tasks_txt: str, v: list) -> None:
     livre. Dep inexistente ou ciclo → ALTO. Arquivo sem nenhum `dep:` → cadeia linear
     implícita pela ordem (retrocompatível, R1)."""
     arestas: dict[str, list[str]] = {}
-    for line in tasks_txt.splitlines():
-        m = TAREFA.match(line)
-        if not m:
-            continue
-        resto = line[m.end():].lstrip()
-        if m.group(1) in arestas:
-            v.append(("ALTO", f"tasks.md {m.group(1)}", "ID de task duplicado no arquivo", "renumerar — ID duplicado engole aresta do grafo (C9)"))
+    for item in itens(tasks_txt, "T"):
+        tid, resto = item["id"], item["resto"]
+        if tid in arestas:
+            v.append(("ALTO", f"tasks.md {tid}", "ID de task duplicado no arquivo", "renumerar — ID duplicado engole aresta do grafo (C9)"))
             continue
         d = DEP.match(resto)  # só a aresta colada ao ID é aresta — "(dep: Tn)" em prosa não conta (achado do dogfood da delta-016)
-        arestas[m.group(1)] = [a.strip() for a in d.group(1).split(",") if a.strip()] if d else []
+        arestas[tid] = [a.strip() for a in d.group(1).split(",") if a.strip()] if d else []
     if not any(arestas.values()):
         return  # nenhum dep: no arquivo — cadeia linear implícita
     for tid, deps in arestas.items():
@@ -348,7 +364,7 @@ def c10_convergencia(root: Path, v: list) -> None:
     remanescente no tasks.md → ALTO. A auditoria semântica codebase×spec segue
     juízo humano do review (renúncia por design, ADR-0014)."""
     for p in sorted((root / "specs" / "_archive").glob("*/tasks.md")):
-        n = len(TAREFA_ABERTA.findall(p.read_text(encoding="utf-8")))
+        n = sum(1 for i in itens(p.read_text(encoding="utf-8"), "T") if not i["feito"])
         if n:
             v.append(("ALTO", str(p.relative_to(root)),
                       f"{n} task(s) '- [ ]' em delta arquivada",
@@ -443,7 +459,7 @@ def checar(root: Path, delta: Path) -> list:
         regressao = re.search(r"^##\s+Teste de regress[ãa]o\s*$(.*?)(?=^##\s|\Z)", spec_txt, re.M | re.S)
         if not regressao or not re.search(r"^\s*-\s*\S", regressao.group(1), re.M) or "{{" in regressao.group(1):
             v.append(("ALTO", "spec.md", "bugfix sem teste de regressão declarado", "apontar o teste que falha antes e passa depois do fix (delta-015)"))
-    c1_aceite(bs, v)
+    c1_aceite(spec_txt, bs, v)
     if not (bugfix and not tasks.is_file()):  # bugfix sem tasks.md é válido — tasks é sob demanda (delta-015)
         tasks_txt = tasks.read_text(encoding="utf-8") if tasks.is_file() else ""
         c2_cobertura(bs, tasks_txt, v)
@@ -546,6 +562,38 @@ Clarify: entrevistado (2026-01-01) — 2 decisões do usuário
     limpa_testplan_rf = limpa_testplan.replace("cobre: R1", "cobre: RF-01.1").replace("cobre: RNF1", "cobre: RNF-01")
     assert rodar(limpa_spec_rf, limpa_tasks_rf, limpa_testplan_rf) == [], "delta limpa em notação RF-NN deveria passar sem achados"
 
+    # heading '###' fora da forma canônica (delta-033): blocos() descarta esse heading em
+    # silêncio — sem este check, o requisito some do gate sem nenhum achado (o caso medido:
+    # '### R2 — Adiciona:' em minúsculo, veredito saía LIBERADO). A varredura é escopada às
+    # seções de requisito ('Mudanças' e 'Requisitos não funcionais') — review da Task 4.
+    spec_mudancas_invalida = limpa_spec.replace(
+        "### R1 — ADICIONA: login\n- DADO usuário anônimo QUANDO envia credencial válida ENTÃO recebe sessão\n",
+        "### R1 — ADICIONA: login\n- DADO usuário anônimo QUANDO envia credencial válida ENTÃO recebe sessão\n"
+        "### R2 — Adiciona: outra coisa\n- DADO a QUANDO b ENTÃO c\n")
+    heading_mudancas = [a for a in rodar(spec_mudancas_invalida, limpa_tasks, limpa_testplan) if "fora da forma canônica" in a[2]]
+    assert len(heading_mudancas) == 1 and heading_mudancas[0][1] == "spec.md l.8" and "R2 — Adiciona" in heading_mudancas[0][2], \
+        f"heading minúsculo em 'Mudanças' deveria virar 1 ALTO nomeando a linha e o texto: {heading_mudancas}"
+
+    spec_rnf_invalido = limpa_spec + "### RNF2 — Adiciona: outra coisa\n- Métrica: x\n- Verificação: y\n"
+    heading_rnf = [a for a in rodar(spec_rnf_invalido, limpa_tasks, limpa_testplan) if "fora da forma canônica" in a[2]]
+    assert len(heading_rnf) == 1 and heading_rnf[0][1] == "spec.md l.13" and "RNF2 — Adiciona" in heading_rnf[0][2], \
+        f"heading minúsculo em 'Requisitos não funcionais' deveria virar 1 ALTO (prova que a 2ª seção é varrida): {heading_rnf}"
+
+    spec_detalhamento = limpa_spec + "\n## Dependências e riscos\n### Detalhamento\nprosa qualquer\n"
+    achados_detalhamento = rodar(spec_detalhamento, limpa_tasks, limpa_testplan)
+    assert not any("fora da forma canônica" in a[2] for a in achados_detalhamento), \
+        f"'### Detalhamento' fora das seções de requisito não pode virar achado: {achados_detalhamento}"
+
+    assert rodar(limpa_spec, limpa_tasks, limpa_testplan) == [], \
+        "spec só com headings válidos não pode ganhar achado de heading (calibração 2026-08-07: 0/92 no corpus real)"
+
+    # caso preexistente: spec sem nenhum '###' continua acusando 'nenhum bloco' (não é
+    # engolido pela detecção nova de heading fora da forma)
+    sem_blocos = rodar("# delta-003 — x\nEstado: proposta · Data: 2026-01-01 · Branch: feat/003-x\n\n"
+                       "## Contexto\nprosa sem heading de requisito\n")
+    assert any("nenhum bloco" in q for _, _, q, _ in sem_blocos), f"spec sem headings deveria acusar 'nenhum bloco': {sem_blocos}"
+    assert not any("fora da forma canônica" in q for _, _, q, _ in sem_blocos), f"spec sem headings não inventa achado de heading: {sem_blocos}"
+
     achados = " · ".join(f"{o} {q}" for _, o, q, _ in rodar(suja_spec, suja_tasks))
     for esperado in (
         "spec.md R1 cenário de aceite sem DADO/QUANDO/ENTÃO",  # C1 Rn
@@ -636,6 +684,36 @@ Estado: arquivada · Data: 2026-01-01 · Branch: feat/001-x
         v10 = []
         c10_convergencia(root, v10)
         assert v10 == [], f"C10 falso positivo com tudo concluído: {v10}"
+
+    # item multi-linha (delta-033, DT-001): C2/C8/C9 consomem itens.py — task/caso quebrado
+    # em duas linhas não pode virar achado falso, e prosa/continuação não pode virar campo.
+    tasks_multi = "- [ ] T1 — form · arquivos: a.py · cobre: R1 · verificação: pytest\n" \
+                  "- [x] T2 (dep: T1) — cache · arquivos: b.py\n" \
+                  "      · cobre: RNF1 · verificação: k6\n"
+    achados_uma = rodar(limpa_spec, limpa_tasks.replace("- [ ] T2", "- [x] T2 (dep: T1)"), limpa_testplan)
+    achados_multi = rodar(limpa_spec, tasks_multi, limpa_testplan)
+    assert achados_uma == achados_multi, \
+        f"fixture gêmea: linha única {achados_uma} vs quebrada em duas {achados_multi}"
+
+    tasks_com_prosa = "- [ ] T1 — form · arquivos: a.py · cobre: R1\n" \
+                      "\n" \
+                      "Prosa solta depois da lista, contém verificação: pytest mas não é da task.\n"
+    achados_prosa = rodar(limpa_spec, tasks_com_prosa, limpa_testplan)
+    assert any(s == "ALTO" and o == "tasks.md T1" and "verificação" in q for s, o, q, _ in achados_prosa), \
+        f"prosa após linha em branco não pode virar 'verificação:' de T1: {achados_prosa}"
+
+    testplan_multi = "- [ ] CT1 — login ok · cobre: R1 · tipo: auto\n" \
+                     "      · verificação: pytest -k login\n" \
+                     "- [ ] CT2 — latência · cobre: RNF1 · tipo: manual · verificação: roteiro k6 em docs\n"
+    achados_tp_multi = rodar(limpa_spec, limpa_tasks, testplan_multi)
+    assert achados_tp_multi == [], f"CT quebrado em duas linhas deveria ser lido inteiro: {achados_tp_multi}"
+
+    tasks_dep_continuacao = "- [ ] T1 — form · arquivos: a.py · cobre: R1 · verificação: pytest\n" \
+                            "- [ ] T2 — cache · arquivos: b.py\n" \
+                            "      · cobre: RNF1 · verificação: k6 (dep: T1)\n"
+    v_dep_cont = rodar(limpa_spec, tasks_dep_continuacao, limpa_testplan)
+    assert not any("dep" in q for _, _, q, _ in v_dep_cont), \
+        f"(dep: T1) na continuação não é aresta — só conta colado ao ID (R40): {v_dep_cont}"
 
     # bugfix (delta-015): sem bloco Rn é válido; repro e teste de regressão são obrigatórios
     bugfix_ok = """# delta-002 — fix parse

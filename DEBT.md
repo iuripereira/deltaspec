@@ -34,16 +34,15 @@ Deles sai o **score `(J × Pr) / P`**, que ordena a fila e **nunca é gravado** 
 
 ## Registro
 
-### DT-001 · débito · aberto
+### DT-001 · débito · quitado
 **Parser do check_cycle acoplado ao formato dos templates**
 
 Parser do `check_cycle.py` acoplado ao formato dos templates: blocos `### Rn — VERBO` no `spec.md` **e task em linha única** no `tasks.md` (task quebrada em linhas gera falso ALTO "task sem verificação") — falha ruidosa, não silenciosa
 
-- **Fila:** `P3·J3·Pr9`
-- **Local:** [check_cycle.py](skills/spec-feature/scripts/check_cycle.py)
 - **Gatilho:** Template mudar de forma
 - **Origem:** [PR #2](../../pull/2); sofrido na [delta-004](specs/_archive/004-exclude-portavel/) · aberto em 2026-07-18
 - **Ticket:** [#88](../../issues/88)
+- **Encerrado:** 2026-08-07, delta-033 — a reprodução achou **dois** modos de falha, não um descrito na prosa acima: (i) task quebrada em 2 linhas produzia 3 achados falsos (2 ALTO + 1 MÉDIO, exit 1); (ii) modo silencioso não registrado — requisito com heading fora da forma (`### R2 — Adiciona:`) sumia do gate inteiro e o veredito saía LIBERADO. Correção: [itens.py](skills/spec-feature/scripts/itens.py) vira dono único do formato de item, consumido pelo `check_cycle.py` (C2/C8/C9/C10) e pelo `tickets.py`, com continuação de linha tolerada; o C1 passa a acusar heading órfão, escopado às seções de requisito. Calibração medida em 2026-08-07 contra o próprio repo: 92 headings em 32 deltas arquivadas com 0 fora da forma, e 40 artefatos de tasks/test-plan com 0 multi-linha — falso positivo e regressão medidos em zero
 
 ### DT-002 · débito · quitado
 Limiar de PR com 4 espelhos sancionados no `deps.toml`, acima do teto de 2–3 da própria skill — baseline consciente do estado atual

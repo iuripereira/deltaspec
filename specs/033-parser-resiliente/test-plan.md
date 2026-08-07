@@ -1,0 +1,10 @@
+# Test plan — delta-033
+<!-- derivado dos cenários DADO/QUANDO/ENTÃO da spec e das verificações do tasks.md -->
+- [ ] CT1 — task quebrada em duas linhas produz **os mesmos achados** que a versão em linha única (hoje produz 3 falsos: 2 ALTO + 1 MÉDIO) · cobre: R1 · tipo: auto · verificação: selftest do check_cycle.py (fixture gêmea multi-linha vs linha única)
+- [ ] CT2 — caso do `test-plan.md` (CT) quebrado em duas linhas é lido inteiro pelo C8 · cobre: R1 · tipo: auto · verificação: selftest do check_cycle.py (caso CT multi-linha)
+- [ ] CT3 — prosa depois da lista, separada por linha em branco, não entra em nenhum item (sem falso `verificação:`) · cobre: R1 · tipo: auto · verificação: selftest do itens.py + do check_cycle.py
+- [ ] CT4 — heading `###` fora da forma canônica gera ALTO nomeando linha e texto; spec só com headings válidos não gera achado novo · cobre: R1 · tipo: auto · verificação: python3 skills/spec-feature/scripts/check_cycle.py --selftest
+- [ ] CT5 — `(dep: Tn)` continua valendo só colado ao ID: dep escrita na prosa da task (ou na continuação) não vira aresta do C9 · cobre: R1 · tipo: auto · verificação: selftest do check_cycle.py (caso de dep em prosa)
+- [ ] CT6 — a âncora de item existe em um arquivo só: nenhum outro script do framework reimplementa `- [ ] T\d+` · cobre: R2 · tipo: manual · verificação: `grep -rlF '(?:T|CT)\d+' skills/*/scripts/*.py` retorna apenas `itens.py`
+- [ ] CT7 — `tickets.py` enxerga os mesmos campos do gate, incluindo a dep de task multi-linha, e o `tickets.md` gerado não muda para entrada de linha única · cobre: R2 · tipo: auto · verificação: python3 skills/spec-feature/scripts/tickets.py --selftest
+- [ ] CT8 — retrocompatibilidade: as 32 deltas arquivadas mantêm o mesmo veredito de antes da delta (0 item multi-linha e 0 heading fora da forma, medidos em 2026-08-07) · cobre: R1, R2 · tipo: manual · verificação: `for d in specs/_archive/*/; do python3 skills/spec-feature/scripts/check_cycle.py $d; done` comparado ao veredito registrado em cada analyze.md
