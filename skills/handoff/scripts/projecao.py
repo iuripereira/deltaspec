@@ -21,6 +21,11 @@ TIPO_ITEM = "Task"
 TIPO_EPICO = "Epic"
 
 
+def nome_var(id_: str) -> str:
+    """Nome de variável bash válido a partir de um id (ex.: 'DT-001' -> 'DT_001')."""
+    return re.sub(r"[^0-9A-Za-z_]", "_", id_)
+
+
 def alvo_local(item: dict) -> str:
     """Caminho do artefato apontado em 'Local' (primeiro link, sem âncora)."""
     achados = LINK_MD.findall(item.get("local", ""))
@@ -105,7 +110,7 @@ def emitir_sh_acli(itens: list, projeto: str, saida: Path, epico: str | None = N
                    f"--type {TIPO_ITEM} --summary {shlex.quote(i['title'])}{rotulos}"
                    f"{pai} --description-file {shlex.quote(str(corpo))} --json")
         if capturar_chaves:
-            var = f"{i['id']}_KEY"
+            var = f"{nome_var(i['id'])}_KEY"
             linhas.append(f"{var}=$({comando} "
                           "| python3 -c 'import json,sys; print(json.load(sys.stdin)[\"key\"])')")
             linhas.append(f'echo "{i["id"]}: ${var}"')
@@ -139,9 +144,9 @@ def selftest():
         # sem quebrar o modo default (capturar_chaves=False testado acima).
         sh3 = emitir_sh_acli(itens, "SBX", saida, capturar_chaves=True)
         t3 = sh3.read_text(encoding="utf-8")
-        assert "DT-001_KEY=$(acli jira workitem create" in t3
-        assert "DT-002_KEY=$(acli jira workitem create" in t3
-        assert t3.count("_KEY=$(") == 2 and 'echo "DT-001: $DT-001_KEY"' in t3
+        assert "DT_001_KEY=$(acli jira workitem create" in t3
+        assert "DT_002_KEY=$(acli jira workitem create" in t3
+        assert t3.count("_KEY=$(") == 2 and 'echo "DT-001: $DT_001_KEY"' in t3
         assert "create-bulk" not in t3
         # (f) epico_existente (correção pós-review, delta-017): reexportar não recria o
         # épico — EPICO vira atribuição literal, sem `--type Epic`, filhas com --parent.

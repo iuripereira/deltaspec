@@ -36,7 +36,7 @@ except ModuleNotFoundError:
 # skills/<nome>/scripts/ é estável tanto no repo quanto no cache do plugin instalado,
 # por isso o caminho é relativo ao próprio arquivo, nunca absoluto de máquina.
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "handoff" / "scripts"))
-from projecao import emitir_sh_acli  # noqa: E402 — import após o path-fix acima, ordem exigida
+from projecao import emitir_sh_acli, nome_var  # noqa: E402 — import após o path-fix acima, ordem exigida
 
 TRACO = "—"
 STATUS_ABERTO = "aberto"
@@ -260,10 +260,10 @@ def montar_links_bloqueio(pendentes: list, externos: dict) -> list:
     ids_pendentes = {t["id"] for t in pendentes}
     linhas = []
     for t in pendentes:
-        destino = f'"${t["id"]}_KEY"'
+        destino = f'"${nome_var(t["id"])}_KEY"'
         for dep in t["deps"]:
             if dep in ids_pendentes:
-                origem = f'"${dep}_KEY"'
+                origem = f'"${nome_var(dep)}_KEY"'
             elif externos.get(dep):
                 origem = f'"{externos[dep]}"'
             else:
