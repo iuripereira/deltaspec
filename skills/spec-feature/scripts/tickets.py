@@ -163,23 +163,41 @@ def _aviso_sem_jira(acao: str) -> None:
     print(f"motores.jira ausente ou sem projeto no doc-profile.yaml — {acao} (RNF2).")
 
 
-def cmd_gerar(delta_dir: Path) -> int:
+class _SemProjeto(Exception):
+    """Sinaliza degradação RNF2 (motores.jira ausente/desligado) — o chamador decide o aviso."""
+
+
+def _carregar_contexto(delta_dir: Path) -> tuple:
+    """Contexto comum a `gerar`/`exportar`: projeto, tarefas, NNN/nome da delta e o que já
+    foi exportado (épico e filhas), lido do `tickets.md` quando ele existe.
+
+    Levanta `_SemProjeto` na degradação RNF2 e `ValueError` (de `parse_tasks`) quando o
+    `tasks.md` tem linha malformada — cada subcomando decide o próprio código de saída.
+    """
     root = delta_dir.resolve().parent.parent
     projeto = ler_projeto_jira(root)
     if not projeto:
-        _aviso_sem_jira("tickets.md não gerado")
-        return 0
-    try:
-        tarefas = parse_tasks((delta_dir / "tasks.md").read_text(encoding="utf-8"))
-    except ValueError as e:
-        print(f"ERRO: {e}")
-        return 1
+        raise _SemProjeto
+    tarefas = parse_tasks((delta_dir / "tasks.md").read_text(encoding="utf-8"))
     nnn, nome = partir_delta(delta_dir.name)
     caminho = delta_dir / "tickets.md"
     epico_externo, itens_externo = None, {}
     if caminho.is_file():
         existentes = parse_tickets_md(caminho.read_text(encoding="utf-8"))
         epico_externo, itens_externo = existentes["epico"], existentes["itens"]
+    return projeto, tarefas, nnn, nome, epico_externo, itens_externo
+
+
+def cmd_gerar(delta_dir: Path) -> int:
+    try:
+        projeto, tarefas, nnn, nome, epico_externo, itens_externo = _carregar_contexto(delta_dir)
+    except _SemProjeto:
+        _aviso_sem_jira("tickets.md não gerado")
+        return 0
+    except ValueError as e:
+        print(f"ERRO: {e}")
+        return 1
+    caminho = delta_dir / "tickets.md"
     texto = montar_tickets_md(delta_dir.name, projeto, nnn, nome, tarefas, epico_externo, itens_externo)
     caminho.write_text(texto, encoding="utf-8")
     print(f"tickets.md gerado em {caminho} · {len(tarefas)} task(s)")
@@ -187,22 +205,14 @@ def cmd_gerar(delta_dir: Path) -> int:
 
 
 def cmd_exportar(delta_dir: Path, saida: Path) -> int:
-    root = delta_dir.resolve().parent.parent
-    projeto = ler_projeto_jira(root)
-    if not projeto:
+    try:
+        projeto, tarefas, nnn, nome, epico_externo, externos = _carregar_contexto(delta_dir)
+    except _SemProjeto:
         _aviso_sem_jira("ida ao Jira não emitida")
         return 0
-    try:
-        tarefas = parse_tasks((delta_dir / "tasks.md").read_text(encoding="utf-8"))
     except ValueError as e:
         print(f"ERRO: {e}")
         return 1
-    nnn, nome = partir_delta(delta_dir.name)
-    caminho_tickets = delta_dir / "tickets.md"
-    epico_externo, externos = None, {}
-    if caminho_tickets.is_file():
-        existentes = parse_tickets_md(caminho_tickets.read_text(encoding="utf-8"))
-        epico_externo, externos = existentes["epico"], existentes["itens"]
     pendentes = [t for t in tarefas if t["id"] not in externos]
     itens = [{"id": t["id"], "title": f"{t['id']} — {t['acao']}",
               "body": corpo_ticket_tarefa(t, nnn, nome), "labels": [f"delta:{nnn}"]}
