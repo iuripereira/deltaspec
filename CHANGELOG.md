@@ -8,13 +8,20 @@ O formato segue [Keep a Changelog 1.0.0](https://keepachangelog.com/pt-BR/1.0.0/
 
 ## [Não lançado]
 
+### Adicionado
+
+- **`tickets.md` por delta como projeção canônica das tasks para o Jira** (delta-017, R1): projeto cujo `doc-profile.yaml` declara `motores: jira: {projeto: CHAVE}` ganha, ao fim da fase tasks, `specs/NNN-nome/tickets.md` — 1 épico `[delta-NNN] nome` + 1 ticket por task, arestas `dep:` do `tasks.md` preservadas como links de bloqueio (`acli jira workitem link create --out --in --type Blocks`), sem o script acessar a rede em nenhum momento (quem executa os comandos é a skill). `skills/spec-feature/scripts/tickets.py` novo reúne `gerar`/`exportar`/`diff`; a volta Jira→repo é sempre diff aprovado, nunca sync automático (R3). Projeto sem `motores.jira` → a projeção se omite com no máximo 1 linha de aviso (RNF2); o `C11` do `check_cycle.py` passa a validar a chave (ligada sem `projeto` → ALTO) e o template do `doc-profile.yaml` ganha a entrada comentada. Contrato descrito em [cycle.md](skills/spec-feature/references/cycle.md).
+
 ### Corrigido
 
 - **`diagram-design` entra no caminho de instalação** ([DT-019](DEBT.md) quitado): o motor da camada de apresentação estava contratado desde a delta-020/ADR-0018 mas fora do `instala-motores.sh` e do README §2.2 — quem seguia o quickstart ficava sem ele, em silêncio. Gatilho disparou com a primeira adoção real (delta-001 do imex/travel-planner, ADR-0036 de lá). O instalador registra o marketplace `cathrynlavery/diagram-design` de forma idempotente e instala o plugin; o diagrama e o texto dos motores nos dois READMEs ganham o nó `diagram-design`.
+- **Dialeto Jira do `debito.py` vira `.sh` de creates unitários** (delta-017, MUDA R52 — [DT-021](DEBT.md)): a primeira execução real contra projeto Jira de verdade (2026-08-07, site `veredas.atlassian.net`) confirmou o risco previsto — o `create-bulk` rejeita `\n` na `description`, até quebra simples de linha, então o dialeto emitido não carregava o corpo dos itens. `exportar --projeto CHAVE` passa a emitir `tickets-acli.sh` (um `acli jira workitem create` por item, corpo em `corpo-DT-NNN.md`, mesmo padrão do `tickets-gh.sh`) em vez do lote; `tickets-acli.json` deixa de existir. A emissão do dialeto (corpo, etiquetas, `.sh`) saiu do `debito.py` para o módulo comum `skills/handoff/scripts/projecao.py`, reusado pelo `tickets.py` novo (R1).
+- **Sintaxe do link de bloqueio do `tickets.py` corrigida contra o acli real** (delta-017, T7 — [DT-021](DEBT.md)): `montar_links_bloqueio` emitia `acli jira workitem link --source X --target Y --type Blocks`, um comando que não existe no `acli` v1.3.22 — a subcomando é `link create`, e as flags são `--out`/`--in` (não `--source`/`--target`), com `--yes` para não interromper a execução não interativa. Achado e corrigido na validação real contra o `SBX`; sem o fix o `.sh` gerado falhava na primeira aresta `dep:`.
 
 ### Mudado
 
 - **Release passa a exigir revisão do processo e do README** (regra nova na tríade de release do `CLAUDE.md`, pedida pelo Iuri): o change que corta a tag confere se `README.md`/`README.en.md` ainda descrevem o processo real. A primeira aplicação da regra achou 4 defasagens nos dois READMEs: versão cravada em `v1.3.0` (7 releases atrás — substituída por link para a página de tags, que é a fonte), dois `### 2.3` na numeração, "(10 checagens)" com o gate já em C1–C12, e `/plugin update deltaspec` sem o `@deltaspec` que o Claude Code exige.
+- **Pin do `max@max4c-skills` re-verificado e mantido** (delta-017 — [ADR-0024](docs/adrs/ADR-0024-pin-do-max-reavaliado-fork-mantido.md)): a reavaliação prevista pela ADR-0012 (gatilho: a delta-017) constatou que a API contratada (0.8.0) segue intacta, e que o `to-tickets` upstream serve o ecossistema Dahso (`dahso:go`), não uma projeção Jira/GitHub — o consumidor que justificaria migrar não se materializou. Fork mantido; gatilho novo registrado no [adapters.md](skills/spec-feature/references/adapters.md): breaking do plugin distribuído ou o upstream ganhar projeção de tickets para Jira/GitHub.
 
 ## [1.10.1] - 2026-08-04
 

@@ -41,6 +41,14 @@ Documentação **cliente** é isenta da economia de tokens (exceção registrada
 
 **Prosa de regras e processos** (spec, PRD, entregável): siga [references/prosa.md](prosa.md) — uma regra por frase, DEVE/NÃO DEVE/PODE, regra combinatória vira tabela de decisão, fluxo > 3 passos vira diagrama + passos numerados. O checklist do guia roda antes de congelar qualquer baseline.
 
+## Projeção Jira (doc-profile — `motores.jira`, delta-017)
+
+Ao fim da fase **tasks**, leia `motores: jira: {projeto: CHAVE}` no `doc-profile.yaml` (mesmo padrão do graphify — decisão registrada por projeto). **Presente** → rode `python3 ${CLAUDE_PLUGIN_ROOT}/skills/spec-feature/scripts/tickets.py gerar specs/NNN-nome` (nasce `tickets.md`: 1 épico + 1 ticket por task, arestas `dep:` como links de bloqueio) e `python3 ${CLAUDE_PLUGIN_ROOT}/skills/spec-feature/scripts/tickets.py exportar specs/NNN-nome --saida DIR` (`.sh` de creates unitários, dialeto em [debito.md](../../handoff/references/debito.md)). **A skill executa o `.sh`** — o script nunca acessa a rede — e grava as chaves devolvidas na coluna `Externo` do `tickets.md`: é ela, e não o título, que garante idempotência. **Ausente** → a projeção se omite com no máximo 1 linha de aviso (RNF2); o `tasks.md` segue valendo sozinho.
+
+**Escada de automação da ida (cenário 3 do R1):** `acli` disponível e autenticado → a skill roda o `.sh` emitido. Sem ele → tenta o Rovo MCP (`/v1/mcp`) se o conector estiver autenticado no harness. Sem os dois → REST da Atlassian se houver credencial. Sem nenhum → os arquivos emitidos (`tickets.md` + `.sh` + corpos) ficam como entregável, e a skill avisa em 1 linha qual degrau faltou (RNF2) — a degradação nunca é silenciosa. Degraus 2 e 3 nascem não exercitados (risco registrado na spec, delta-017).
+
+**Volta:** `python3 ${CLAUDE_PLUGIN_ROOT}/skills/spec-feature/scripts/tickets.py diff specs/NNN-nome --externo jira.json`, com `jira.json` colhido por `acli jira workitem search --jql "project=CHAVE AND labels=delta:NNN" --json`. Emite a tabela *tickets.md diz × Jira diz × impacto × ação proposta* (formato do R27) — sempre **proposta + aprovação humana**, nunca escrita automática. Detalhe de flags e subcomandos: `--help` do script.
+
 ## PR da delta — split condicional (delta-003)
 
 O limiar de tamanho de PR (dono: regra canônica do git-workflow, no projeto-init) vale para o PR da delta — **e os artefatos do ciclo contam**. O **C7** do `check_cycle.py` mede isso no analyze e reporta BAIXO quando os artefatos passam do limiar (sem git ou sem merge-base o C7 se omite; nesse caso meça à mão):
