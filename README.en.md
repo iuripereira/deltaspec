@@ -339,7 +339,14 @@ Every script carries its own test:
 ```bash
 python3 skills/spec-feature/scripts/check_cycle.py --selftest
 python3 skills/guarding-doc-integrity/scripts/validate_integrity.py --selftest
+python3 skills/spec-feature/scripts/itens.py --selftest
+python3 skills/spec-feature/scripts/tickets.py --selftest
+python3 skills/handoff/scripts/debito.py --selftest
+python3 skills/handoff/scripts/md_para_adf.py --selftest
+python3 skills/handoff/scripts/projecao.py
 ```
+
+The `ci` job runs all of them — a new script missing from here and from the workflow ships with no safety net.
 
 ---
 

@@ -338,7 +338,14 @@ Cada script carrega o próprio teste:
 ```bash
 python3 skills/spec-feature/scripts/check_cycle.py --selftest
 python3 skills/guarding-doc-integrity/scripts/validate_integrity.py --selftest
+python3 skills/spec-feature/scripts/itens.py --selftest
+python3 skills/spec-feature/scripts/tickets.py --selftest
+python3 skills/handoff/scripts/debito.py --selftest
+python3 skills/handoff/scripts/md_para_adf.py --selftest
+python3 skills/handoff/scripts/projecao.py
 ```
+
+O job `ci` roda todos eles — script novo sem entrada aqui e no workflow nasce sem rede.
 
 ---
 
