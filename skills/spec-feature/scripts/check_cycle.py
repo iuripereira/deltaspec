@@ -70,6 +70,11 @@ CABECALHO = re.compile(rf"^###\s+({REQ_ID})\s*[—-]\s*(ADICIONA|MUDA|REMOVE)\b(
 # Qualquer '###' — usado só para achar o heading que casa isto mas não CABECALHO (delta-033):
 # blocos() descarta esse heading em silêncio, e o requisito some do gate sem nenhum achado.
 HEADING_QUALQUER = re.compile(r"^###\s+(.*)$")
+# Seções que hospedam heading '###' de requisito (R1, delta-033): 'Mudanças' e a segunda
+# leva de RNFn, 'Requisitos não funcionais'. Fora delas, '### algo' é subtítulo comum
+# (ex.: '### Detalhamento' dentro de 'Dependências e riscos') — não é requisito perdido,
+# então HEADING_QUALQUER não se aplica lá. Tolerante a caixa e à falta do acento.
+SECAO_REQUISITO = re.compile(r"^##\s+(mudan[çc]as|requisitos n[ãa]o funcionais)\s*$", re.I)
 ALVO = re.compile(rf"\b({REQ_ID})\s*\((?:Δ\s*|delta-)\d+\)")  # aceita (ΔNNN) legado e (delta-NNN)
 DEP = re.compile(r"\(dep:\s*([^)]*)\)")  # arestas de bloqueio do tasks.md (delta-016)
 SECAO_RISCOS = re.compile(r"^##\s+Depend[êe]ncias e riscos\s*$(.*?)(?=^##\s|\Z)", re.M | re.S)
@@ -150,7 +155,13 @@ def blocos(spec_txt: str) -> list[tuple[str, str, str, str]]:
 
 
 def c1_aceite(spec_txt: str, bs, v: list) -> None:
+    em_secao_requisito = False
     for n, line in enumerate(spec_txt.splitlines(), 1):
+        if line.startswith("## "):
+            em_secao_requisito = bool(SECAO_REQUISITO.match(line))
+            continue
+        if not em_secao_requisito:
+            continue  # '### algo' fora de 'Mudanças'/'Requisitos não funcionais' é subtítulo comum, não requisito perdido
         m = HEADING_QUALQUER.match(line)
         if m and not CABECALHO.match(line):
             v.append(("ALTO", f"spec.md l.{n}", f"heading '### {m.group(1)}' fora da forma canônica",
@@ -553,13 +564,26 @@ Clarify: entrevistado (2026-01-01) — 2 decisões do usuário
 
     # heading '###' fora da forma canônica (delta-033): blocos() descarta esse heading em
     # silêncio — sem este check, o requisito some do gate sem nenhum achado (o caso medido:
-    # '### R2 — Adiciona:' em minúsculo, veredito saía LIBERADO).
-    heading_invalido_spec = limpa_spec + "### R2 — Adiciona: outra coisa\n- DADO a QUANDO b ENTÃO c\n"
-    achados_heading = [a for a in rodar(heading_invalido_spec, limpa_tasks, limpa_testplan) if "fora da forma canônica" in a[2]]
-    assert len(achados_heading) == 1, f"heading com verbo minúsculo deveria virar exatamente 1 ALTO: {achados_heading}"
-    sev, onde, o_que, _ = achados_heading[0]
-    assert sev == "ALTO" and onde == "spec.md l.13" and "R2 — Adiciona" in o_que, \
-        f"achado de heading precisa nomear a linha exata e o texto do heading: {achados_heading[0]}"
+    # '### R2 — Adiciona:' em minúsculo, veredito saía LIBERADO). A varredura é escopada às
+    # seções de requisito ('Mudanças' e 'Requisitos não funcionais') — review da Task 4.
+    spec_mudancas_invalida = limpa_spec.replace(
+        "### R1 — ADICIONA: login\n- DADO usuário anônimo QUANDO envia credencial válida ENTÃO recebe sessão\n",
+        "### R1 — ADICIONA: login\n- DADO usuário anônimo QUANDO envia credencial válida ENTÃO recebe sessão\n"
+        "### R2 — Adiciona: outra coisa\n- DADO a QUANDO b ENTÃO c\n")
+    heading_mudancas = [a for a in rodar(spec_mudancas_invalida, limpa_tasks, limpa_testplan) if "fora da forma canônica" in a[2]]
+    assert len(heading_mudancas) == 1 and heading_mudancas[0][1] == "spec.md l.8" and "R2 — Adiciona" in heading_mudancas[0][2], \
+        f"heading minúsculo em 'Mudanças' deveria virar 1 ALTO nomeando a linha e o texto: {heading_mudancas}"
+
+    spec_rnf_invalido = limpa_spec + "### RNF2 — Adiciona: outra coisa\n- Métrica: x\n- Verificação: y\n"
+    heading_rnf = [a for a in rodar(spec_rnf_invalido, limpa_tasks, limpa_testplan) if "fora da forma canônica" in a[2]]
+    assert len(heading_rnf) == 1 and heading_rnf[0][1] == "spec.md l.13" and "RNF2 — Adiciona" in heading_rnf[0][2], \
+        f"heading minúsculo em 'Requisitos não funcionais' deveria virar 1 ALTO (prova que a 2ª seção é varrida): {heading_rnf}"
+
+    spec_detalhamento = limpa_spec + "\n## Dependências e riscos\n### Detalhamento\nprosa qualquer\n"
+    achados_detalhamento = rodar(spec_detalhamento, limpa_tasks, limpa_testplan)
+    assert not any("fora da forma canônica" in a[2] for a in achados_detalhamento), \
+        f"'### Detalhamento' fora das seções de requisito não pode virar achado: {achados_detalhamento}"
+
     assert rodar(limpa_spec, limpa_tasks, limpa_testplan) == [], \
         "spec só com headings válidos não pode ganhar achado de heading (calibração 2026-08-07: 0/92 no corpus real)"
 
