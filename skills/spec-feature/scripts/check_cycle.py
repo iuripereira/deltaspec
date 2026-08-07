@@ -401,6 +401,12 @@ def c11_perfil(root: Path, v: list) -> None:
     if mot.get("graphify") and not str(mot.get("graphify_backend") or "").strip():
         v.append(("ALTO", "doc-profile.yaml", "motores.graphify ligado sem motores.graphify_backend",
                   "declarar o backend, ou pare e pergunte ao usuário (R44, ADR-0022)"))
+    jira = mot.get("jira")
+    if jira not in (None, False):  # ligado: true ou dict (mesmo vazio) — ausente/false é desligado
+        projeto = jira.get("projeto") if isinstance(jira, dict) else None
+        if not str(projeto or "").strip():
+            v.append(("ALTO", "doc-profile.yaml", "motores.jira ligado sem motores.jira.projeto",
+                      "declarar a chave do projeto Jira (delta-017), ou desligar o motor"))
 
 
 def c12_clarify(spec_txt: str, v: list) -> None:
@@ -694,6 +700,11 @@ def selftest_c11() -> None:
         (nucleo + "motores: { graphify: true, graphify_backend: claude-cli }\n", 0,
          "graphify ligado com backend declarado é válido"),
         (nucleo + "motores: { graphify: false }\n", 0, "graphify desligado dispensa o backend"),
+        (nucleo + "motores: { jira: { projeto: SBX } }\n", 0, "jira ligado com projeto declarado é válido"),
+        (nucleo + "motores: { jira: {} }\n", 1, "jira ligado sem projeto (dict vazio) acusa ALTO"),
+        (nucleo + "motores: { jira: true }\n", 1, "jira ligado como booleano acusa ALTO"),
+        (nucleo + "motores: { jira: false }\n", 0, "jira desligado dispensa o projeto"),
+        (nucleo, 0, "sem chave jira não acusa nada (já coberto pelo caso de núcleo íntegro)"),
         ("isto: : não é yaml\n", 1, "YAML inválido acusa ALTO, sem exceção"),
         ("- isto é uma lista, não um mapa\n", 1, "raiz que não é mapa acusa ALTO"),
     ]
