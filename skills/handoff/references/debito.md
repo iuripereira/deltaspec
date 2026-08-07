@@ -90,7 +90,7 @@ Item com juros ao menos médios cuja linha não muda há mais que o limiar (`STA
 
 O `DEBT.md` é a fonte; GitHub Issues e Jira são **projeção para gestão humana**. Quem executa os comandos é a skill — o script apenas emite arquivos e **nunca acessa a rede** (mesmo padrão do `projeto-infra`, roteiro sem script instalável).
 
-**Ida (mecânica).** `debito.py exportar` produz o JSON canônico e os dois dialetos: bulk do Jira (`acli jira workitem create-bulk --from-json`) e as linhas de criação do GitHub. Revise o corpo antes de executar — o conteúdo vai para uma ferramenta que pode ser pública. Criado o ticket, **grave a chave na coluna `Externo`**: é ela, e não o título, que evita duplicata na próxima execução.
+**Ida (mecânica).** `debito.py exportar` produz o JSON canônico (`tickets.json`) e os dois dialetos: `.sh` de `acli jira workitem create` **unitários** (`tickets-acli.sh` — um create por item, corpo em `corpo-DT-NNN.md`, mesmo padrão do `tickets-gh.sh`) e as linhas de criação do GitHub. O dialeto Jira era um lote `create-bulk` até a primeira execução real contra projeto Jira de verdade (DT-021, 2026-08-07): o `create-bulk` rejeita `\n` na `description` — até quebra simples de linha — então o lote saiu e o unitário, que preserva o corpo multi-linha, entrou. Revise o corpo antes de executar — o conteúdo vai para uma ferramenta que pode ser pública. Criado o ticket, **grave a chave na coluna `Externo`**: é ela, e não o título, que evita duplicata na próxima execução.
 
 **Volta (sempre avaliada).** Colete o estado e rode `debito.py diff`:
 
