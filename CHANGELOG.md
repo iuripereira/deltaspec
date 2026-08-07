@@ -8,6 +8,10 @@ O formato segue [Keep a Changelog 1.0.0](https://keepachangelog.com/pt-BR/1.0.0/
 
 ## [Não lançado]
 
+### Corrigido
+
+- **Parser do `check_cycle.py` tolera item multi-linha e acusa heading órfão em vez de perder o requisito** (delta-033 — [DT-001](DEBT.md) quitado): a reprodução de 2026-08-07 mediu dois modos de falha, não um — task quebrada em 2 linhas produzia 3 achados falsos (2 ALTO + 1 MÉDIO, exit 1), e requisito com heading fora da forma canônica (`### R2 — Adiciona:`) sumia do gate inteiro em silêncio, com veredito LIBERADO. `itens.py` novo vira dono único do formato de item, consumido pelo `check_cycle.py` (C2/C8/C9/C10) e pelo `tickets.py` — continuação de linha tolerada, `(dep: Tn)` só vale colado ao ID (R40); o C1 passa a acusar heading fora da forma como ALTO, escopado às seções de requisito. Calibração contra o próprio repo: 92 headings em 32 deltas arquivadas com 0 fora da forma, 40 artefatos de tasks/test-plan com 0 multi-linha — falso positivo e regressão medidos em zero.
+
 ## [1.11.0] - 2026-08-07
 
 ### Adicionado
