@@ -45,13 +45,20 @@ STATUS_ABERTO = "aberto"
 STATUS_CONCLUIDO = "concluído"
 
 # Item ('- [ ] T1 ...', checkbox/id/continuação) vem de itens.py — dono único do formato
-# (R2, delta-033). Aqui só valida os campos do corpo: "ação · arquivos: X · cobre: Rn ·
-# verificação: cmd", já com a continuação embutida em item["texto"] (itens.py).
+# (R2, delta-033). Daqui pra frente são duas checagens, não uma:
+# 1) PADRAO_CABECA valida a CABEÇA de forma ancorada sobre item["resto"] (o que vem
+#    logo após o ID, só a primeira linha) — "(dep: Tn)" opcional seguido de " — ".
+#    Ancorada de propósito: sem isso, "T1 lixo aqui — ação..." (lixo antes do "—") ou
+#    "T1 sem formato" com os campos jogados numa continuação passavam batido, porque o
+#    PADRAO_CORPO_TASK abaixo é `search`, não `match` (achado do review pós-Task 3). O
+#    grupo capturado é a própria aresta `dep:` — nunca lida de item["texto"] (texto
+#    acumulado), onde "(dep: Tn)" citado na prosa de uma continuação não pode virar
+#    aresta (mesma regra do C9/R40 em check_cycle.py).
+# 2) PADRAO_CORPO_TASK busca os campos ("ação · arquivos: X · cobre: Rn · verificação:
+#    cmd") de forma tolerante sobre item["texto"] — é aqui que mora a tolerância a
+#    task quebrada em duas linhas.
+PADRAO_CABECA = re.compile(r"^(?:\(dep:\s*([^)]*)\))?\s*— ")
 PADRAO_CORPO_TASK = re.compile(r"— (.+?) · arquivos: .+? · cobre: .+? · verificação: .+$")
-# Aresta `(dep: Tn)` só conta colada ao ID — mesma regra do C9/R40 (check_cycle.py), por
-# isso lê de item["resto"] (primeira linha só) e nunca de item["texto"] (texto acumulado,
-# onde "(dep: Tn)" citado na prosa de uma continuação não pode virar aresta).
-PADRAO_DEP = re.compile(r"\(dep:\s*([^)]*)\)")
 LINHA_EPICO = re.compile(r"^Épico: \[delta-(\d+)\] (.+?) · Externo: (.+)$", re.M)
 # LINHA_TICKET casa (tid, externo) — consumidor: parse_tickets_md (idempotência de
 # gerar/exportar). LINHA_TICKET_DIFF casa (tid, status, externo) — consumidor:
@@ -77,18 +84,20 @@ def die(msg: str) -> None:
 
 
 def parse_tasks(texto: str) -> list:
-    """Tasks do tasks.md via itens.py (R2) — item malformado nomeia a linha e vira ValueError."""
+    """Tasks do tasks.md via itens.py (R2) — cabeça ancorada + campos tolerantes a
+    multi-linha; item malformado em qualquer uma das duas nomeia a linha e vira ValueError."""
     tarefas = []
     for item in itens(texto, "T"):
-        m = PADRAO_CORPO_TASK.search(item["texto"])
-        if not m:
+        cabeca = PADRAO_CABECA.match(item["resto"])
+        corpo = PADRAO_CORPO_TASK.search(item["texto"])
+        if not cabeca or not corpo:
             raise ValueError(f"linha {item['linha']}: task malformada — {item['texto']!r}")
-        dep_m = PADRAO_DEP.match(item["resto"])
+        dep_str = cabeca.group(1)
         tarefas.append({
             "id": item["id"],
             "feito": item["feito"],
-            "deps": [d.strip() for d in dep_m.group(1).split(",")] if dep_m else [],
-            "acao": m.group(1).strip(),
+            "deps": [d.strip() for d in dep_str.split(",")] if dep_str else [],
+            "acao": corpo.group(1).strip(),
         })
     return tarefas
 
@@ -484,6 +493,26 @@ def selftest() -> None:
     texto_multi = montar_tickets_md("999-fixture", "SBX", "999", "fixture", tarefas_multi)
     assert "- T2 — ajusta Y · status: concluído · deps: T1 · Externo: —" in texto_multi, \
         f"tickets.md não trouxe dep+ação da task multi-linha: {texto_multi}"
+
+    # cabeça malformada não pode passar batido só porque os campos aparecem em algum
+    # ponto do texto acumulado (regressão pega no review pós-Task 3: search() sem
+    # âncora na cabeça aceitava lixo antes do '—' e primeira linha fora de forma)
+    cabeca_com_lixo = "- [ ] T1 lixo aqui — ação · arquivos: a.py · cobre: R1 · verificação: x\n"
+    try:
+        parse_tasks(cabeca_com_lixo)
+        assert False, "lixo antes do '—' na cabeça devia ser rejeitado"
+    except ValueError as e:
+        assert "linha 1" in str(e), f"erro não nomeia a linha: {e}"
+
+    primeira_linha_sem_forma = (
+        "- [ ] T1 blah blah sem formato\n"
+        "      — ação real · arquivos: a.py · cobre: R1 · verificação: x\n"
+    )
+    try:
+        parse_tasks(primeira_linha_sem_forma)
+        assert False, "primeira linha fora de forma não pode ser salva pela continuação"
+    except ValueError as e:
+        assert "linha 1" in str(e), f"erro não nomeia a linha: {e}"
 
     # ler_projeto_jira: presente, desligado, ausente
     root, delta_dir = _montar_delta()
