@@ -110,7 +110,7 @@ def itens(texto: str, prefixo: str) -> list[dict]:
 - [ ] **Step 1: casos novos no selftest, antes de mexer no código** — a fixture `limpa_tasks` ganha uma gêmea multi-linha (mesma task, quebrada em duas) que deve produzir **os mesmos achados que a versão em linha única**; e um caso com prosa depois da lista que não pode virar `verificação:`. Rodar → FAIL.
 - [ ] **Step 2: implementar** — em `c9_grafo`, a aresta sai de `item["resto"]` (mantém a âncora colada ao ID, R40); em `c10_convergencia`, o contador vira `sum(1 for i in itens(txt, "T") if not i["feito"])`.
 - [ ] **Step 3: selftest verde** — inclusive os casos antigos, que provam a retrocompatibilidade.
-- [ ] **Step 4: rodar o gate contra as 33 deltas arquivadas** (`for d in specs/_archive/*/; do check_cycle.py $d; done`) e conferir que nenhum veredito mudou em relação ao registrado em cada `analyze.md`.
+- [ ] **Step 4: rodar o gate contra as 32 deltas arquivadas** (`for d in specs/_archive/*/; do check_cycle.py $d; done`) e conferir que nenhum veredito mudou em relação ao registrado em cada `analyze.md`.
 - [ ] **Step 5: commit** — `fix(033-parser-resiliente): C2/C8/C9/C10 toleram item multi-linha (MUDA R12)`.
 
 ### Task 3 (dep: T1): `tickets.py` consome o mesmo módulo
@@ -136,7 +136,7 @@ def itens(texto: str, prefixo: str) -> list[dict]:
 
 - [ ] **Step 1: caso novo no selftest** — spec com `### R1 — ADICIONA:` válido **e** `### R2 — Adiciona:` (verbo minúsculo): precisa sair 1 ALTO nomeando a linha e o texto do heading; spec só com headings válidos → 0 achados novos (a varredura de 2026-08-07 mediu 92 headings em 32 deltas arquivadas, **0** fora da forma — o check não pode acusar nenhum deles). Rodar → FAIL.
 - [ ] **Step 2: implementar** — `HEADING_QUALQUER = re.compile(r"^###\s+(.*)$")`; heading que casa `HEADING_QUALQUER` mas não `CABECALHO` → `("ALTO", f"spec.md l.{n}", f"heading '### {texto}' fora da forma canônica", "usar '### Rn — ADICIONA|MUDA|REMOVE' (templates/delta-spec.md) — requisito fora da forma some do gate")`.
-- [ ] **Step 3: selftest verde + varredura das 33 deltas arquivadas sem novo achado. Step 4: commit** — `fix(033-parser-resiliente): C1 acusa heading fora da forma em vez de perder o requisito`.
+- [ ] **Step 3: selftest verde + varredura das 32 deltas arquivadas sem novo achado. Step 4: commit** — `fix(033-parser-resiliente): C1 acusa heading fora da forma em vez de perder o requisito`.
 
 ### Task 5 (dep: T2, T3, T4): documentação e quito do DT-001
 

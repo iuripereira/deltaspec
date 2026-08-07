@@ -27,7 +27,7 @@ import re
 import sys
 from pathlib import Path
 
-from itens import itens  # dono do formato de item (delta-033) — mesmo parser do check_cycle.py (C9)
+from itens import itens, ITEM  # dono do formato de item (delta-033) — mesmo parser do check_cycle.py (C9)
 
 try:
     import yaml  # única dependência externa admitida nos gates (ADR-0023)
@@ -83,9 +83,21 @@ def die(msg: str) -> None:
 # ---------------------------------------------------------------- funções puras
 
 
+LINHA_CHECKBOX = re.compile(r"^\s*-\s*\[[ xX]\]")
+
+
 def parse_tasks(texto: str) -> list:
     """Tasks do tasks.md via itens.py (R2) — cabeça ancorada + campos tolerantes a
-    multi-linha; item malformado em qualquer uma das duas nomeia a linha e vira ValueError."""
+    multi-linha; item malformado em qualquer uma das duas nomeia a linha e vira ValueError.
+
+    Checagem extra antes de chamar itens.py: itens() filtra por prefixo ("T"), então uma
+    linha `- [ ] ...` sem ID Tn/CTn nunca vira item — sumiria da projeção em silêncio (sozinha)
+    ou seria absorvida como continuação da task anterior. Rejeita as duas pela mesma âncora
+    (ITEM, de itens.py) antes que isso aconteça.
+    """
+    for n, linha in enumerate(texto.splitlines(), 1):
+        if LINHA_CHECKBOX.match(linha) and not ITEM.match(linha):
+            raise ValueError(f"linha {n}: task malformada — {linha!r}")
     tarefas = []
     for item in itens(texto, "T"):
         cabeca = PADRAO_CABECA.match(item["resto"])
@@ -479,6 +491,26 @@ def selftest() -> None:
         assert False, "task malformada não foi rejeitada"
     except ValueError as e:
         assert "linha 6" in str(e), f"erro não nomeia a linha: {e}"
+
+    # checkbox sem ID nenhum (nem Tn nem CTn) não pode sumir em silêncio — itens() filtra
+    # por prefixo, então sem esta checagem a linha nunca vira item (achado do review)
+    sem_id = "- [ ] ação sem ID\n"
+    try:
+        parse_tasks(sem_id)
+        assert False, "checkbox sem ID devia ser rejeitado"
+    except ValueError as e:
+        assert "linha 1" in str(e), f"erro não nomeia a linha: {e}"
+
+    # checkbox sem ID logo após uma task válida não pode ser absorvido como continuação
+    valida_e_sem_id = (
+        "- [ ] T1 — ação · arquivos: a.py · cobre: R1 · verificação: x\n"
+        "- [ ] sem id\n"
+    )
+    try:
+        parse_tasks(valida_e_sem_id)
+        assert False, "checkbox sem ID após task válida devia ser rejeitado, não absorvido"
+    except ValueError as e:
+        assert "linha 2" in str(e), f"erro não nomeia a linha: {e}"
 
     # task multi-linha: (dep: T1) colada ao ID na primeira linha, 'verificação:' na
     # continuação — parse_tasks usa itens.py (R2), tickets.md tem que trazer os dois
