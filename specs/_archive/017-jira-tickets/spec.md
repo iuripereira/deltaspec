@@ -1,5 +1,5 @@
 # delta-017 — jira-tickets
-Estado: proposta · Data: 2026-08-07 · Branch: feat/017-jira-tickets · Perfil: completo — contrato externo novo (dialeto acli/Jira) e reavaliação de pin de motor (ADR-0012) (aprovado: 2026-08-07)
+Estado: arquivada · Data: 2026-08-07 · Branch: feat/017-jira-tickets · Perfil: completo — contrato externo novo (dialeto acli/Jira) e reavaliação de pin de motor (ADR-0012) (aprovado: 2026-08-07)
 Clarify: entrevistado (2026-08-07) — 7 decisões do usuário
 
 > **Numeração (R5):** `017` é reserva explícita do usuário — número reservado desde o plano de upgrade de 2026-07-28 (Fase 4), consumido agora; as deltas 018–032 já existem arquivadas.

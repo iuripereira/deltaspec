@@ -30,8 +30,9 @@
   - DADO um item com juros ≥ 3 cujo **cabeçalho** não muda há mais que o limiar de dias QUANDO o script roda ENTÃO ele é marcado `stale` na saída — o relógio mede decisão (mudança de estado ou natureza), não edição de prosa, e força escolher entre agendar, aceitar ou descartar
   - DADO o parsing do registro QUANDO o script lê um bloco ENTÃO cabeçalho, título e campos vêm de **âncoras de início de linha**, nunca de busca de texto — a mesma sintaxe citada dentro da descrição é prosa, não campo
   - DADO uma referência a ticket, PR, issue ou delta QUANDO ela aparece num bloco ENTÃO é um link relativo navegável (`../../issues/N`, `../../pull/N`, `specs/_archive/NNN-*/`), que resolve no GitHub e sobrevive a fork
-- R52 (delta-023) — ferramenta de ticket é projeção do registro, com ida mecânica e volta aprovada.
+- R52 (delta-017) — ferramenta de ticket é projeção do registro, com ida mecânica e volta aprovada.
   - DADO o `DEBT.md` QUANDO `debito.py exportar` roda ENTÃO ele emite o JSON canônico e os dialetos de importação em arquivos, **sem acessar a rede** — quem executa os comandos é a skill, nunca o script; o dialeto que exige chave de projeto só é emitido quando ela é informada
+  - DADO o dialeto Jira emitido QUANDO ele é gerado ENTÃO é um `.sh` de `acli jira workitem create` **unitários** (padrão do `tickets-gh.sh`), preservando o corpo multi-linha dos itens — decisão da primeira execução real (DT-021, 2026-08-07: `create-bulk` rejeita `\n` na description; o lote bulk deixa de ser emitido) — e execução não interativa
   - DADO um item projetado QUANDO o ticket é criado ENTÃO ele carrega a etiqueta determinística com o `DT-NNN` e o título prefixado pelo ID, e a chave devolvida (`gh#NNN`, `PROJ-NNN`) é gravada na coluna `Externo` — é ela, e não o título, que garante idempotência
   - DADO o estado coletado da ferramenta QUANDO `debito.py diff` roda ENTÃO ele emite a tabela *DEBT.md diz × ferramenta diz × impacto × ação proposta* (formato do R27), cobrindo item sem ticket, ticket fechado com item ativo e ticket sem item correspondente
   - DADO uma divergência detectada QUANDO ela vira mudança no `DEBT.md` ENTÃO a alteração é **proposta e só aplicada após aprovação humana** — a ferramenta externa nunca sobrescreve o arquivo, que permanece a fonte da verdade
@@ -142,6 +143,14 @@
   - DADO uma delta com analyze LIBERADO cujo diff acumulado de `specs/NNN-nome/` contra a main excede o limiar de PR da regra canônica QUANDO o ciclo segue para o implement ENTÃO os artefatos são mergeados antes, num PR próprio de documentação, e a implementação segue em PR separado
   - DADO uma delta cujos artefatos ficam dentro do limiar QUANDO o ciclo abre o PR ENTÃO um único PR carrega artefatos e implementação
   - DADO o texto do ciclo que descreve o split QUANDO cita o limiar ENTÃO referencia a regra canônica dona sem materializar o valor
+- R53 (delta-017) — tickets.md é a projeção canônica das tasks da delta.
+  - DADO um projeto cujo `doc-profile.yaml` declara `motores: jira` com a chave do projeto (mesmo padrão do graphify: decisão registrada por projeto) QUANDO a fase tasks conclui ENTÃO `specs/NNN-nome/tickets.md` nasce no repo como projeção mecânica do `tasks.md` — 1 épico `[delta-NNN] nome` + 1 ticket por task, arestas `dep:` preservadas como links de bloqueio — **sem acessar a rede** (quem executa os comandos é a skill, nunca o script)
+  - DADO um projeto sem `motores: jira` no doc-profile QUANDO o ciclo roda ENTÃO a projeção se omite com no máximo 1 linha de aviso (RNF2) — o `tasks.md` segue valendo sozinho
+  - DADO o `tickets.md` gerado QUANDO a ida ao Jira roda ENTÃO a escada de automação é acli → Rovo MCP `/v1/mcp` → REST → só arquivo, degradando com aviso de 1 linha (RNF2)
+  - DADO um ticket criado QUANDO a chave devolvida chega (`PROJ-NNN`) ENTÃO ela é gravada no `tickets.md` — é ela, e não o título, que garante idempotência (mesma regra do R52)
+- R54 (delta-017) — volta Jira→repo dos tickets de delta é diff aprovado, nunca sync.
+  - DADO o estado dos tickets no Jira QUANDO a volta roda ENTÃO ela emite a tabela *tickets.md diz × Jira diz × impacto × ação proposta* (formato do R27) cobrindo **status e existência**: issue fechada com task aberta, task concluída com issue aberta, issue órfã/faltante, épico aberto com delta arquivada — assignee, comentários e descrição ficam fora (gestão edita no Jira sem gerar divergência)
+  - DADO uma divergência detectada QUANDO ela vira mudança no repo ENTÃO a alteração é **proposta e só aplicada após aprovação humana** — mesmo contrato do R52
 
 ## Gates determinísticos
 
