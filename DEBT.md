@@ -329,6 +329,18 @@ Pesquisa de 2026-08-06 nos SDDs da comunidade mostrou que todo framework separa 
 - **Origem:** pesquisa pedida pelo Iuri em sessão, 2026-08-06 · aberto em 2026-08-06
 - **Ticket:** [#130](../../issues/130)
 
+### DT-033 · débito · aberto
+**Destino do ticket (GitHub × Jira) se configura de dois jeitos diferentes**
+
+A mesma decisão — para onde vai a projeção — tem dois mecanismos. `debito.py exportar` (débitos do `DEBT.md`) escolhe por **flag `--projeto CHAVE`**: emite o `tickets-gh.sh` sempre e o dialeto Jira só quando a flag vem. Já `tickets.py` (tasks de delta) escolhe por **`motores.jira.projeto` do `doc-profile.yaml`**, e não tem rota GitHub nenhuma. Efeito: a rota dos débitos vive na memória de quem digita o comando, não declarada no repo — quem esquece a flag manda pro GitHub sem perceber; quem a digita no repo errado manda pro Jira de um cliente. E os dois comandos do mesmo ciclo respondem a fontes de configuração diferentes, o que contraria a fonte canônica única.
+
+Correção candidata (pequena, sem mudança de requisito): `debito.py` passa a ler `motores.jira.projeto` do perfil, com `--projeto` sobrepondo — destino declarativo por repo, alinhado ao `tickets.py`; ausência da chave = GitHub, que já é o default de fato. Decidir junto se a rota GitHub também merece chave própria (`motores.github`) ou se "ausência de jira" basta como declaração — hoje basta, e acrescentar chave sem necessidade é cerimônia.
+
+- **Fila:** `P3·J1·Pr3`
+- **Local:** [debito.py](skills/handoff/scripts/debito.py)
+- **Gatilho:** Primeira projeção real de débito de um repo consumidor — ou a próxima delta que tocar a projeção
+- **Origem:** pergunta do Iuri em sessão, 2026-08-07 (durante a [delta-034](specs/_archive/034-adf-description/)) · aberto em 2026-08-07
+
 ## Lições
 <!-- post-mortems datados, com desfecho; sem ação pendente — ação pendente é DT -->
 

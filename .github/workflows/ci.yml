@@ -61,6 +61,12 @@ jobs:
           python3 skills/spec-feature/scripts/check_cycle.py --selftest
           python3 skills/guarding-doc-integrity/scripts/validate_integrity.py --selftest
           python3 skills/handoff/scripts/debito.py --selftest
+          # Dialeto do Jira (delta-034): sem estes, a regressão do corpo do ticket fica
+          # sem rede — o selftest do debito.py exercita o exportar, mas não os asserts
+          # de formatação que provam que o ADF não regrediu para Markdown cru.
+          python3 skills/handoff/scripts/md_para_adf.py --selftest
+          python3 skills/handoff/scripts/projecao.py
+          python3 skills/spec-feature/scripts/tickets.py --selftest
       - name: Integridade documental (deps.toml)
         run: python3 skills/guarding-doc-integrity/scripts/validate_integrity.py .
       - name: Validar frontmatter dos SKILL.md

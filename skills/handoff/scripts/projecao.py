@@ -5,10 +5,13 @@ Emite .sh de creates unitários em Jira CLI (acli) — decisão da delta-017 (DT
 rejeita \n). Contrato: funções puras de corpo_ticket/etiquetas (copiadas de debito.py
 sem mudança de assinatura) + emitir_sh_acli que orquestra.
 """
+import json
 import re
 import shlex
 import tempfile
 from pathlib import Path
+
+from md_para_adf import converter  # o acli lê ADF, não Markdown (delta-034)
 
 # Constantes — copiadas do contexto de debito.py onde são usadas
 FAIXA_ALTA = 9
@@ -102,13 +105,19 @@ def emitir_sh_acli(itens: list, projeto: str, saida: Path, epico: str | None = N
         linhas += [f"EPICO={shlex.quote(epico_existente)}",
                    'echo "épico reaproveitado: $EPICO"', ""]
     for i in itens:
+        # Dois arquivos por item: o `.md` é a fonte legível (byte-idêntica ao DEBT.md,
+        # conferível a olho antes de rodar); o `.adf.json` é o que o acli consome — ele
+        # aceita texto puro ou ADF, nunca Markdown (delta-034).
         corpo = saida / f"corpo-{i['id']}.md"
         corpo.write_text(i["body"], encoding="utf-8")
+        corpo_adf = saida / f"corpo-{i['id']}.adf.json"
+        corpo_adf.write_text(json.dumps(converter(i["body"]), ensure_ascii=False),
+                             encoding="utf-8")
         rotulos = f" --label {shlex.quote(','.join(i['labels']))}" if i["labels"] else ""
         pai = ' --parent "$EPICO"' if (epico or epico_existente) else ""
         comando = (f"acli jira workitem create --project {shlex.quote(projeto)} "
                    f"--type {TIPO_ITEM} --summary {shlex.quote(i['title'])}{rotulos}"
-                   f"{pai} --description-file {shlex.quote(str(corpo))} --json")
+                   f"{pai} --description-file {shlex.quote(str(corpo_adf))} --json")
         if capturar_chaves:
             var = f"{nome_var(i['id'])}_KEY"
             linhas.append(f"{var}=$({comando} "
@@ -136,6 +145,16 @@ def selftest():
         assert texto.count("acli jira workitem create ") == 2
         assert (saida / "corpo-DT-001.md").read_text(encoding="utf-8") == itens[0]["body"]
         assert "--label dt:DT-001" in texto and "--label x,y" in texto
+        # (c2) o acli lê ADF, não Markdown (delta-034): o `.md` fica como fonte legível,
+        # mas quem vai para --description-file é o `.adf.json` — senão a marcação chega
+        # literal no ticket, como aconteceu de SBX-11 a SBX-14.
+        assert "--description-file" in texto and "corpo-DT-001.md " not in texto, \
+            "o .md não pode ir para o acli — ele não interpreta Markdown"
+        adf = json.loads((saida / "corpo-DT-001.adf.json").read_text(encoding="utf-8"))
+        assert [b["type"] for b in adf["content"]] == \
+            ["paragraph", "bulletList", "rule", "paragraph"], "estrutura do corpo perdida"
+        assert "**" not in json.dumps(adf) and "---" not in json.dumps(adf), \
+            "marcação crua vazou para o ADF"
         sh2 = emitir_sh_acli(itens, "SBX", saida, epico="[delta-017] jira-tickets")
         t2 = sh2.read_text(encoding="utf-8")
         assert t2.index("--type Epic") < t2.index("--type Task")
