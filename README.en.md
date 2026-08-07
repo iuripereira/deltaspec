@@ -96,12 +96,14 @@ flowchart LR
     sp("superpowers<br>plan · implement · review")
     po("ponytail<br>keeps code lean")
     mx("max<br>interviews the spec")
+    dd("diagram-design<br>presentation layer")
     gf("graphify<br><i>optional</i>")
     fb("plugin missing?<br>the phase runs in simple mode<br>+ a degradation warning")
 
     c --> sp
     c --> po
     c --> mx
+    c --> dd
     c --> gf
     sp -.-> fb
     fb -.-> c
@@ -110,11 +112,11 @@ flowchart LR
     classDef motor fill:#cfeadd,stroke:#2b2b2b,stroke-width:1.5px,color:#1f2937
     classDef aviso fill:#f4eccd,stroke:#2b2b2b,stroke-width:1.5px,color:#1f2937
     class c core
-    class sp,po,mx,gf motor
+    class sp,po,mx,dd,gf motor
     class fb aviso
 ```
 
-Each one covers a front: [`superpowers`](https://github.com/anthropics/claude-plugins) runs plan, implement and review; `ponytail` holds back over-engineering; `max` interviews the spec (`grill-me`) and writes the discovery PRD (`write-prd`); `graphify`, optional, provides a code graph as a citable source (`file:line`).
+Each one covers a front: [`superpowers`](https://github.com/anthropics/claude-plugins) runs plan, implement and review; `ponytail` holds back over-engineering; `max` interviews the spec (`grill-me`) and writes the discovery PRD (`write-prd`); [`diagram-design`](https://github.com/cathrynlavery/diagram-design) materializes the presentation layer for client/management docs ([ADR-0018](docs/adrs/ADR-0018-diagram-design-camada-apresentacao.md)); `graphify`, optional, provides a code graph as a citable source (`file:line`).
 
 > **Golden rule:** a missing plugin **never breaks the cycle**. The phase falls back to the simple path described in [`adapters.md`](skills/spec-feature/references/adapters.md) and you get a warning telling you which phase lost power.
 

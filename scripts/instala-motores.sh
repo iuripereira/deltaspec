@@ -7,7 +7,11 @@ MOTORES=(
   superpowers@claude-plugins-official
   ponytail@ponytail
   max@max4c-skills
+  diagram-design@diagram-design
 )
+
+# O diagram-design vem de marketplace próprio (ADR-0018; DT-019) — registro idempotente.
+claude plugin marketplace add cathrynlavery/diagram-design >/dev/null 2>&1 || true
 
 falhas=()
 for motor in "${MOTORES[@]}"; do

@@ -95,12 +95,14 @@ flowchart LR
     sp("superpowers<br>plan · implement · review")
     po("ponytail<br>evita código demais")
     mx("max<br>entrevista a spec")
+    dd("diagram-design<br>camada de apresentação")
     gf("graphify<br><i>opcional</i>")
     fb("plugin faltando?<br>a fase roda no modo simples<br>+ aviso de que degradou")
 
     c --> sp
     c --> po
     c --> mx
+    c --> dd
     c --> gf
     sp -.-> fb
     fb -.-> c
@@ -109,11 +111,11 @@ flowchart LR
     classDef motor fill:#cfeadd,stroke:#2b2b2b,stroke-width:1.5px,color:#1f2937
     classDef aviso fill:#f4eccd,stroke:#2b2b2b,stroke-width:1.5px,color:#1f2937
     class c core
-    class sp,po,mx,gf motor
+    class sp,po,mx,dd,gf motor
     class fb aviso
 ```
 
-Cada um cobre uma frente: [`superpowers`](https://github.com/anthropics/claude-plugins) executa plan, implement e review; `ponytail` segura o excesso de engenharia; `max` entrevista a spec (`grill-me`) e escreve o PRD da descoberta (`write-prd`); o `graphify`, opcional, dá um grafo do código como fonte citável (`arquivo:linha`).
+Cada um cobre uma frente: [`superpowers`](https://github.com/anthropics/claude-plugins) executa plan, implement e review; `ponytail` segura o excesso de engenharia; `max` entrevista a spec (`grill-me`) e escreve o PRD da descoberta (`write-prd`); o [`diagram-design`](https://github.com/cathrynlavery/diagram-design) materializa a camada de apresentação para cliente/gestão ([ADR-0018](docs/adrs/ADR-0018-diagram-design-camada-apresentacao.md)); o `graphify`, opcional, dá um grafo do código como fonte citável (`arquivo:linha`).
 
 > **Regra de ouro:** plugin faltando **nunca quebra o ciclo**. A fase cai no caminho simples descrito em [`adapters.md`](skills/spec-feature/references/adapters.md) e você recebe um aviso dizendo qual fase perdeu potência.
 

@@ -221,16 +221,15 @@ O `exportar --projeto` emite o lote do `acli jira workitem create-bulk`, mas nen
 - **Origem:** [delta-023](specs/_archive/023-divida-tecnica-e-tickets/) · aberto em 2026-08-01
 - **Ticket:** [#96](../../issues/96)
 
-### DT-019 · pendência · aberto
+### DT-019 · pendência · quitado
 **diagram-design contratado como motor mas fora do caminho de instalação**
 
 `diagram-design` contratado como motor opcional (delta-020/ADR-0018) mas fora do caminho de instalação: nem no `scripts/instala-motores.sh` (só superpowers/ponytail/max) nem na seção 2.2 do README — quem segue o quickstart nunca o instala. Decidir: incluir no instalador (é plugin comum, sem a renúncia de instalador do graphify/ADR-0014) ou documentar a instalação à parte (`/plugin marketplace add cathrynlavery/diagram-design` + `/plugin install diagram-design@diagram-design`). **Pr revisto de 1 para 3 em 2026-08-02**, acompanhando a derivação: incide em **toda** instalação nova que siga o quickstart, e falha em silêncio — o usuário não sabe que ficou sem o motor
 
-- **Fila:** `P1·J1·Pr3`
-- **Local:** [instala-motores.sh](scripts/instala-motores.sh)
 - **Gatilho:** Primeira adoção real da camada `apresentacao` — a mesma que define o pin (R46)
 - **Origem:** pergunta do Iuri em sessão, 2026-07-30 · aberto em 2026-07-30
 - **Ticket:** [#93](../../issues/93)
+- **Encerrado:** 2026-08-06, decisão do Iuri no disparo do gatilho (a varredura da fila achou a primeira adoção real: delta-001 do `imex/travel-planner`, ADR-0036 de lá) — **incluir no instalador**: `diagram-design@diagram-design` entra no `MOTORES` do [instala-motores.sh](scripts/instala-motores.sh) com registro idempotente do marketplace, e os dois READMEs (§2.2: diagrama e texto dos motores) ganham o motor. O pin por commit/tag (R46) segue com o piloto, no repo dele
 
 ### DT-023 · débito · quitado
 **Clarify fecha sem canal humano — o grill se auto-responde e se auto-aprova**
