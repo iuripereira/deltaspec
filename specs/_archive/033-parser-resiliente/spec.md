@@ -1,5 +1,5 @@
 # delta-033 — parser-resiliente
-Estado: proposta · Data: 2026-08-07 · Branch: fix/033-parser-resiliente · Perfil: completo — o gate é o coração do framework e a mudança toca o parser que 3 scripts consomem (aprovado: 2026-08-07)
+Estado: arquivada · Data: 2026-08-07 · Branch: fix/033-parser-resiliente · Perfil: completo — o gate é o coração do framework e a mudança toca o parser que 3 scripts consomem (aprovado: 2026-08-07)
 Clarify: entrevistado (2026-08-07) — 2 decisões do usuário
 
 ## Contexto (≤3 linhas)
