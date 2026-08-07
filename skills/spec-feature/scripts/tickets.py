@@ -48,10 +48,13 @@ PADRAO_TASK = re.compile(
     r"^- \[([ x])\] (T\d+)(?: \(dep: ([^)]+)\))? — (.+?) · arquivos: .+? · cobre: .+? · verificação: .+$"
 )
 LINHA_EPICO = re.compile(r"^Épico: \[delta-(\d+)\] (.+?) · Externo: (.+)$", re.M)
+# LINHA_TICKET casa (tid, externo) — consumidor: parse_tickets_md (idempotência de
+# gerar/exportar). LINHA_TICKET_DIFF casa (tid, status, externo) — consumidor:
+# parse_tickets_diff (o `diff`, R3, também compara o status contra o Jira). Duplicação
+# deliberada em vez de mudar o grupo do LINHA_TICKET e quebrar quem já desempacota
+# (tid, externo) — regra de ouro do CLAUDE.md: **mudou o formato da linha do ticket em
+# um dos dois regexes (campos, ordem, separador `·`), mude no outro também.**
 LINHA_TICKET = re.compile(r"^- (T\d+) — .+? · status: .+? · deps: .+? · Externo: (.+)$", re.M)
-# Mesma âncora do LINHA_TICKET acima, mas o `diff` (R3) também precisa do status
-# (aberto/concluído) para comparar contra o Jira — por isso um regex à parte em vez
-# de mudar o grupo do LINHA_TICKET e quebrar quem já desempacota (tid, externo).
 LINHA_TICKET_DIFF = re.compile(r"^- (T\d+) — .+? · status: (.+?) · deps: .+? · Externo: (.+)$", re.M)
 ESTADO_ARQUIVADA = re.compile(r"^Estado:\s*arquivada", re.M)
 
