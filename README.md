@@ -243,7 +243,7 @@ flowchart TD
 | **specify** | "O que muda no que já vale?" | `spec.md` com blocos ADICIONA/MUDA/REMOVE |
 | **clarify** | "Onde essa spec é frágil?" | spec revisada depois da entrevista |
 | **plan** | "Como construir?" | `plan.md` |
-| **tasks** | "Em que ordem? O que dá para fazer em paralelo?" | `tasks.md` com dependências `(dep: T1, T2)` |
+| **tasks** | "Em que ordem? O que dá para fazer em paralelo?" | `tasks.md` com dependências `(dep: T1, T2)` — e, se o `doc-profile.yaml` liga `motores.jira`, o `tickets.md` projetado para o Jira (épico + tickets + links de bloqueio) |
 | **test-plan** | "Como eu provo que cada requisito funciona?" | `test-plan.md` com `cobre: Rn` |
 | **analyze** | "Os documentos combinam entre si?" | `analyze.md` com veredito LIBERADO ou BLOQUEADO |
 | **implement** | — | código + testes |

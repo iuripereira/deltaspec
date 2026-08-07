@@ -244,7 +244,7 @@ flowchart TD
 | **specify** | "What changes in what is already true?" | `spec.md` with ADICIONA/MUDA/REMOVE blocks |
 | **clarify** | "Where is this spec fragile?" | spec revised after the interview |
 | **plan** | "How do we build it?" | `plan.md` |
-| **tasks** | "In what order? What can run in parallel?" | `tasks.md` with `(dep: T1, T2)` dependencies |
+| **tasks** | "In what order? What can run in parallel?" | `tasks.md` with `(dep: T1, T2)` dependencies — and, when `doc-profile.yaml` enables `motores.jira`, the `tickets.md` projected to Jira (epic + tickets + blocking links) |
 | **test-plan** | "How do I prove each requirement works?" | `test-plan.md` with `cobre: Rn` (covers) |
 | **analyze** | "Do the documents agree with each other?" | `analyze.md` with a LIBERADO (cleared) or BLOQUEADO (blocked) verdict |
 | **implement** | — | code + tests |

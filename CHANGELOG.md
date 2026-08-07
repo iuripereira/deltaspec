@@ -8,6 +8,8 @@ O formato segue [Keep a Changelog 1.0.0](https://keepachangelog.com/pt-BR/1.0.0/
 
 ## [Não lançado]
 
+## [1.11.0] - 2026-08-07
+
 ### Adicionado
 
 - **`tickets.md` por delta como projeção canônica das tasks para o Jira** (delta-017, R1): projeto cujo `doc-profile.yaml` declara `motores: jira: {projeto: CHAVE}` ganha, ao fim da fase tasks, `specs/NNN-nome/tickets.md` — 1 épico `[delta-NNN] nome` + 1 ticket por task, arestas `dep:` do `tasks.md` preservadas como links de bloqueio (`acli jira workitem link create --out --in --type Blocks`), sem o script acessar a rede em nenhum momento (quem executa os comandos é a skill). `skills/spec-feature/scripts/tickets.py` novo reúne `gerar`/`exportar`/`diff`; a volta Jira→repo é sempre diff aprovado, nunca sync automático (R3). Projeto sem `motores.jira` → a projeção se omite com no máximo 1 linha de aviso (RNF2); o `C11` do `check_cycle.py` passa a validar a chave (ligada sem `projeto` → ALTO) e o template do `doc-profile.yaml` ganha a entrada comentada. Contrato descrito em [cycle.md](skills/spec-feature/references/cycle.md).
