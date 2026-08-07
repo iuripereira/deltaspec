@@ -10,13 +10,19 @@ quem executa o `.sh` é a skill (mesmo contrato do R52/debito.py).
   gerar     lê tasks.md, escreve tickets.md (preserva Externo já gravado)
   exportar  emite o .sh de creates unitários (acli) + links de bloqueio; item com
             Externo preenchido no tickets.md é pulado — idempotência
+  diff      compara o tickets.md com o estado coletado do Jira (`acli jira workitem
+            search --jql "project=CHAVE AND labels=delta:NNN" --json`, colhido pela
+            skill e passado por arquivo) — só propõe, nunca escreve (R3)
 
 Uso: tickets.py gerar DELTA_DIR
      tickets.py exportar DELTA_DIR [--saida DIR]
+     tickets.py diff DELTA_DIR --externo ESTADO.json
      tickets.py --selftest
-Exit 0 = sem erro (inclui degradação RNF2) · 1 = tasks.md inválido · 2 = erro de uso.
+Exit 0 = sem erro (inclui degradação RNF2) · 1 = tasks.md inválido ou diff achou
+divergência · 2 = erro de uso.
 """
 import argparse
+import json
 import re
 import sys
 from pathlib import Path
@@ -43,6 +49,15 @@ PADRAO_TASK = re.compile(
 )
 LINHA_EPICO = re.compile(r"^Épico: \[delta-(\d+)\] (.+?) · Externo: (.+)$", re.M)
 LINHA_TICKET = re.compile(r"^- (T\d+) — .+? · status: .+? · deps: .+? · Externo: (.+)$", re.M)
+# Mesma âncora do LINHA_TICKET acima, mas o `diff` (R3) também precisa do status
+# (aberto/concluído) para comparar contra o Jira — por isso um regex à parte em vez
+# de mudar o grupo do LINHA_TICKET e quebrar quem já desempacota (tid, externo).
+LINHA_TICKET_DIFF = re.compile(r"^- (T\d+) — .+? · status: (.+?) · deps: .+? · Externo: (.+)$", re.M)
+ESTADO_ARQUIVADA = re.compile(r"^Estado:\s*arquivada", re.M)
+
+# Categoria "fechado" por nome de status do Jira — vocabulário fechado, mas
+# extensível: workflow customizado do projeto pode acrescentar nomes aqui.
+CONCLUIDOS = {"Done", "Concluído", "Concluída"}
 
 
 def die(msg: str) -> None:
@@ -100,6 +115,100 @@ def parse_tickets_md(texto: str) -> dict:
     itens_externo = {tid: ext.strip() for tid, ext in LINHA_TICKET.findall(texto)
                      if ext.strip() != TRACO}
     return {"epico": epico_externo, "itens": itens_externo}
+
+
+def parse_tickets_diff(texto: str) -> tuple:
+    """Épico e tickets com status+Externo — o que o `diff` precisa comparar contra o Jira."""
+    m = LINHA_EPICO.search(texto)
+    epico = {"externo": m.group(3).strip() if m and m.group(3).strip() != TRACO else None}
+    tickets = [
+        {"id": tid, "status": status.strip(), "externo": ext.strip() if ext.strip() != TRACO else None}
+        for tid, status, ext in LINHA_TICKET_DIFF.findall(texto)
+    ]
+    return epico, tickets
+
+
+def fechado(status_jira: str) -> bool:
+    """Categoria 'fechado' por nome de status — ver CONCLUIDOS (extensível por projeto)."""
+    return status_jira in CONCLUIDOS
+
+
+def delta_arquivada(delta_dir: Path) -> bool:
+    """Arquivada quando o diretório está sob specs/_archive/ ou o spec.md declara Estado: arquivada."""
+    if "_archive" in delta_dir.parts:
+        return True
+    spec = delta_dir / "spec.md"
+    return spec.is_file() and bool(ESTADO_ARQUIVADA.search(spec.read_text(encoding="utf-8")))
+
+
+def comparar(epico: dict, tickets: list, externos: dict, arquivada: bool) -> list:
+    """Diff tickets.md × Jira — função pura, sem I/O (R3).
+
+    epico: {"externo": chave|None}. tickets: [{"id", "status", "externo"}, ...] — status é
+    "aberto"/"concluído" (STATUS_ABERTO/STATUS_CONCLUIDO). externos: {chave: nome do status
+    no Jira}, já normalizado. arquivada: delta_dir arquivada (ver `delta_arquivada`).
+
+    Cobertura: issue fechada com task aberta; task concluída com issue aberta; issue
+    órfã (chave no Jira sem linha correspondente); ticket sem issue (Externo vazio ou
+    chave ausente do JSON); épico aberto com delta arquivada. Só reporta — a atualização
+    do tickets.md/tasks.md é proposta e aplicada por quem revisa (R3).
+    """
+    linhas = []
+    chaves_conhecidas = {t["externo"] for t in tickets if t["externo"]}
+    if epico["externo"]:
+        chaves_conhecidas.add(epico["externo"])
+
+    for t in tickets:
+        if not t["externo"]:
+            linhas.append({
+                "tickets_diz": f"{t['id']} — sem Externo",
+                "jira_diz": TRACO,
+                "impacto": "ticket sem issue correspondente no Jira",
+                "acao": "exportar com `tickets.py exportar` para abrir a issue",
+            })
+            continue
+        status_jira = externos.get(t["externo"])
+        if status_jira is None:
+            linhas.append({
+                "tickets_diz": f"{t['id']} — Externo: {t['externo']}",
+                "jira_diz": f"{t['externo']} não encontrada na busca",
+                "impacto": "ticket sem issue correspondente no Jira",
+                "acao": "confirmar a chave ou limpar o Externo no tickets.md",
+            })
+        elif t["status"] == STATUS_CONCLUIDO and not fechado(status_jira):
+            linhas.append({
+                "tickets_diz": f"{t['id']} — status: concluído",
+                "jira_diz": f"{t['externo']} — {status_jira}",
+                "impacto": "repo marca pronto, issue segue aberta no Jira",
+                "acao": "fechar a issue no Jira ou revisar o status no tasks.md",
+            })
+        elif t["status"] == STATUS_ABERTO and fechado(status_jira):
+            linhas.append({
+                "tickets_diz": f"{t['id']} — status: aberto",
+                "jira_diz": f"{t['externo']} — {status_jira}",
+                "impacto": "issue fechada no Jira, repo ainda marca aberto",
+                "acao": "concluir a task no tasks.md ou reabrir a issue",
+            })
+
+    for chave, status_jira in sorted(externos.items()):
+        if chave not in chaves_conhecidas:
+            linhas.append({
+                "tickets_diz": f"nenhuma linha — {chave}",
+                "jira_diz": f"{chave} — {status_jira}",
+                "impacto": "issue com a label da delta sem correspondência no tickets.md",
+                "acao": "adicionar o Externo na task correta ou remover a label da delta",
+            })
+
+    if arquivada and epico["externo"]:
+        status_epico = externos.get(epico["externo"])
+        if status_epico is not None and not fechado(status_epico):
+            linhas.append({
+                "tickets_diz": "épico — delta arquivada",
+                "jira_diz": f"{epico['externo']} — {status_epico}",
+                "impacto": "delta encerrada com o épico ainda aberto no Jira",
+                "acao": "fechar o épico no Jira",
+            })
+    return linhas
 
 
 def montar_tickets_md(dirname: str, projeto: str, nnn: str, nome: str, tarefas: list,
@@ -232,20 +341,65 @@ def cmd_exportar(delta_dir: Path, saida: Path) -> int:
     return 0
 
 
+def _normalizar_externos(dados) -> dict:
+    """chave -> nome do status, do JSON bruto de `acli jira workitem search --json`.
+
+    Aceita a lista direta ou o envelope `{"issues": [...]}` (dialetos observados do
+    acli). Item sem `key` ou sem `fields.status.name` é ignorado — dado incompleto
+    não deveria derrubar o diff inteiro.
+    """
+    itens = dados.get("issues", dados) if isinstance(dados, dict) else dados
+    externos = {}
+    for item in itens or []:
+        chave = item.get("key")
+        status = ((item.get("fields") or {}).get("status") or {}).get("name")
+        if chave and status:
+            externos[chave] = status
+    return externos
+
+
+def cmd_diff(delta_dir: Path, externo: Path) -> int:
+    caminho = delta_dir / "tickets.md"
+    if not caminho.is_file():
+        die(f"tickets.md não encontrado em {delta_dir} — rode 'gerar' primeiro")
+    epico, tickets = parse_tickets_diff(caminho.read_text(encoding="utf-8"))
+    try:  # fronteira de confiança: o arquivo vem de fora, colhido à mão pela skill
+        dados = json.loads(externo.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as erro:
+        die(f"não consegui ler {externo}: {erro}")
+    linhas = comparar(epico, tickets, _normalizar_externos(dados), delta_arquivada(delta_dir))
+    print(f"# Divergências tickets.md × Jira · {len(linhas)} achado(s)\n")
+    if not linhas:
+        print("Nenhuma divergência: tickets.md e Jira estão em sincronia.")
+        return 0
+    print("| tickets.md diz | Jira diz | impacto | ação proposta |")
+    print("|---|---|---|---|")
+    for l in linhas:
+        print(f"| {l['tickets_diz']} | {l['jira_diz']} | {l['impacto']} | {l['acao']} |")
+    print("\n> Proposta, não aplicação: aprovação humana decide o que muda no "
+          "tickets.md/tasks.md (R3).")
+    return 1
+
+
 def main() -> None:
     if "--selftest" in sys.argv[1:]:
         selftest()
         return
     p = argparse.ArgumentParser(description="Projeção do tasks.md de uma delta para o Jira.")
-    p.add_argument("comando", choices=("gerar", "exportar"))
+    p.add_argument("comando", choices=("gerar", "exportar", "diff"))
     p.add_argument("delta_dir", help="specs/NNN-nome da delta")
     p.add_argument("--saida", help="diretório dos arquivos de exportação (exportar)")
+    p.add_argument("--externo", help="JSON de `acli jira workitem search --json` (diff)")
     a = p.parse_args()
     delta_dir = Path(a.delta_dir).resolve()
     if not (delta_dir / "tasks.md").is_file():
         die(f"tasks.md não encontrado em {delta_dir}")
     if a.comando == "gerar":
         sys.exit(cmd_gerar(delta_dir))
+    if a.comando == "diff":
+        if not a.externo:
+            die("diff exige --externo ESTADO.json (saída de `acli jira workitem search --json`)")
+        sys.exit(cmd_diff(delta_dir, Path(a.externo).resolve()))
     saida = Path(a.saida).resolve() if a.saida else delta_dir / "tickets-out"
     sys.exit(cmd_exportar(delta_dir, saida))
 
@@ -373,8 +527,111 @@ def selftest() -> None:
     assert codigo_exp_off == 0 and not saida_off2.exists()
     assert len(saida_exp_off.strip().splitlines()) == 1
 
+    # comparar (R3): pura, um caso por linha de cobertura
+    def tk(id_, status, ext):
+        return {"id": id_, "status": status, "externo": ext}
+
+    epico_ok = {"externo": "SBX-1"}
+
+    # issue fechada no Jira, task ainda aberta no tickets.md
+    d = comparar(epico_ok, [tk("T1", STATUS_ABERTO, "SBX-10")],
+                 {"SBX-1": "Done", "SBX-10": "Done"}, False)
+    assert any("T1" in l["tickets_diz"] and "SBX-10" in l["jira_diz"] for l in d), \
+        f"issue fechada com task aberta não acusada: {d}"
+
+    # task concluída no tickets.md, issue ainda aberta no Jira
+    d = comparar(epico_ok, [tk("T2", STATUS_CONCLUIDO, "SBX-11")],
+                 {"SBX-1": "Done", "SBX-11": "In Progress"}, False)
+    assert any("T2" in l["tickets_diz"] and "SBX-11" in l["jira_diz"] for l in d), \
+        f"task concluída com issue aberta não acusada: {d}"
+
+    # issue órfã: chave com a label da delta no Jira sem linha correspondente
+    d = comparar(epico_ok, [tk("T1", STATUS_ABERTO, None)], {"SBX-1": "Done", "SBX-77": "To Do"}, False)
+    assert any("SBX-77" in l["tickets_diz"] and "SBX-77" in l["jira_diz"] for l in d), \
+        f"issue órfã não acusada: {d}"
+
+    # ticket sem issue — Externo vazio
+    d = comparar(epico_ok, [tk("T3", STATUS_ABERTO, None)], {"SBX-1": "Done"}, False)
+    assert any("T3" in l["tickets_diz"] and "sem Externo" in l["tickets_diz"] for l in d), \
+        f"Externo vazio não acusado: {d}"
+
+    # ticket sem issue — chave gravada no tickets.md mas ausente do JSON
+    d = comparar(epico_ok, [tk("T4", STATUS_ABERTO, "SBX-99")], {"SBX-1": "Done"}, False)
+    assert any("T4" in l["tickets_diz"] and "não encontrada" in l["jira_diz"] for l in d), \
+        f"chave ausente do JSON não acusada: {d}"
+
+    # épico aberto com delta arquivada — e o caso limpo (não arquivada) não diverge
+    d = comparar(epico_ok, [], {"SBX-1": "In Progress"}, True)
+    assert any("arquivada" in l["tickets_diz"] and "SBX-1" in l["jira_diz"] for l in d), \
+        f"épico aberto com delta arquivada não acusado: {d}"
+    assert comparar(epico_ok, [], {"SBX-1": "In Progress"}, False) == [], \
+        "épico aberto sem delta arquivada não deveria divergir"
+
+    # tudo sincronizado → zero divergência
+    limpo = comparar(epico_ok, [tk("T1", STATUS_CONCLUIDO, "SBX-10")],
+                      {"SBX-1": "Done", "SBX-10": "Done"}, True)
+    assert limpo == [], f"registro sincronizado não deveria divergir: {limpo}"
+
+    # delta_arquivada: caminho sob specs/_archive/, spec.md com Estado: arquivada, nenhum dos dois
+    root_a, delta_a = _montar_delta()
+    assert delta_arquivada(delta_a) is False, "delta comum acusada como arquivada"
+    arq_dir = root_a / "specs" / "_archive" / "999-fixture"
+    arq_dir.mkdir(parents=True)
+    assert delta_arquivada(arq_dir) is True, "specs/_archive/ não reconhecido como arquivada"
+    (delta_a / "spec.md").write_text("Título\nEstado: arquivada · Data: 2026-01-01\n", encoding="utf-8")
+    assert delta_arquivada(delta_a) is True, "spec.md com 'Estado: arquivada' não reconhecido"
+
+    # cmd_diff (I/O): parse real do tickets.md, envelope {"issues": [...]}, tabela impressa,
+    # nunca escreve no repo — só imprime
+    root_d, delta_d = _montar_delta()
+    (delta_d / "tickets.md").write_text(
+        "# Tickets — delta-999 · projeto: SBX\n"
+        "Épico: [delta-999] fixture · Externo: SBX-1\n"
+        "- T1 — cria arquivo X · status: aberto · deps: — · Externo: SBX-10\n"
+        "- T2 — ajusta Y · status: concluído · deps: T1 · Externo: SBX-11\n"
+        "- T3 — documenta Z · status: aberto · deps: T1, T2 · Externo: —\n",
+        encoding="utf-8")
+    jira_json = delta_d / "jira.json"
+    jira_json.write_text(json.dumps({"issues": [
+        {"key": "SBX-1", "fields": {"status": {"name": "In Progress"}}},
+        {"key": "SBX-10", "fields": {"status": {"name": "Done"}}},
+        {"key": "SBX-11", "fields": {"status": {"name": "In Progress"}}},
+        {"key": "SBX-20", "fields": {"status": {"name": "To Do"}}},
+    ]}), encoding="utf-8")
+    antes = (delta_d / "tickets.md").read_text(encoding="utf-8")
+    codigo_diff, saida_diff = quieto(cmd_diff, delta_d, jira_json)
+    assert codigo_diff == 1, "diff não sinalizou divergência achada"
+    assert "| tickets.md diz | Jira diz | impacto | ação proposta |" in saida_diff
+    for esperado in ("T1", "T2", "SBX-20"):
+        assert esperado in saida_diff, f"diff não cobriu {esperado}: {saida_diff}"
+    assert (delta_d / "tickets.md").read_text(encoding="utf-8") == antes, "diff alterou o tickets.md"
+
+    # lista direta (sem envelope 'issues') também é aceita; sincronizado → limpo, código 0
+    (delta_d / "tickets.md").write_text(
+        "# Tickets — delta-999 · projeto: SBX\n"
+        "Épico: [delta-999] fixture · Externo: SBX-1\n"
+        "- T1 — cria arquivo X · status: concluído · deps: — · Externo: SBX-10\n"
+        "- T2 — ajusta Y · status: concluído · deps: T1 · Externo: SBX-11\n",
+        encoding="utf-8")
+    jira_lista = delta_d / "jira_lista.json"
+    jira_lista.write_text(json.dumps([
+        {"key": "SBX-1", "fields": {"status": {"name": "Done"}}},
+        {"key": "SBX-10", "fields": {"status": {"name": "Done"}}},
+        {"key": "SBX-11", "fields": {"status": {"name": "Done"}}},
+    ]), encoding="utf-8")
+    codigo_limpo, saida_limpo = quieto(cmd_diff, delta_d, jira_lista)
+    assert codigo_limpo == 0 and "Nenhuma divergência" in saida_limpo, f"diff limpo não sincronizou: {saida_limpo}"
+
+    # JSON ilegível: erro de uso (exit 2), como o resto do script
+    try:
+        quieto(cmd_diff, delta_d, root_d / "nao-existe.json")
+        assert False, "JSON ausente deveria abortar com erro de uso"
+    except SystemExit as e:
+        assert e.code == 2, f"JSON ausente devia sair com código 2: {e.code}"
+
     print("selftest tickets: OK (parse âncora, deps/status, degradação RNF2, "
-          "exportar idempotente inclusive épico, links Blocks, aviso de dep órfã)")
+          "exportar idempotente inclusive épico, links Blocks, aviso de dep órfã, "
+          "diff Jira→repo cobrindo as 5 divergências do R3)")
 
 
 if __name__ == "__main__":
