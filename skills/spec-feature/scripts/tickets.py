@@ -27,6 +27,8 @@ import re
 import sys
 from pathlib import Path
 
+from itens import itens  # dono do formato de item (delta-033) — mesmo parser do check_cycle.py (C9)
+
 try:
     import yaml  # única dependência externa admitida nos gates (ADR-0023)
 except ModuleNotFoundError:
@@ -42,11 +44,14 @@ TRACO = "—"
 STATUS_ABERTO = "aberto"
 STATUS_CONCLUIDO = "concluído"
 
-# Âncora de início de linha (regra do R51 — nunca busca de texto). Formato do tasks.md
-# gerado pelo template: "- [ ] T1 — ação · arquivos: X · cobre: Rn · verificação: cmd".
-PADRAO_TASK = re.compile(
-    r"^- \[([ x])\] (T\d+)(?: \(dep: ([^)]+)\))? — (.+?) · arquivos: .+? · cobre: .+? · verificação: .+$"
-)
+# Item ('- [ ] T1 ...', checkbox/id/continuação) vem de itens.py — dono único do formato
+# (R2, delta-033). Aqui só valida os campos do corpo: "ação · arquivos: X · cobre: Rn ·
+# verificação: cmd", já com a continuação embutida em item["texto"] (itens.py).
+PADRAO_CORPO_TASK = re.compile(r"— (.+?) · arquivos: .+? · cobre: .+? · verificação: .+$")
+# Aresta `(dep: Tn)` só conta colada ao ID — mesma regra do C9/R40 (check_cycle.py), por
+# isso lê de item["resto"] (primeira linha só) e nunca de item["texto"] (texto acumulado,
+# onde "(dep: Tn)" citado na prosa de uma continuação não pode virar aresta).
+PADRAO_DEP = re.compile(r"\(dep:\s*([^)]*)\)")
 LINHA_EPICO = re.compile(r"^Épico: \[delta-(\d+)\] (.+?) · Externo: (.+)$", re.M)
 # LINHA_TICKET casa (tid, externo) — consumidor: parse_tickets_md (idempotência de
 # gerar/exportar). LINHA_TICKET_DIFF casa (tid, status, externo) — consumidor:
@@ -72,20 +77,18 @@ def die(msg: str) -> None:
 
 
 def parse_tasks(texto: str) -> list:
-    """Tasks do tasks.md por âncora — linha malformada nomeia o número e vira ValueError."""
+    """Tasks do tasks.md via itens.py (R2) — item malformado nomeia a linha e vira ValueError."""
     tarefas = []
-    for n, linha_txt in enumerate(texto.splitlines(), 1):
-        if not linha_txt.startswith("- ["):
-            continue  # comentário/cabeçalho: não é linha de task
-        m = PADRAO_TASK.match(linha_txt)
+    for item in itens(texto, "T"):
+        m = PADRAO_CORPO_TASK.search(item["texto"])
         if not m:
-            raise ValueError(f"linha {n}: task malformada — {linha_txt!r}")
-        feito, tid, deps, acao = m.groups()
+            raise ValueError(f"linha {item['linha']}: task malformada — {item['texto']!r}")
+        dep_m = PADRAO_DEP.match(item["resto"])
         tarefas.append({
-            "id": tid,
-            "feito": feito == "x",
-            "deps": [d.strip() for d in deps.split(",")] if deps else [],
-            "acao": acao.strip(),
+            "id": item["id"],
+            "feito": item["feito"],
+            "deps": [d.strip() for d in dep_m.group(1).split(",")] if dep_m else [],
+            "acao": m.group(1).strip(),
         })
     return tarefas
 
@@ -467,6 +470,20 @@ def selftest() -> None:
         assert False, "task malformada não foi rejeitada"
     except ValueError as e:
         assert "linha 6" in str(e), f"erro não nomeia a linha: {e}"
+
+    # task multi-linha: (dep: T1) colada ao ID na primeira linha, 'verificação:' na
+    # continuação — parse_tasks usa itens.py (R2), tickets.md tem que trazer os dois
+    tasks_multi = (
+        "- [ ] T1 — cria arquivo X · arquivos: a.py · cobre: R1 · verificação: pytest a\n"
+        "- [x] T2 (dep: T1) — ajusta Y · arquivos: b.py\n"
+        "      · cobre: R2 · verificação: pytest b\n"
+    )
+    tarefas_multi = parse_tasks(tasks_multi)
+    assert tarefas_multi[1]["deps"] == ["T1"], f"dep na primeira linha não capturada: {tarefas_multi}"
+    assert tarefas_multi[1]["acao"] == "ajusta Y", f"ação da task quebrada em duas linhas: {tarefas_multi}"
+    texto_multi = montar_tickets_md("999-fixture", "SBX", "999", "fixture", tarefas_multi)
+    assert "- T2 — ajusta Y · status: concluído · deps: T1 · Externo: —" in texto_multi, \
+        f"tickets.md não trouxe dep+ação da task multi-linha: {texto_multi}"
 
     # ler_projeto_jira: presente, desligado, ausente
     root, delta_dir = _montar_delta()
