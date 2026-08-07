@@ -59,7 +59,8 @@ def etiquetas(item: dict, entrada: dict) -> list:
 
 
 def emitir_sh_acli(itens: list, projeto: str, saida: Path, epico: str | None = None,
-                    capturar_chaves: bool = False, epico_existente: str | None = None) -> Path:
+                    capturar_chaves: bool = False, epico_existente: str | None = None,
+                    epico_labels: list | None = None) -> Path:
     """Emite .sh de creates unitários — decisão da delta-017 (DT-021: bulk rejeita \n).
 
     Args:
@@ -74,6 +75,11 @@ def emitir_sh_acli(itens: list, projeto: str, saida: Path, epico: str | None = N
         capturar_chaves: se True, cada create de filha vira `<ID>_KEY=$(... --json | ...)`
             em vez de um `--json` solto — usado pelo tickets.py (T3) para depois emitir
             `acli jira workitem link` entre as chaves capturadas (arestas `dep:`)
+        epico_labels: etiquetas do épico recém-criado (só usado com `epico`). Achado da
+            validação real (delta-017/T7): sem etiqueta, o `acli jira workitem search
+            --jql "... AND labels=delta:NNN"` documentado para a volta (R3) nunca devolve
+            o épico, e o achado "épico aberto com delta arquivada" fica inalcançável na
+            prática — só o selftest sintético cobria o caso.
 
     Returns:
         Path do tickets-acli.sh gerado
@@ -82,8 +88,9 @@ def emitir_sh_acli(itens: list, projeto: str, saida: Path, epico: str | None = N
               "# Emitido por projecao.py — revise antes de executar (R52: quem executa é a skill).",
               "set -euo pipefail", ""]
     if epico:
+        rotulos_epico = f" --label {shlex.quote(','.join(epico_labels))}" if epico_labels else ""
         linhas += [f"EPICO=$(acli jira workitem create --project {shlex.quote(projeto)} "
-                   f"--type {TIPO_EPICO} --summary {shlex.quote(epico)} --json "
+                   f"--type {TIPO_EPICO} --summary {shlex.quote(epico)}{rotulos_epico} --json "
                    "| python3 -c 'import json,sys; print(json.load(sys.stdin)[\"key\"])')",
                    'echo "épico criado: $EPICO"', ""]
     elif epico_existente:
@@ -142,6 +149,15 @@ def selftest():
         t4 = sh4.read_text(encoding="utf-8")
         assert "--type Epic" not in t4, "epico_existente não deveria recriar o épico"
         assert "EPICO=SBX-1" in t4 and '--parent "$EPICO"' in t4
+        # (g) epico_labels (achado da validação real, delta-017/T7): sem etiqueta o JQL
+        # do diff (labels=delta:NNN) nunca acha o épico — "épico aberto com delta
+        # arquivada" (R3) fica inalcançável fora do selftest sintético.
+        sh5 = emitir_sh_acli(itens, "SBX", saida, epico="[delta-017] jira-tickets",
+                             epico_labels=["delta:017"])
+        t5 = sh5.read_text(encoding="utf-8")
+        assert "--type Epic --summary '[delta-017] jira-tickets' --label delta:017" in t5, \
+            "épico com epico_labels deveria carregar --label"
+        assert "--label delta:017" not in t2, "épico sem epico_labels não deveria ganhar --label"
     print("selftest projecao: OK")
 
 

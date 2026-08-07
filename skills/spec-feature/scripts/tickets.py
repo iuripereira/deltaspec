@@ -242,7 +242,7 @@ def corpo_ticket_tarefa(t: dict, nnn: str, nome: str) -> str:
 
 
 def montar_links_bloqueio(pendentes: list, externos: dict) -> list:
-    """`acli jira workitem link --type Blocks` por aresta `dep:` entre as filhas pendentes.
+    """`acli jira workitem link create --type Blocks` por aresta `dep:` entre as filhas pendentes.
 
     Extremo criado nesta rodada usa a variável capturada pelo `.sh` (`capturar_chaves=True`
     em `emitir_sh_acli`); extremo já exportado usa a chave literal gravada no tickets.md —
@@ -250,6 +250,12 @@ def montar_links_bloqueio(pendentes: list, externos: dict) -> list:
     chave conhecida (nem pendente nem exportada — não deveria ocorrer no fluxo normal, mas
     correção pós-review: falha visível, não silêncio) vira aviso de 1 linha no stderr do
     próprio `.sh`, e o link correspondente não é emitido.
+
+    Sintaxe real do acli (achado da validação real, delta-017/T7 — o plano previa
+    `link --source/--target`, que não existe): subcomando `link create`, flags `--out`
+    (quem bloqueia) / `--in` (quem é bloqueado) e `--yes` para não interromper a
+    execução não interativa do `.sh` — confirmado contra o `SBX` (`--out X --in Y
+    --type Blocks` grava `X Blocks Y`, i.e. X bloqueia Y).
     """
     ids_pendentes = {t["id"] for t in pendentes}
     linhas = []
@@ -264,7 +270,8 @@ def montar_links_bloqueio(pendentes: list, externos: dict) -> list:
                 linhas.append(f'echo "aviso: {dep} sem chave conhecida — link {dep} -> {t["id"]} '
                               'não emitido" >&2')
                 continue
-            linhas.append(f"acli jira workitem link --source {origem} --target {destino} --type Blocks")
+            linhas.append(f"acli jira workitem link create --out {origem} --in {destino} "
+                          "--type Blocks --yes")
     return linhas
 
 
@@ -335,7 +342,11 @@ def cmd_exportar(delta_dir: Path, saida: Path) -> int:
     if epico_externo:
         sh = emitir_sh_acli(itens, projeto, saida, epico_existente=epico_externo, capturar_chaves=True)
     else:
-        sh = emitir_sh_acli(itens, projeto, saida, epico=f"[delta-{nnn}] {nome}", capturar_chaves=True)
+        # etiqueta delta:NNN no épico (achado da validação real, T7): sem ela o JQL de
+        # diff (labels=delta:NNN) nunca devolve o épico — R3 não alcança o caso "épico
+        # aberto com delta arquivada" fora do selftest sintético.
+        sh = emitir_sh_acli(itens, projeto, saida, epico=f"[delta-{nnn}] {nome}",
+                            epico_labels=[f"delta:{nnn}"], capturar_chaves=True)
     links = montar_links_bloqueio(pendentes, externos)
     if links:
         with sh.open("a", encoding="utf-8") as f:
@@ -493,11 +504,15 @@ def selftest() -> None:
     assert "T1_KEY" not in sh, "task já exportada (Externo preenchido) voltou ao .sh"
     assert sh.count("--type Task") == 2, "deveria criar só T2 e T3 (T1 já tem Externo)"
     assert "T2_KEY=$(acli jira workitem create" in sh and "T3_KEY=$(acli jira workitem create" in sh
-    assert '--source "SBX-9" --target "$T2_KEY" --type Blocks' in sh, "dep já exportada devia virar chave literal"
-    assert '--source "SBX-9" --target "$T3_KEY" --type Blocks' in sh, "T3 depende de T1 (já exportada)"
-    assert '--source "$T2_KEY" --target "$T3_KEY" --type Blocks' in sh, "T3 depende de T2 (pendente nesta rodada)"
+    assert 'link create --out "SBX-9" --in "$T2_KEY" --type Blocks --yes' in sh, \
+        "dep já exportada devia virar chave literal"
+    assert 'link create --out "SBX-9" --in "$T3_KEY" --type Blocks --yes' in sh, \
+        "T3 depende de T1 (já exportada)"
+    assert 'link create --out "$T2_KEY" --in "$T3_KEY" --type Blocks --yes' in sh, \
+        "T3 depende de T2 (pendente nesta rodada)"
     assert "--label delta:999" in sh, "etiqueta delta:NNN ausente"
-    assert "--type Epic --summary '[delta-999] fixture'" in sh, "épico não emitido com o summary certo"
+    assert "--type Epic --summary '[delta-999] fixture' --label delta:999" in sh, \
+        "épico não emitido com o summary e a etiqueta delta:NNN certos (achado T7: sem ela o JQL do diff não o acha)"
     assert (saida_dir / "corpo-T2.md").read_text(encoding="utf-8") == corpo_ticket_tarefa(
         tarefas[1], "999", "fixture"), "corpo do ticket não bateu com o canônico"
 
