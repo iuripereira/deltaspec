@@ -31,7 +31,8 @@ from datetime import date, datetime
 from functools import lru_cache
 from pathlib import Path
 
-from projecao import LINK_MD, alvo_local, corpo_ticket, emitir_sh_acli, etiquetas
+from projecao import (LINK_MD, alvo_local, corpo_ticket, emitir_sh_acli, etiquetas,
+                      ler_projeto_jira)
 
 STALE_DIAS = 90  # sem mudança na linha e com juros altos: força decisão explícita
 JANELA_CHURN = "6 months ago"  # janela do git log que estima a probabilidade de incidência
@@ -317,7 +318,9 @@ def exportar(root: Path, saida: Path, projeto: str = "") -> int:
     pendentes = sum(1 for i in dados["items"] if not i["externo"])
     print(f"{len(dados['items'])} item(ns) na fila · {pendentes} sem projeção · saída em {saida}")
     if not projeto:
-        print("> Dialeto do Jira omitido: informe --projeto CHAVE para gerar os creates do acli.")
+        print("> Dialeto do Jira omitido: declare `motores.jira.projeto` no doc-profile.yaml "
+              "(ou passe --projeto CHAVE para uma exportação pontual). Sem isso o destino "
+              "é o GitHub, via tickets-gh.sh.")
     return 0
 
 
@@ -409,7 +412,9 @@ def main() -> None:
     p.add_argument("comando", choices=("fila", "exportar", "diff"))
     p.add_argument("root", nargs="?", default=".", help="raiz do repositório (default: .)")
     p.add_argument("--saida", help="diretório dos arquivos de importação (exportar)")
-    p.add_argument("--projeto", default="", help="chave do projeto Jira (exportar)")
+    p.add_argument("--projeto", default="",
+                   help="chave do projeto Jira (exportar); sobrepõe motores.jira.projeto "
+                        "do doc-profile.yaml, que é onde o destino deve ser declarado")
     p.add_argument("--externo", help="JSON do `gh issue list --json ...` (diff)")
     a = p.parse_args()
     root = Path(a.root).resolve()
@@ -418,7 +423,10 @@ def main() -> None:
     if a.comando == "fila":
         sys.exit(cmd_fila(root))
     if a.comando == "exportar":
-        sys.exit(exportar(root, Path(a.saida) if a.saida else root / "docs" / "tickets", a.projeto))
+        # Destino declarado no repo vence a memória de quem digita (delta-035, DT-033);
+        # a flag sobrepõe, para exportação pontual (sandbox) sem editar arquivo versionado.
+        projeto = a.projeto or ler_projeto_jira(root) or ""
+        sys.exit(exportar(root, Path(a.saida) if a.saida else root / "docs" / "tickets", projeto))
     if not a.externo:
         die("diff exige --externo ESTADO.json (saída de `gh issue list --json ...`)")
     sys.exit(diff(root, Path(a.externo)))

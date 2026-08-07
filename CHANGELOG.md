@@ -8,6 +8,12 @@ O formato segue [Keep a Changelog 1.0.0](https://keepachangelog.com/pt-BR/1.0.0/
 
 ## [Não lançado]
 
+## [1.13.0] - 2026-08-07
+
+### Adicionado
+
+- **Destino do ticket é declarado no repo, não digitado de memória** (delta-035, MUDA R52, quita DT-033): `debito.py exportar` passa a ler `motores.jira.projeto` do `doc-profile.yaml` — a mesma fonte que o `tickets.py` já usava —, com `--projeto` sobrepondo para exportação pontual. **Ausência da chave é declaração explícita de que a rota é o GitHub**, e a mensagem de omissão nomeia o perfil em vez da flag. `ler_projeto_jira` sai do `tickets.py` e vira dono único no `projecao.py`: dois leitores do mesmo campo divergiriam em silêncio, que era a classe de falha do débito. A leitura degrada com aviso de 1 linha (RNF2) em perfil ilegível ou PyYAML ausente, em vez de estourar ou — pior — cair no default sem dizer por quê.
+
 ### Corrigido
 
 - **Ticket projetado no Jira sai formatado, não com a marcação crua** (delta-034): o `acli jira workitem create` aceita texto puro ou **ADF**, nunca Markdown — o corpo emitido por `corpo_ticket()` chegava literal (`**Local:**`, crases, `---`) em toda issue criada pelo `tickets-acli.sh` desde a delta-017. Novo `md_para_adf.py` converte o subset que a projeção emite; `emitir_sh_acli` passa a escrever `corpo-<id>.adf.json` ao lado do `.md` (que segue byte-idêntico ao `DEBT.md`, como fonte legível) e a apontar o `--description-file` para o ADF. Validado de ponta a ponta contra um Jira real (SBX-24), não só no selftest — e a lição da delta-017 sobre dialeto de ferramenta externa cobrou duas vezes: a mark `code` é exclusiva no ADF (combinada com `em`/`strong` o Jira recusa o documento inteiro) e a cerca de crase dupla desalinhava os pares em silêncio. Nenhum dos dois aparecia no selftest sintético.

@@ -8,12 +8,22 @@ sem mudança de assinatura) + emitir_sh_acli que orquestra.
 import json
 import re
 import shlex
+import sys
 import tempfile
 from pathlib import Path
 
 from md_para_adf import converter  # o acli lê ADF, não Markdown (delta-034)
 
+try:
+    import yaml  # única dependência externa admitida nos gates (ADR-0023)
+except ModuleNotFoundError:
+    # Diferente do tickets.py, que aborta: aqui a ausência degrada (RNF2). O `debito.py`
+    # roda em repo sem doc-profile.yaml e precisa seguir rodando sem PyYAML instalado —
+    # perder a leitura do perfil só devolve o destino ao default, que é o GitHub.
+    yaml = None
+
 # Constantes — copiadas do contexto de debito.py onde são usadas
+ARQUIVO_PERFIL = "doc-profile.yaml"
 FAIXA_ALTA = 9
 FAIXA_MEDIA = 3
 ROTULO_NATUREZA = {"débito": "debito", "pendência": "pendencia"}
@@ -27,6 +37,37 @@ TIPO_EPICO = "Epic"
 def nome_var(id_: str) -> str:
     """Nome de variável bash válido a partir de um id (ex.: 'DT-001' -> 'DT_001')."""
     return re.sub(r"[^0-9A-Za-z_]", "_", id_)
+
+
+def ler_projeto_jira(root: Path) -> str | None:
+    """`motores.jira.projeto` do doc-profile.yaml; ausente ou desligado → None (RNF2).
+
+    Dono único da leitura do destino (delta-035, DT-033): `debito.py` e `tickets.py`
+    chamam esta função, nunca releem o campo por conta própria — dois leitores do mesmo
+    campo divergiriam em silêncio, que é exatamente a classe de falha do DT-033.
+    Ausência de `motores.jira` **é** a declaração de que a rota é o GitHub.
+    """
+    perfil = root / ARQUIVO_PERFIL
+    if not perfil.is_file():
+        return None
+    if yaml is None:
+        # Perfil existe mas não dá para lê-lo: sem este aviso o destino cairia no default
+        # e a causa ficaria invisível — "não declarei" e "não consigo ler" viram a mesma
+        # saída silenciosa, que é a família de falha que o DT-033 fecha.
+        print(f"aviso: PyYAML ausente — {ARQUIVO_PERFIL} não lido, destino cai no default "
+              "(pip install pyyaml, ADR-0023)")
+        return None
+    try:
+        dados = yaml.safe_load(perfil.read_text(encoding="utf-8")) or {}
+    except yaml.YAMLError:
+        # Perfil ilegível não pode derrubar a projeção: o DEBT.md vale sozinho (RNF2).
+        print(f"aviso: {ARQUIVO_PERFIL} ilegível — destino do ticket cai no default")
+        return None
+    jira = (dados.get("motores") or {}).get("jira")
+    if not isinstance(jira, dict):
+        return None
+    projeto = jira.get("projeto")
+    return projeto if projeto else None
 
 
 def alvo_local(item: dict) -> str:
@@ -182,6 +223,21 @@ def selftest():
         assert "--type Epic --summary '[delta-017] jira-tickets' --label delta:017" in t5, \
             "épico com epico_labels deveria carregar --label"
         assert "--label delta:017" not in t2, "épico sem epico_labels não deveria ganhar --label"
+    # (h) ler_projeto_jira (delta-035, DT-033): dono único do destino declarado.
+    with tempfile.TemporaryDirectory() as td:
+        raiz = Path(td)
+        assert ler_projeto_jira(raiz) is None, "sem perfil, o destino é o GitHub"
+        perfil = raiz / ARQUIVO_PERFIL
+        perfil.write_text("motores:\n  jira:\n    projeto: TP\n", encoding="utf-8")
+        assert ler_projeto_jira(raiz) == "TP"
+        # desligado de todas as formas que um perfil real usa — nenhuma vira projeto
+        for desligado in ("motores:\n  jira: false\n", "motores:\n  jira: {}\n",
+                          "motores:\n  jira:\n    projeto: ''\n", "motores: {}\n", "{}\n"):
+            perfil.write_text(desligado, encoding="utf-8")
+            assert ler_projeto_jira(raiz) is None, f"deveria degradar: {desligado!r}"
+        # perfil quebrado não derruba a projeção — o DEBT.md vale sozinho (RNF2)
+        perfil.write_text("motores:\n  jira: [\n", encoding="utf-8")
+        assert ler_projeto_jira(raiz) is None, "YAML inválido deveria degradar, não estourar"
     print("selftest projecao: OK")
 
 

@@ -29,16 +29,16 @@ from pathlib import Path
 
 from itens import itens, ITEM  # dono do formato de item (delta-033) — mesmo parser do check_cycle.py (C9)
 
-try:
-    import yaml  # única dependência externa admitida nos gates (ADR-0023)
-except ModuleNotFoundError:
-    sys.exit("ERRO: PyYAML ausente — rode 'pip install pyyaml' (ADR-0023)")
+# PyYAML não é mais importado aqui: a única leitura de YAML deste script era o
+# `ler_projeto_jira`, que virou dono único no projecao.py (delta-035, DT-033) e avisa
+# em 1 linha quando a lib falta — abortar aqui deixaria de fazer sentido.
 
 # Import do módulo comum de projeção — skill irmã do mesmo plugin. O layout
 # skills/<nome>/scripts/ é estável tanto no repo quanto no cache do plugin instalado,
 # por isso o caminho é relativo ao próprio arquivo, nunca absoluto de máquina.
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "handoff" / "scripts"))
-from projecao import emitir_sh_acli, nome_var  # noqa: E402 — import após o path-fix acima, ordem exigida
+from projecao import (emitir_sh_acli, ler_projeto_jira,  # noqa: E402 — após o path-fix, ordem exigida
+                      nome_var)
 
 TRACO = "—"
 STATUS_ABERTO = "aberto"
@@ -112,19 +112,6 @@ def parse_tasks(texto: str) -> list:
             "acao": corpo.group(1).strip(),
         })
     return tarefas
-
-
-def ler_projeto_jira(root: Path) -> str | None:
-    """`motores.jira.projeto` do doc-profile.yaml; ausente ou desligado → None (RNF2)."""
-    perfil = root / "doc-profile.yaml"
-    if not perfil.is_file():
-        return None
-    dados = yaml.safe_load(perfil.read_text(encoding="utf-8")) or {}
-    jira = (dados.get("motores") or {}).get("jira")
-    if not isinstance(jira, dict):
-        return None
-    projeto = jira.get("projeto")
-    return projeto if projeto else None
 
 
 def partir_delta(dirname: str) -> tuple:

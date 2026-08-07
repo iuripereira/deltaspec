@@ -329,7 +329,7 @@ Pesquisa de 2026-08-06 nos SDDs da comunidade mostrou que todo framework separa 
 - **Origem:** pesquisa pedida pelo Iuri em sessão, 2026-08-06 · aberto em 2026-08-06
 - **Ticket:** [#130](../../issues/130)
 
-### DT-033 · débito · aberto
+### DT-033 · débito · quitado
 **Destino do ticket (GitHub × Jira) se configura de dois jeitos diferentes**
 
 A mesma decisão — para onde vai a projeção — tem dois mecanismos. `debito.py exportar` (débitos do `DEBT.md`) escolhe por **flag `--projeto CHAVE`**: emite o `tickets-gh.sh` sempre e o dialeto Jira só quando a flag vem. Já `tickets.py` (tasks de delta) escolhe por **`motores.jira.projeto` do `doc-profile.yaml`**, e não tem rota GitHub nenhuma. Efeito: a rota dos débitos vive na memória de quem digita o comando, não declarada no repo — quem esquece a flag manda pro GitHub sem perceber; quem a digita no repo errado manda pro Jira de um cliente. E os dois comandos do mesmo ciclo respondem a fontes de configuração diferentes, o que contraria a fonte canônica única.
@@ -338,8 +338,9 @@ Correção candidata (pequena, sem mudança de requisito): `debito.py` passa a l
 
 - **Fila:** `P3·J1·Pr3`
 - **Local:** [debito.py](skills/handoff/scripts/debito.py)
-- **Gatilho:** Primeira projeção real de débito de um repo consumidor — ou a próxima delta que tocar a projeção
+- **Gatilho:** ~~Primeira projeção real de débito de um repo consumidor~~ — antecipado a pedido do Iuri, 2026-08-07
 - **Origem:** pergunta do Iuri em sessão, 2026-08-07 (durante a [delta-034](specs/_archive/034-adf-description/)) · aberto em 2026-08-07
+- **Encerrado:** 2026-08-07, [delta-035](specs/_archive/035-destino-declarativo/) — `ler_projeto_jira` sai do `tickets.py` e vira **dono único** no `projecao.py`, consumido pelos dois; `debito.py exportar` lê `motores.jira.projeto` do perfil, com `--projeto` sobrepondo para exportação pontual. Ausência da chave passa a ser declaração explícita da rota GitHub, e a mensagem de omissão nomeia o perfil em vez da flag. **Dois achados da implementação:** remover a duplicação deixou o `import yaml` do `tickets.py` órfão, e ele carregava um `sys.exit` protetor cuja simples remoção criaria falha silenciosa — `ler_projeto_jira` passou a avisar em 1 linha quando o perfil existe mas PyYAML falta, distinguindo "não declarei" de "não consigo ler"; e a leitura degrada em perfil YAML inválido em vez de estourar, porque o `DEBT.md` vale sozinho (RNF2). A alternativa `motores.github` explícita foi recusada: ausência de `jira` já declara a rota, e chave sem necessidade é a cerimônia que o repo evita
 
 ## Lições
 <!-- post-mortems datados, com desfecho; sem ação pendente — ação pendente é DT -->
