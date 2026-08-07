@@ -7,7 +7,7 @@ executa `gh`/`acli` é a skill (mesmo padrão do projeto-infra, que é roteiro s
 script instalável). Política de fila e contrato da projeção: references/debito.md.
 
   fila      valida, calcula o score e imprime a fila ordenada
-  exportar  emite o JSON canônico + dialeto bulk do Jira + linhas de criação do GitHub
+  exportar  emite o JSON canônico + dialeto unitário do Jira (acli) + linhas de criação do GitHub
   diff      compara o DEBT.md com o estado coletado da ferramenta externa
 
 Score = (juros × probabilidade) / principal, derivado na leitura e **nunca gravado**
@@ -31,13 +31,14 @@ from datetime import date, datetime
 from functools import lru_cache
 from pathlib import Path
 
+from projecao import FAIXA_ALTA, FAIXA_MEDIA, LINK_MD, ROTULO_NATUREZA, alvo_local, corpo_ticket, \
+    emitir_sh_acli, etiquetas
+
 STALE_DIAS = 90  # sem mudança na linha e com juros altos: força decisão explícita
 JANELA_CHURN = "6 months ago"  # janela do git log que estima a probabilidade de incidência
 PERCENTIL_QUENTE = 0.10  # top 10% dos arquivos mais tocados → probabilidade 9
 PERCENTIL_MORNO = 0.40  # top 40% → probabilidade 3; o resto → 1
 JUROS_RELEVANTE = 3  # a partir daqui o aging cobra decisão (C do references/debito.md)
-FAIXA_ALTA = 9  # limiares de SCORE para a etiqueta de faixa — não confundir com a
-FAIXA_MEDIA = 3  # escala dos eixos, que é fechada pelo próprio regex FILA
 
 # Precedência do override: impedimento, não prioridade alta — entra fora da competição por score.
 OVERRIDES = ("security", "compliance", "eol", "contract")
@@ -45,14 +46,12 @@ NATUREZAS_PONTUAVEIS = ("débito", "pendência")
 ESTADOS_ATIVOS = ("aberto", "aceito", "vigente")
 ESTADOS_FINAIS = ("quitado", "descartado")
 VAZIO = ("", "—", "-")
-ROTULO_NATUREZA = {"débito": "debito", "pendência": "pendencia"}  # só o que é pontuável
 
 # `P3·J9·Pr9` com sufixos opcionais ` · trilha` / ` · !security(AAAA-MM-DD)`.
 # Ancorada no início: a fila só vale na posição canônica da célula (lição 2026-07-28).
 FILA = re.compile(r"^P([139])·J([139])·Pr([139])(?:\s*·\s*(.+))?$")
 OVERRIDE = re.compile(r"^!(\w+)\((\d{4}-\d{2}-\d{2})\)$")
 DATA = re.compile(r"\d{4}-\d{2}-\d{2}")  # data obrigatória em quitado/descartado (R18)
-LINK_MD = re.compile(r"\[[^\]]*\]\(([^)\s]+)\)")
 TRILHA = "trilha"
 
 # Gramática do bloco (delta-024). Todas ancoradas em início de linha: campo citado
@@ -219,12 +218,6 @@ def dias_parado(root: Path, ident: str, hoje: date):
         return None
 
 
-def alvo_local(item: dict) -> str:
-    """Caminho do artefato apontado em 'Local' (primeiro link, sem âncora)."""
-    achados = LINK_MD.findall(item.get("local", ""))
-    return achados[0].split("#")[0] if achados else ""
-
-
 def montar_fila(itens: list, root: Path, hoje=None) -> list:
     """Itens pontuáveis, ordenados: override, trilha, score desc. Score não é persistido."""
     hoje = hoje or date.today()
@@ -245,36 +238,6 @@ def montar_fila(itens: list, root: Path, hoje=None) -> list:
         })
     fila.sort(key=lambda f: (precedencia(f), -f["score"]))
     return fila
-
-
-def corpo_ticket(item: dict, entrada: dict) -> str:
-    """Markdown do ticket — sempre declarando que o arquivo é a fonte, não ele.
-
-    O `Local` entra como caminho literal, não como link relativo: dentro de um
-    issue o relativo resolve contra a URL da issue (não contra a árvore do repo)
-    e quebra; no Jira ele nem é interpretado.
-    """
-    caminho = alvo_local(item) or item.get("local", "—")
-    return (
-        f"{item.get('descrição', '')}\n\n"
-        f"- **Local:** `{caminho}`\n"
-        f"- **Origem:** {item.get('origem', '—')}\n"
-        f"- **Fila:** {item.get('fila', '—')} · **Score:** {entrada['score']:.2f}\n"
-        f"- **Gatilho:** {item.get('gatilho', '—')}\n\n---\n"
-        f"_Projeção de **{item['id']}** do `DEBT.md`. A fonte da verdade é o arquivo versionado; "
-        f"este ticket é espelho para gestão (ADR-0021)._"
-    )
-
-
-def etiquetas(item: dict, entrada: dict) -> list:
-    faixa = ("alta" if entrada["score"] >= FAIXA_ALTA
-             else "media" if entrada["score"] >= FAIXA_MEDIA else "baixa")
-    marcas = [f"dt:{item['id']}", f"deltaspec:{ROTULO_NATUREZA[item['natureza']]}", f"fila:{faixa}"]
-    if entrada["trilha"]:
-        marcas.append("fila:trilha")
-    if entrada["override"]:
-        marcas.append(f"fila:override-{entrada['override'][0]}")
-    return marcas
 
 
 def canonico(fila: list) -> dict:
@@ -326,15 +289,13 @@ def exportar(root: Path, saida: Path, projeto: str = "") -> int:
     saida.mkdir(parents=True, exist_ok=True)
     (saida / "tickets.json").write_text(json.dumps(dados, ensure_ascii=False, indent=2) + "\n",
                                         encoding="utf-8")
-    # Dialeto do `acli jira workitem create-bulk --from-json` (campos flat). Só é
-    # emitido com a chave do projeto: sem `projectKey` o acli recusa o lote, e emitir
-    # um payload que não roda seria pior que não emitir (achado do review).
+    # Dialeto unitário do `acli jira workitem create` (DT-021: `create-bulk` rejeita \n
+    # na description). Só é emitido com a chave do projeto: sem ela o acli recusa o
+    # create, e emitir um roteiro que não roda seria pior que não emitir (achado do review).
     if projeto:
-        bulk = {"issues": [{"summary": i["title"], "projectKey": projeto, "issueType": "Task",
-                            "description": i["body"], "label": i["labels"]}
-                           for i in dados["items"] if not i["externo"]]}
-        (saida / "tickets-acli.json").write_text(
-            json.dumps(bulk, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        pendentes_acli = [{"id": i["id"], "title": i["title"], "body": i["body"], "labels": i["labels"]}
+                          for i in dados["items"] if not i["externo"]]
+        emitir_sh_acli(pendentes_acli, projeto, saida)
     linhas = ["#!/usr/bin/env bash",
               "# Emitido por debito.py — revise antes de executar. Itens já projetados são pulados.",
               "# Rode a partir da raiz do repositório: o gh resolve o repo pelo diretório corrente.",
@@ -357,7 +318,7 @@ def exportar(root: Path, saida: Path, projeto: str = "") -> int:
     pendentes = sum(1 for i in dados["items"] if not i["externo"])
     print(f"{len(dados['items'])} item(ns) na fila · {pendentes} sem projeção · saída em {saida}")
     if not projeto:
-        print("> Dialeto do Jira omitido: informe --projeto CHAVE para gerar o lote do acli.")
+        print("> Dialeto do Jira omitido: informe --projeto CHAVE para gerar os creates do acli.")
     return 0
 
 
@@ -615,7 +576,7 @@ def selftest() -> None:
         (root_o / "DEBT.md").read_text(encoding="utf-8")), root=root_o)]
     assert ordem == ["DT-024", "DT-023", "DT-022", "DT-021", "DT-020"], f"ordem errada: {ordem}"
 
-    # exportar: três arquivos, JSON válido, item já projetado é pulado
+    # exportar: JSON canônico + .sh unitário do acli, item já projetado é pulado
     root_e = montar(linha("DT-030") + linha("DT-031", externo="[#7](../../issues/7)"))
     saida = root_e / "out"
     assert quieto(exportar, root_e, saida, "PROJ") == 0
@@ -623,12 +584,16 @@ def selftest() -> None:
     assert len(dados["items"]) == 2 and dados["version"] == 1
     assert dados["items"][0]["title"].startswith("[DT-0"), "título sem o ID como prefixo"
     assert any(l == "dt:DT-030" for l in dados["items"][0]["labels"]), "etiqueta de idempotência ausente"
-    bulk = json.loads((saida / "tickets-acli.json").read_text(encoding="utf-8"))
-    assert len(bulk["issues"]) == 1, "item já projetado entrou no bulk do Jira"
-    assert bulk["issues"][0]["projectKey"] == "PROJ", "lote do Jira sem chave de projeto não roda"
+    acli_sh = (saida / "tickets-acli.sh").read_text(encoding="utf-8")
+    assert "create-bulk" not in acli_sh, "bulk quebrado não pode voltar (DT-021)"
+    assert acli_sh.count("acli jira workitem create ") == 1, "item já projetado entrou no roteiro do Jira"
+    assert f"--project {shlex.quote('PROJ')}" in acli_sh, "roteiro do Jira sem chave de projeto não roda"
+    corpo_dt030 = (saida / "corpo-DT-030.md").read_text(encoding="utf-8")
+    assert corpo_dt030 == dados["items"][0]["body"], "corpo do ticket não bateu byte a byte com o canônico"
+    assert not (saida / "corpo-DT-031.md").exists(), "item já projetado gerou corpo no roteiro do Jira"
     sem_projeto = root_e / "out2"
     assert quieto(exportar, root_e, sem_projeto) == 0
-    assert not (sem_projeto / "tickets-acli.json").exists(), \
+    assert not (sem_projeto / "tickets-acli.sh").exists(), \
         "sem --projeto o dialeto do Jira deve ser omitido, não emitido quebrado"
     # O módulo não fala com a rede. A checagem lê a árvore sintática, não o texto:
     # uma busca por "import urllib" acharia a própria lista de proibidos abaixo — a
