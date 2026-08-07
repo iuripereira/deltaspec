@@ -8,6 +8,10 @@ O formato segue [Keep a Changelog 1.0.0](https://keepachangelog.com/pt-BR/1.0.0/
 
 ## [Não lançado]
 
+### Corrigido
+
+- **`diagram-design` entra no caminho de instalação** ([DT-019](DEBT.md) quitado): o motor da camada de apresentação estava contratado desde a delta-020/ADR-0018 mas fora do `instala-motores.sh` e do README §2.2 — quem seguia o quickstart ficava sem ele, em silêncio. Gatilho disparou com a primeira adoção real (delta-001 do imex/travel-planner, ADR-0036 de lá). O instalador registra o marketplace `cathrynlavery/diagram-design` de forma idempotente e instala o plugin; o diagrama e o texto dos motores nos dois READMEs ganham o nó `diagram-design`.
+
 ### Mudado
 
 - **Release passa a exigir revisão do processo e do README** (regra nova na tríade de release do `CLAUDE.md`, pedida pelo Iuri): o change que corta a tag confere se `README.md`/`README.en.md` ainda descrevem o processo real. A primeira aplicação da regra achou 4 defasagens nos dois READMEs: versão cravada em `v1.3.0` (7 releases atrás — substituída por link para a página de tags, que é a fonte), dois `### 2.3` na numeração, "(10 checagens)" com o gate já em C1–C12, e `/plugin update deltaspec` sem o `@deltaspec` que o Claude Code exige.
