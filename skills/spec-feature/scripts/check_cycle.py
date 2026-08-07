@@ -9,7 +9,8 @@ regra 6), o limiar de particionamento do TRUTH.md, a pendência roteada
 checks 3 e 5 do analyze (scope creep spec×plan, violação de regra canônica)
 continuam com o modelo — são juízo, não regex.
 
-  C1  aceite verificável — Rn com DADO/QUANDO/ENTÃO; RNFn com Métrica + Verificação
+  C1  aceite verificável — Rn com DADO/QUANDO/ENTÃO; RNFn com Métrica + Verificação;
+      heading '###' fora da forma canônica (delta-033)
   C2  cobertura spec ↔ tasks — órfãos nos dois sentidos; task sem verificação
   C3  estado × localização — delta 'aplicada' fora de _archive/ é trabalho inacabado
   C4  archive sem perda — requisito sumido do TRUTH.md sem MUDA/REMOVE que o declare
@@ -66,6 +67,9 @@ PERFIL_NUCLEO = (
 REQ_ID = r"R(?:NF|F)?-?\d+(?:\.\d+)*"
 
 CABECALHO = re.compile(rf"^###\s+({REQ_ID})\s*[—-]\s*(ADICIONA|MUDA|REMOVE)\b(.*)$")
+# Qualquer '###' — usado só para achar o heading que casa isto mas não CABECALHO (delta-033):
+# blocos() descarta esse heading em silêncio, e o requisito some do gate sem nenhum achado.
+HEADING_QUALQUER = re.compile(r"^###\s+(.*)$")
 ALVO = re.compile(rf"\b({REQ_ID})\s*\((?:Δ\s*|delta-)\d+\)")  # aceita (ΔNNN) legado e (delta-NNN)
 DEP = re.compile(r"\(dep:\s*([^)]*)\)")  # arestas de bloqueio do tasks.md (delta-016)
 SECAO_RISCOS = re.compile(r"^##\s+Depend[êe]ncias e riscos\s*$(.*?)(?=^##\s|\Z)", re.M | re.S)
@@ -82,7 +86,10 @@ def die(msg: str) -> None:
 
 
 def campo(texto: str, nome: str):
-    """Valor de 'nome: valor' até '·' ou fim de linha. None se ausente ou placeholder."""
+    """Valor de 'nome: valor' até '·' ou fim de `texto`. `texto` pode ser a junção de
+    várias linhas de um item (itens.py) — não é garantido ser uma única linha física;
+    reintroduzir `.splitlines()` aqui quebraria esse contrato (DT-001). None se ausente
+    ou placeholder."""
     m = re.search(rf"{nome}\s*:\s*([^·\n]*)", texto, re.IGNORECASE)
     if not m:
         return None
@@ -103,11 +110,13 @@ def cabecalho(spec_txt: str) -> str:
     return re.sub(r"<!--.*?-->", "", spec_txt, flags=re.S).split("\n## ", 1)[0]
 
 
-def cobre_alvos(linha: str, ids_spec: set, onde: str, cobertos: set, v: list, ignora: tuple = ()):
+def cobre_alvos(texto: str, ids_spec: set, onde: str, cobertos: set, v: list, ignora: tuple = ()):
     """Núcleo comum do C2 (tasks) e do C8 (test-plan): parseia 'cobre:', acumula os
-    alvos em `cobertos` e acusa referência morta (ALTO). Retorna o valor bruto de
-    'cobre:' (None se ausente) para o check de completude de cada chamador."""
-    cobre = campo(linha, "cobre")
+    alvos em `cobertos` e acusa referência morta (ALTO). `texto` é `item["texto"]`
+    (itens.py) — a junção de todas as linhas do item, não uma linha física isolada.
+    Retorna o valor bruto de 'cobre:' (None se ausente) para o check de completude
+    de cada chamador."""
+    cobre = campo(texto, "cobre")
     if not cobre:
         return None
     for alvo in re.split(r"[,/]", cobre):
@@ -140,7 +149,13 @@ def blocos(spec_txt: str) -> list[tuple[str, str, str, str]]:
     return out
 
 
-def c1_aceite(bs, v: list) -> None:
+def c1_aceite(spec_txt: str, bs, v: list) -> None:
+    for n, line in enumerate(spec_txt.splitlines(), 1):
+        m = HEADING_QUALQUER.match(line)
+        if m and not CABECALHO.match(line):
+            v.append(("ALTO", f"spec.md l.{n}", f"heading '### {m.group(1)}' fora da forma canônica",
+                      "usar '### Rn — ADICIONA|MUDA|REMOVE' (templates/delta-spec.md) — "
+                      "requisito fora da forma some do gate"))
     for rid, verbo, _, corpo in bs:
         if verbo == "REMOVE":
             continue  # REMOVE não precisa de cenário — está saindo
@@ -433,7 +448,7 @@ def checar(root: Path, delta: Path) -> list:
         regressao = re.search(r"^##\s+Teste de regress[ãa]o\s*$(.*?)(?=^##\s|\Z)", spec_txt, re.M | re.S)
         if not regressao or not re.search(r"^\s*-\s*\S", regressao.group(1), re.M) or "{{" in regressao.group(1):
             v.append(("ALTO", "spec.md", "bugfix sem teste de regressão declarado", "apontar o teste que falha antes e passa depois do fix (delta-015)"))
-    c1_aceite(bs, v)
+    c1_aceite(spec_txt, bs, v)
     if not (bugfix and not tasks.is_file()):  # bugfix sem tasks.md é válido — tasks é sob demanda (delta-015)
         tasks_txt = tasks.read_text(encoding="utf-8") if tasks.is_file() else ""
         c2_cobertura(bs, tasks_txt, v)
@@ -535,6 +550,25 @@ Clarify: entrevistado (2026-01-01) — 2 decisões do usuário
     limpa_tasks_rf = limpa_tasks.replace("cobre: R1", "cobre: RF-01.1").replace("cobre: RNF1", "cobre: RNF-01")
     limpa_testplan_rf = limpa_testplan.replace("cobre: R1", "cobre: RF-01.1").replace("cobre: RNF1", "cobre: RNF-01")
     assert rodar(limpa_spec_rf, limpa_tasks_rf, limpa_testplan_rf) == [], "delta limpa em notação RF-NN deveria passar sem achados"
+
+    # heading '###' fora da forma canônica (delta-033): blocos() descarta esse heading em
+    # silêncio — sem este check, o requisito some do gate sem nenhum achado (o caso medido:
+    # '### R2 — Adiciona:' em minúsculo, veredito saía LIBERADO).
+    heading_invalido_spec = limpa_spec + "### R2 — Adiciona: outra coisa\n- DADO a QUANDO b ENTÃO c\n"
+    achados_heading = [a for a in rodar(heading_invalido_spec, limpa_tasks, limpa_testplan) if "fora da forma canônica" in a[2]]
+    assert len(achados_heading) == 1, f"heading com verbo minúsculo deveria virar exatamente 1 ALTO: {achados_heading}"
+    sev, onde, o_que, _ = achados_heading[0]
+    assert sev == "ALTO" and onde == "spec.md l.13" and "R2 — Adiciona" in o_que, \
+        f"achado de heading precisa nomear a linha exata e o texto do heading: {achados_heading[0]}"
+    assert rodar(limpa_spec, limpa_tasks, limpa_testplan) == [], \
+        "spec só com headings válidos não pode ganhar achado de heading (calibração 2026-08-07: 0/92 no corpus real)"
+
+    # caso preexistente: spec sem nenhum '###' continua acusando 'nenhum bloco' (não é
+    # engolido pela detecção nova de heading fora da forma)
+    sem_blocos = rodar("# delta-003 — x\nEstado: proposta · Data: 2026-01-01 · Branch: feat/003-x\n\n"
+                       "## Contexto\nprosa sem heading de requisito\n")
+    assert any("nenhum bloco" in q for _, _, q, _ in sem_blocos), f"spec sem headings deveria acusar 'nenhum bloco': {sem_blocos}"
+    assert not any("fora da forma canônica" in q for _, _, q, _ in sem_blocos), f"spec sem headings não inventa achado de heading: {sem_blocos}"
 
     achados = " · ".join(f"{o} {q}" for _, o, q, _ in rodar(suja_spec, suja_tasks))
     for esperado in (
