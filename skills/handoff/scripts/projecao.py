@@ -58,7 +58,8 @@ def etiquetas(item: dict, entrada: dict) -> list:
     return marcas
 
 
-def emitir_sh_acli(itens: list, projeto: str, saida: Path, epico: str | None = None) -> Path:
+def emitir_sh_acli(itens: list, projeto: str, saida: Path, epico: str | None = None,
+                    capturar_chaves: bool = False) -> Path:
     """Emite .sh de creates unitários — decisão da delta-017 (DT-021: bulk rejeita \n).
 
     Args:
@@ -66,6 +67,9 @@ def emitir_sh_acli(itens: list, projeto: str, saida: Path, epico: str | None = N
         projeto: projeto Jira (--project)
         saida: Path onde escrever corpo-<id>.md e tickets-acli.sh
         epico: se presente, cria épico primeiro e usa --parent nas filhas
+        capturar_chaves: se True, cada create de filha vira `<ID>_KEY=$(... --json | ...)`
+            em vez de um `--json` solto — usado pelo tickets.py (T3) para depois emitir
+            `acli jira workitem link` entre as chaves capturadas (arestas `dep:`)
 
     Returns:
         Path do tickets-acli.sh gerado
@@ -83,9 +87,16 @@ def emitir_sh_acli(itens: list, projeto: str, saida: Path, epico: str | None = N
         corpo.write_text(i["body"], encoding="utf-8")
         rotulos = f" --label {shlex.quote(','.join(i['labels']))}" if i["labels"] else ""
         pai = ' --parent "$EPICO"' if epico else ""
-        linhas.append(f"acli jira workitem create --project {shlex.quote(projeto)} "
-                      f"--type {TIPO_ITEM} --summary {shlex.quote(i['title'])}{rotulos}"
-                      f"{pai} --description-file {shlex.quote(str(corpo))} --json")
+        comando = (f"acli jira workitem create --project {shlex.quote(projeto)} "
+                   f"--type {TIPO_ITEM} --summary {shlex.quote(i['title'])}{rotulos}"
+                   f"{pai} --description-file {shlex.quote(str(corpo))} --json")
+        if capturar_chaves:
+            var = f"{i['id']}_KEY"
+            linhas.append(f"{var}=$({comando} "
+                          "| python3 -c 'import json,sys; print(json.load(sys.stdin)[\"key\"])')")
+            linhas.append(f'echo "{i["id"]}: ${var}"')
+        else:
+            linhas.append(comando)
     destino = saida / "tickets-acli.sh"
     destino.write_text("\n".join(linhas) + "\n", encoding="utf-8")
     return destino
@@ -110,6 +121,14 @@ def selftest():
         t2 = sh2.read_text(encoding="utf-8")
         assert t2.index("--type Epic") < t2.index("--type Task")
         assert '--parent "$EPICO"' in t2
+        # (e) capturar_chaves=True (T3, delta-017): create de filha vira <ID>_KEY=$(...),
+        # sem quebrar o modo default (capturar_chaves=False testado acima).
+        sh3 = emitir_sh_acli(itens, "SBX", saida, capturar_chaves=True)
+        t3 = sh3.read_text(encoding="utf-8")
+        assert "DT-001_KEY=$(acli jira workitem create" in t3
+        assert "DT-002_KEY=$(acli jira workitem create" in t3
+        assert t3.count("_KEY=$(") == 2 and 'echo "DT-001: $DT-001_KEY"' in t3
+        assert "create-bulk" not in t3
     print("selftest projecao: OK")
 
 
