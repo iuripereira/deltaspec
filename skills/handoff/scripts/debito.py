@@ -31,8 +31,7 @@ from datetime import date, datetime
 from functools import lru_cache
 from pathlib import Path
 
-from projecao import FAIXA_ALTA, FAIXA_MEDIA, LINK_MD, ROTULO_NATUREZA, alvo_local, corpo_ticket, \
-    emitir_sh_acli, etiquetas
+from projecao import LINK_MD, alvo_local, corpo_ticket, emitir_sh_acli, etiquetas
 
 STALE_DIAS = 90  # sem mudança na linha e com juros altos: força decisão explícita
 JANELA_CHURN = "6 months ago"  # janela do git log que estima a probabilidade de incidência
