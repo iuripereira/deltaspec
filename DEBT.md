@@ -215,9 +215,11 @@ Duas evidências da **primeira revisão completa das marcas** (2026-08-02, 5 div
 
 O `exportar --projeto` emite o lote do `acli jira workitem create-bulk`, mas nenhum projeto Jira existe para validá-lo — o formato veio da doc e do `--generate-json`, não de execução (a ADR-0021 registra a limitação). **Pr mantido em 1 contra a derivação (2026-08-02):** o churn do `debito.py` mede o desenvolvimento do script, não o uso do dialeto Jira — que nunca rodou uma vez e só roda quando existir projeto Jira (delta-017). Frio de verdade
 
+**Primeira execução real: 2026-08-07, e o risco previsto se confirmou.** O site veredas.atlassian.net já tinha 6 projetos IMEX reais (o gatilho estava satisfeito sem varredura — mesma classe da lição de 2026-08-02); o teste rodou no `SBX`, sandbox criado por clone do TP. Resultado por bissecção (12 casos): o lote flat **passa** (summary/projectKey/issueType/label, inclusive labels com `:` e acentuação), a execução automatizada exige `--yes` (sem ele há prompt interativo que cancela fora de TTY), e **description com qualquer `\n` é rejeitada** ("The request body is missing or invalid") — até quebra simples de linha. O `create` unitário aceita o mesmo corpo multi-linha ([SBX-6](https://veredas.atlassian.net/browse/SBX-6)). Ou seja: o dialeto como emitido **não carrega o corpo dos itens**. Correção pelo ciclo (delta-017, que já reusa o mecanismo): candidatos — emitir `.sh` de `create` unitários no padrão do `tickets-gh.sh` (preserva o corpo) ou manter o bulk com description achatada em linha única (perde estrutura)
+
 - **Fila:** `P1·J1·Pr1`
 - **Local:** [debito.py](skills/handoff/scripts/debito.py)
-- **Gatilho:** Primeiro projeto Jira disponível — ou a delta-017, que reusa este mesmo mecanismo no `tickets.md`
+- **Gatilho:** ~~Primeiro projeto Jira disponível~~ (satisfeito em 2026-08-07) → delta-017, que corrige o dialeto com os achados acima
 - **Origem:** [delta-023](specs/_archive/023-divida-tecnica-e-tickets/) · aberto em 2026-08-01
 - **Ticket:** [#96](../../issues/96)
 
