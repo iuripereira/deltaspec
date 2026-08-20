@@ -1,0 +1,101 @@
+# doc-profile.yaml — decisão registrada de documentação visual deste projeto (ADR-0009)
+#
+# O que é obrigatório é a DECISÃO, não os diagramas. Na fase de spec o agente lê
+# este perfil e gera SOMENTE o que está declarado como `obrigatorio: true`;
+# qualquer artefato fora do perfil exige pergunta explícita ao usuário antes.
+# Arquivo ausente = comportamento sem gate, com warning sugerindo criá-lo.
+#
+# Ferramentas (diagram-as-code, CLIs — setup no README do deltaspec):
+#   mermaid     fluxogramas/sequência/ERD rápido; renderiza nativo no GitHub/Obsidian  [obrigatória]
+#   dbml        modelo de dados canônico (schema.dbml → dbml-renderer)                 [opcional]
+#   structurizr arquitetura de alto nível / C4 formal via DSL (docker)                 [opcional]
+#   d2          arquitetura visual moderna (alternativa: excalidraw)                   [opcional]
+#   plantuml    UML formal e casos de uso                                              [opcional]
+#   excalidraw  diagramas explicativos (regras, conceitos) e arquitetura visual        [opcional]
+#
+# A ferramenta segue a CATEGORIA do diagrama (tabela do ADR-0009) — não reaproveite
+# um diagrama pronto de outra categoria/ferramenta: arquitetura C4 em Mermaid, por
+# exemplo, migra para Structurizr DSL; Mermaid fica para fluxos/sequência/ERD.
+#
+# APRESENTAÇÃO NÃO É CATEGORIA — é a flag `apresentacao: true` no artefato (ADR-0029).
+# Acabamento é eixo perpendicular à categoria: marcar a arquitetura não troca o
+# Structurizr por outra coisa, só diz que ela também sai com acabamento editorial.
+decisao:
+  data: "{{AAAA-MM-DD}}"
+  # Obrigatória quando NENHUM artefato é declarado obrigatório (perfil "sem diagramas"):
+  justificativa: ""
+
+publico:
+  interno: true    # documentação VIVA — Mermaid inline no markdown, mantida junto do código; segue a economia de tokens (RNF1)
+  cliente: false   # entregável CONGELADO — PDF/DOCX assinável via skill doc-entregavel; isento da economia de tokens (ADR-0009)
+
+# Default enxuto: arquitetura + modelo de dados obrigatórios na spec; o resto sob demanda.
+# `apresentacao: true` (opcional, default false) marca o artefato que também sai com
+# acabamento editorial para cliente/gestão/stakeholder — ver bloco `apresentacao` abaixo.
+artefatos:
+  arquitetura:  { obrigatorio: true,  ferramenta: structurizr, fase: spec, saida: docs/diagrams/ }
+  modelo-dados: { obrigatorio: true,  ferramenta: dbml,        fase: spec, saida: docs/diagrams/ }
+  fluxos:       { obrigatorio: false }   # ferramenta: mermaid
+  casos-de-uso: { obrigatorio: false }   # ferramenta: plantuml
+  explicativos: { obrigatorio: false }   # ferramenta: excalidraw — regras/conceitos que a prosa não sustenta
+  prototipo:    { obrigatorio: false }   # ferramenta: html-estatico — estágio CONDITIONAL do ciclo (delta-015, ADR-0013); default: docs/prototypes/NNN-nome/. NÃO leva `apresentacao`: já é HTML interativo, a página só o linka
+
+# Camada de APRESENTAÇÃO a cliente/gestão/stakeholder (delta-042, ADR-0029).
+# Bloco OPCIONAL: só é lido quando algum artefato acima marca `apresentacao: true`;
+# ausente, valem os defaults abaixo. No archive nasce `<saida>/NNN-nome.html`,
+# autocontido, com uma seção ancorada por categoria marcada (`#arquitetura`, `#fluxos`).
+# Unidirecional: o fonte versionado (.mmd/.dsl/.dbml) governa e a página se refaz dele.
+# Regra do HTML (dona): skills/spec-feature/references/html-autocontido.md
+apresentacao:
+  motor: html-editorial   # html-editorial (nativo, default) | diagram-design (plugin de terceiro, opcional; ausente → cai para o nativo com 1 linha de aviso)
+  saida: docs/apresentacao/
+  paleta: {}              # mapa inline token → cor; vazio = paleta default. Ex.: { ink: "#141413", paper: "#FAF9F5", acc: "#D97757" }
+
+# Motores externos opcionais que o ciclo consulta neste projeto (contrato e avisos:
+# spec-feature/references/adapters.md, seção graphify — instalação manual, ADR-0014).
+motores:
+  graphify: false        # true = descoberta/specify/plan/review consultam o grafo de codebase (requer binário instalado; NUNCA use `graphify install` nem `graphify claude install`)
+  graphify_backend: ""   # obrigatório se a indexação incluir docs; vazio = pare e pergunte (ADR-0022). Prefira claude-cli ou ollama
+  # jira: { projeto: CHAVE }  # projeção de tickets.md por delta para o Jira (delta-017); ausente = desligado
+
+# Lido só quando publico.cliente: true — insumo da skill doc-entregavel.
+entregaveis:
+  formato: [pdf, docx]
+  momento: entrega-prd        # entrega-prd | fechamento-fase
+  saida: docs/entregaveis/
+  capa:
+    titulo: "{{Documento de Requisitos do Produto (PRD)}}"
+    anexo: ""                 # texto jurídico de vínculo ao contrato, se houver (ex.: "Anexo V ao Contrato ...")
+    local: "{{Cidade/UF}}"
+    assinaturas:
+      - "{{Razão Social}} — CONTRATANTE"
+      - "{{Razão Social}} — CONTRATADO"
+
+# ── Perfis alternativos (exemplos — substitua os blocos acima) ────────────────
+#
+# 1) Projeto só-interno (default acima já cobre; variação mínima):
+#    publico: { interno: true, cliente: false }  e apague o bloco `entregaveis`.
+#
+# 2) Projeto com entregável oficial para o cliente:
+#    publico: { interno: true, cliente: true }
+#    artefatos:
+#      arquitetura:  { obrigatorio: true, ferramenta: structurizr, fase: spec, saida: docs/diagrams/, apresentacao: true }
+#      modelo-dados: { obrigatorio: true, ferramenta: dbml,        fase: spec, saida: docs/diagrams/ }
+#      fluxos:       { obrigatorio: true, ferramenta: mermaid,     fase: spec, saida: docs/diagrams/, apresentacao: true }
+#      casos-de-uso: { obrigatorio: true, ferramenta: plantuml,    fase: spec, saida: docs/diagrams/ }
+#      explicativos: { obrigatorio: true, ferramenta: excalidraw,  fase: spec, saida: docs/diagrams/ }
+#    apresentacao: { motor: html-editorial, saida: docs/apresentacao/, paleta: { ink: "#141413", paper: "#FAF9F5", acc: "#D97757" } }
+#    e preencha `entregaveis.capa` com os dados do contrato.
+#    (arquitetura e fluxos marcados = o que a alta gestão lê; o congelado do cliente
+#     continua saindo pelo pipeline CLI da doc-entregavel, fora desta camada)
+#
+# 3) Projeto sem diagramas (decisão válida — a justificativa é OBRIGATÓRIA):
+#    decisao:
+#      data: 2026-07-20
+#      justificativa: "CLI sem UI nem persistência; arquitetura cabe em prosa no README."
+#    publico: { interno: true, cliente: false }
+#    artefatos:
+#      arquitetura:  { obrigatorio: false }
+#      modelo-dados: { obrigatorio: false }
+#      fluxos:       { obrigatorio: false }
+#      casos-de-uso: { obrigatorio: false }
