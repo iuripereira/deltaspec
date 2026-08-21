@@ -1,0 +1,17 @@
+{
+  "name": "deltaspec",
+  "description": "Spec-Driven Development por delta specs, com estados proposta → aplicada → arquivada, fonte da verdade consolidada a cada archive e gates determinísticos.",
+  "owner": {
+    "name": "Iuri Pereira",
+    "url": "https://github.com/iuripereira"
+  },
+  "plugins": [
+    {
+      "name": "deltaspec",
+      "description": "Skills do ciclo deltaspec: projeto-init, projeto-infra, descoberta, rodada-insumos, spec-feature, spec-review, guarding-doc-integrity, handoff, doc-entregavel, gerar-diagrama, modelo-dados, status-pmo, audit-workspace, ticket-to-jira e eu-tenho-tdah.",
+      "source": "./",
+      "category": "workflow",
+      "homepage": "https://github.com/iuripereira/deltaspec"
+    }
+  ]
+}

@@ -1,0 +1,190 @@
+# CI do plugin deltaspec: valida JSON, TOML, YAML, frontmatter das SKILL.md,
+# portabilidade (RNF5), integridade documental (deps.toml) e os --selftest dos gates.
+# Os contextos "ci" e "commits" são exigidos pelo ruleset sdd-protect-main — não renomeie os jobs.
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+# Least privilege: o default do repositorio pode ser read/write, e em
+# repositorio publico isso e superficie de graca (delta-066).
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      # Antes de qualquer step que importe yaml — "Validar YAML" ja dependia do pre-instalado do runner
+      - name: Dependencia admitida dos gates (ADR-0023)
+        run: python3 -m pip install --quiet pyyaml
+      - name: Validar JSON
+        run: |
+          set -e
+          for f in $(git ls-files '*.json'); do
+            python3 -m json.tool "$f" > /dev/null || { echo "JSON inválido: $f"; exit 1; }
+          done
+      - name: Validar TOML
+        run: |
+          set -e
+          for f in $(git ls-files '*.toml'); do
+            python3 -c "import tomllib,sys; tomllib.load(open(sys.argv[1],'rb'))" "$f" \
+              || { echo "TOML inválido: $f"; exit 1; }
+          done
+      - name: Validar YAML
+        run: |
+          python3 - <<'EOF'
+          import sys, subprocess, yaml
+          files = subprocess.check_output(['git', 'ls-files', '*.yml', '*.yaml'], text=True).split()
+          bad = []
+          for f in files:
+              try:
+                  yaml.safe_load(open(f))
+              except Exception as e:
+                  bad.append(f"{f}: {e}")
+          if bad:
+              print("\n".join(bad)); sys.exit(1)
+          EOF
+      - name: Portabilidade (RNF5) — zero caminho absoluto de maquina
+        run: |
+          # Padroes escritos com [.] e [e] para nao casarem com estas proprias
+          # linhas do workflow, que vive dentro de .github/ e e varrido abaixo.
+          # As tres arvores sao as publicadas pelo allowlist do publica-dist.sh.
+          PUB="skills/ .github/ scripts/"
+          # caminho de instalacao legado — proibido em qualquer variante (delta-060)
+          if grep -rnE '(~|\$HOME|/hom[e]/[^/ ]+)/[.]claude/skills' $PUB; then
+            echo "RNF5: caminho de instalacao legado encontrado acima"; exit 1
+          fi
+          # caminho absoluto de maquina — nunca portatil (delta-067)
+          if grep -rnE '/hom[e]/[^/ ]+/' $PUB; then
+            echo "RNF5: caminho absoluto de maquina em artefato publicado acima"; exit 1
+          fi
+          # caminho relativo a home — so sob .claude/, que e a instalacao do
+          # plugin e e portatil por construcao; layout pessoal nao entra (delta-067)
+          if grep -rnE '(~|[$]HOME)/' $PUB | grep -vE '(~|[$]HOME)/[.]claude/'; then
+            echo "RNF5: caminho da home fora de .claude/ em artefato publicado acima"; exit 1
+          fi
+          # docs/ vivo com padrao mais largo (qualquer caminho de maquina); ADRs
+          # Accepted sao imutaveis e podem citar caminho historico (delta-060)
+          if grep -rnE '(~|\$HOME|/hom[e]/[^/ ]+)/' docs/ --exclude-dir=adrs; then
+            echo "RNF5: caminho absoluto de maquina em doc viva acima"; exit 1
+          fi
+          echo "RNF5: OK"
+      - name: "Sem interpolacao de expressao dentro de run: (delta-069)"
+        run: |
+          python3 - <<'EOF'
+          # Expressao do Actions dentro de run: e substituida no TEXTO do script
+          # antes de o shell existir: o valor nao vira argumento, vira codigo. Em
+          # repo publico o nome de branch de um fork e dado de terceiro (DT-059).
+          # Correto: passar por env: e ler "$VAR" no script.
+          # Le o YAML em vez de grep porque so o parse distingue o run: perigoso
+          # do with:/env:, que sao campos de input e sao seguros.
+          import subprocess, sys, yaml
+          MARCA = '$' + '{{'   # partido para o gate nao se acusar, nem o Actions interpretar
+          falhas = []
+          for f in subprocess.check_output(['git', 'ls-files', '*.yml', '*.yaml'], text=True).split():
+              doc = yaml.safe_load(open(f)) or {}
+              if not isinstance(doc, dict):
+                  continue
+              for job, corpo in (doc.get('jobs') or {}).items():
+                  for passo in (corpo or {}).get('steps') or []:
+                      if MARCA in ((passo or {}).get('run') or ''):
+                          falhas.append(f"{f}: job '{job}', passo '{passo.get('name', 'sem nome')}'")
+          if falhas:
+              print('interpolacao de expressao dentro de run: (use env: e leia "$VAR")')
+              print('\n'.join(falhas)); sys.exit(1)
+          print('sem interpolacao em run:: OK')
+          EOF
+      # Metade negativa; a positiva e o C1 do deps.toml. Excecao registrada na delta-028.
+      - name: Politica de dependencia - nenhum arquivo promete zero-dep
+        run: |
+          if grep -rn "só a biblioteca padrão\|just the Python 3.11+ standard library\|zero pacote externo\|stdlib pura\|zero dependência externa" CLAUDE.md README.md README.en.md SECURITY.md; then
+            echo "politica: arquivo ainda promete zero dependencia — atualizar"; exit 1
+          fi
+          echo "politica (metade negativa): OK"
+      - name: Formato do CHANGELOG
+        run: python3 skills/spec-feature/scripts/check_changelog.py CHANGELOG.md
+      - name: Selftest dos gates
+        run: |
+          set -e
+          python3 skills/spec-feature/scripts/check_cycle.py --selftest
+          python3 skills/spec-feature/scripts/check_changelog.py --selftest
+          python3 skills/guarding-doc-integrity/scripts/validate_integrity.py --selftest
+          python3 skills/handoff/scripts/debito.py --selftest
+          # Dialeto do Jira (delta-034): sem estes, a regressão do corpo do ticket fica
+          # sem rede — o selftest do debito.py exercita o exportar, mas não os asserts
+          # de formatação que provam que o ADF não regrediu para Markdown cru.
+          python3 skills/handoff/scripts/md_para_adf.py --selftest
+          python3 skills/handoff/scripts/projecao.py --selftest
+          python3 skills/spec-feature/scripts/tickets.py --selftest
+          python3 skills/spec-feature/scripts/itens.py --selftest
+          python3 skills/audit-workspace/scripts/audit_workspace.py --selftest
+          python3 skills/doc-entregavel/scripts/tabela_cliente.py --selftest
+          python3 skills/gerar-diagrama/scripts/gera_excalidraw.py --selftest
+          python3 skills/modelo-dados/scripts/check_data_model.py --selftest
+          python3 .github/scripts/versao_manifesto.py --selftest
+          python3 .claude/hooks/guarda-imutaveis.py --selftest
+          python3 .claude/hooks/guarda-confidencialidade.py --selftest
+      # Runtime proprio da skill doc-entregavel (nao dos gates — ADR-0023 intacta):
+      # o selftest exporta docx+pdf de verdade, entao precisa do pandoc e das libs
+      # de exportacao. Step separado para nao sugerir que os gates dependem disso.
+      - name: Runtime da doc-entregavel + selftest do exporta
+        run: |
+          sudo apt-get install -y --no-install-recommends pandoc
+          python3 -m pip install --quiet pypandoc python-docx markdown pypdf weasyprint
+          python3 skills/doc-entregavel/scripts/exporta_entregavel.py --selftest
+      # Validador oficial de plugin (delta-059): schema dos manifestos com warning
+      # tratado como erro. CLI instalado so para validacao, sem auth.
+      - name: Validador oficial do plugin (claude plugin validate)
+        run: |
+          npm install -g @anthropic-ai/claude-code
+          # Falha upstream intermitente e conhecida (anthropics/claude-code#50609): o
+          # postinstall que copia o binário nativo por plataforma às vezes não completa
+          # em install global num runner efêmero. Sem --ignore-scripts/--omit=optional
+          # aqui, então o fallback é rodar o postinstall de novo, como a própria mensagem
+          # de erro do pacote recomenda.
+          claude --version >/dev/null 2>&1 || node "$(npm root -g)/@anthropic-ai/claude-code/install.cjs"
+          claude plugin validate --strict .
+      - name: Integridade documental (deps.toml)
+        run: |
+          if [ -f deps.toml ]; then
+            python3 skills/guarding-doc-integrity/scripts/validate_integrity.py .
+          else
+            # repo derivado (ADR-0036): sem manifesto na raiz — só links (C3, R60)
+            python3 skills/guarding-doc-integrity/scripts/validate_integrity.py --links-only .
+          fi
+      - name: Validar frontmatter dos SKILL.md
+        run: |
+          set -e
+          shopt -s nullglob
+          arquivos=(skills/*/SKILL.md)
+          # glob que nao casa era a falha silenciosa: bash passava o literal adiante
+          [ ${#arquivos[@]} -gt 0 ] || { echo "nenhuma SKILL.md em skills/"; exit 1; }
+          for f in "${arquivos[@]}"; do
+            head -1 "$f" | grep -q '^---$' && grep -q '^name:' "$f" && grep -q '^description:' "$f" \
+              || { echo "frontmatter inválido: $f"; exit 1; }
+          done
+          echo "frontmatter OK em ${#arquivos[@]} skills"
+      - name: Inventário de skills nos manifestos
+        run: |
+          python3 - <<'EOF'
+          # toda skill de skills/ deve ser citada na description dos DOIS manifestos
+          # (case-insensitive — lição do grep case-sensitive, DEBT.md 2026-07-20)
+          import json, pathlib, sys
+          skills = sorted(p.name for p in pathlib.Path('skills').iterdir() if (p / 'SKILL.md').is_file())
+          manifestos = {
+              '.claude-plugin/plugin.json': json.load(open('.claude-plugin/plugin.json'))['description'],
+              '.claude-plugin/marketplace.json': json.load(open('.claude-plugin/marketplace.json'))['plugins'][0]['description'],
+          }
+          falhas = [f"{caminho}: não cita a skill '{s}'"
+                    for caminho, descricao in manifestos.items()
+                    for s in skills if s.lower() not in descricao.lower()]
+          if falhas:
+              print('\n'.join(falhas)); sys.exit(1)
+          print(f"inventário OK: {len(skills)} skills citadas nos 2 manifestos")
+          EOF
+      # A tag e a fonte da verdade da versao (CLAUDE.md, triade de release); o
+      # plugin.json e espelho vigiado — atras da maior tag = bump esquecido (delta-057).
+      - name: Versao do manifesto espelha a tag git
+        run: python3 .github/scripts/versao_manifesto.py
