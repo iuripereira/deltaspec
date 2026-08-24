@@ -1,0 +1,32 @@
+# doc-profile.yaml — decisão registrada de documentação visual deste projeto (ADR-0009)
+#
+# O que é obrigatório é a DECISÃO, não os diagramas. Na fase de spec o agente lê este
+# perfil e gera SOMENTE o que está declarado como `obrigatorio: true`; qualquer artefato
+# fora do perfil exige pergunta explícita ao usuário antes.
+#
+# Template e tabela de ferramentas por categoria: skills/projeto-init/references/templates/doc-profile.yaml
+# Schema exigido pelo gate: C11 do check_cycle.py (delta-026).
+decisao:
+  data: "2026-08-02"
+  justificativa: >-
+    Plugin de skills em Markdown mais gates em Python: sem UI, sem persistência e sem
+    entregável de cliente, então arquitetura, modelo de dados e casos de uso não têm
+    o que diagramar. Os fluxos do ciclo vivem como Mermaid inline no README.md, que é
+    o artefato de fato mantido e renderizado onde as pessoas leem; exigir diagrama por
+    delta seria cerimônia — a maioria muda um check ou uma regra, não um fluxo.
+    Diagrama continua possível sob demanda, com pergunta explícita (regra do ADR-0009).
+
+publico:
+  interno: true    # documentação viva, Mermaid inline no markdown, sob a economia de tokens (RNF1)
+  cliente: false   # sem entregável congelado — este repo não é projeto de cliente
+
+artefatos:
+  arquitetura:  { obrigatorio: false }
+  modelo-dados: { obrigatorio: false }
+  fluxos:       { obrigatorio: false }   # sob demanda; os vigentes estão no README.md
+  casos-de-uso: { obrigatorio: false }
+
+# Motores externos opcionais (contrato: skills/spec-feature/references/adapters.md).
+motores:
+  graphify: false        # repo pequeno e conhecido; o grafo de codebase não paga o custo
+  graphify_backend: ""   # dispensável com graphify desligado (ADR-0022)
