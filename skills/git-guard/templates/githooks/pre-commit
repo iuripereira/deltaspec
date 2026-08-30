@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+# Gate pré-commit do deltaspec — template da git-guard (delta-090). Quatro blocos
+# independentes, cada um se omitindo com aviso quando o que ele precisa não está
+# instalado: o hook nunca impede um commit por estar mal instalado.
+#   1. integridade documental (guarding-doc-integrity) — bloqueia, só quando o commit toca
+#      .md/deps.toml E a raiz tem deps.toml; sem manifesto o bloco se omite (delta-094)
+#   2. segredo no índice (G1) — bloqueia; o CI roda o mesmo código com --diff
+#   3. arquivo acima do limite (G7) — bloqueia
+#   4. commit acima do limiar de PR (G5) — só avisa: hook que bloqueia estilo produz --no-verify
+# Instalação: /deltaspec:git-guard instalar — grava na config local (não versionada):
+#   git config core.hooksPath .githooks
+#   git config deltaspec.plugin-root <raiz do plugin deltaspec>
+# No repositório do próprio framework, .githooks/pre-commit é symlink para este arquivo e a
+# raiz do plugin é a própria árvore — sem config e sem cópia.
+set -u
+
+raiz=$(git config --get deltaspec.plugin-root || true)
+[ -n "$raiz" ] || raiz=$(git rev-parse --show-toplevel)
+staged=$(git diff --cached --name-only --diff-filter=ACMR)
+[ -n "$staged" ] || exit 0
+
+# 1. integridade documental — aceita a chave antiga deltaspec.validator (instalações pré-090)
+validador="$raiz/skills/guarding-doc-integrity/scripts/validate_integrity.py"
+[ -f "$validador" ] || validador=$(git config --get deltaspec.validator || true)
+if printf '%s\n' "$staged" | grep -qE '\.md$|(^|/)deps\.toml$'; then
+  if [ ! -f deps.toml ]; then
+    echo "pre-commit (deltaspec): sem deps.toml na raiz — bloco de integridade omitido (bootstrap: deltaspec:guarding-doc-integrity)" >&2
+  elif [ -n "$validador" ] && [ -f "$validador" ]; then
+    if ! python3 "$validador" .; then
+      echo "pre-commit: integridade documental FALHOU — corrija antes de commitar." >&2
+      echo "pre-commit: bypass consciente (registre o porquê): git commit --no-verify" >&2
+      exit 1
+    fi
+  else
+    echo "pre-commit (deltaspec): validador ausente — bloco de integridade omitido (git-guard instalar)" >&2
+  fi
+fi
+
+# 2. segredo no índice (G1) — o CI roda o mesmo código com --diff, e não conhece --no-verify
+segredos="$raiz/skills/git-guard/scripts/segredos.py"
+if [ -f "$segredos" ]; then
+  if ! python3 "$segredos" --staged; then
+    echo "pre-commit: segredo no índice (G1) — remova antes de commitar; o valor não foi impresso." >&2
+    exit 1
+  fi
+else
+  echo "pre-commit (deltaspec): segredos.py ausente — bloco de segredo omitido (git-guard instalar)" >&2
+fi
+
+# 3. arquivo grande (G7) — espelho de TETO_ARQUIVO_BYTES do audit_workspace.py (deps.toml vigia)
+teto_bytes=1000000
+while IFS= read -r arquivo; do
+  [ -f "$arquivo" ] || continue
+  tamanho=$(wc -c < "$arquivo")
+  if [ "$tamanho" -gt "$teto_bytes" ]; then
+    echo "pre-commit: $arquivo tem $((tamanho / 1000)) kB, acima de $((teto_bytes / 1000)) kB (G7) — LFS ou fora do git." >&2
+    exit 1
+  fi
+done <<< "$staged"
+
+# 4. commit gigante (G5) — espelho de pr-limiar-tamanho (deps.toml vigia); só avisa
+teto_linhas=500
+linhas=$(git diff --cached --numstat | awk '{ soma += $1 + $2 } END { print soma + 0 }')
+if [ "$linhas" -gt "$teto_linhas" ]; then
+  echo "pre-commit: commit com $linhas linhas, acima do limiar de $teto_linhas (G5) — considere fatiar (só aviso)." >&2
+fi
+exit 0
