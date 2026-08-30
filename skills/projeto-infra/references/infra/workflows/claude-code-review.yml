@@ -1,0 +1,19 @@
+# Review assistido por Claude em PRs (camada 3 do D9). Requer o secret CLAUDE_CODE_OAUTH_TOKEN
+# (ou ANTHROPIC_API_KEY — troque o campo abaixo).
+name: claude-review
+on:
+  pull_request:
+    types: [opened, ready_for_review]
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@{{SHA:actions/checkout@v4}} # v4
+      - uses: anthropics/claude-code-action@{{SHA:anthropics/claude-code-action@v1}} # v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: "Revise este PR: conformidade com a spec da delta (specs/), regras do CLAUDE.md e over-engineering. Responda em PT-BR."
