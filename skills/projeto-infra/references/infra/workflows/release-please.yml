@@ -1,0 +1,17 @@
+# release-please — release PR + tag a cada merge na main. A tag git segue como fonte da verdade.
+# Config com seções PT-BR: .release-please-config.json (ver release-please-config.json da skill).
+name: release-please
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: googleapis/release-please-action@{{SHA:googleapis/release-please-action@v4}} # v4
+        with:
+          config-file: .release-please-config.json
+          manifest-file: .release-please-manifest.json
