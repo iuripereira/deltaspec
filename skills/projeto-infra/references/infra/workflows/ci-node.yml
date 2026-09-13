@@ -1,0 +1,25 @@
+# CI Node — lint/test/build com --if-present: adapta-se aos scripts reais do package.json.
+# O nome do job ("ci") é o contexto exigido pelos rulesets — não renomeie sem ajustar o JSON.
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main, develop]
+# Least privilege: o default do repositorio pode ser read/write, e em
+# repositorio publico isso e superficie de graca (delta-066).
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@{{SHA:actions/checkout@v4}} # v4
+      - uses: actions/setup-node@{{SHA:actions/setup-node@v4}} # v4
+        with:
+          node-version: lts/*
+          cache: npm
+      - run: npm ci
+      - run: npm run lint --if-present
+      - run: npm test --if-present
+      - run: npm run build --if-present
