@@ -1,0 +1,15 @@
+{
+  "name": "sdd-protect-release-hotfix",
+  "target": "branch",
+  "enforcement": "active",
+  "bypass_actors": [],
+  "conditions": {
+    "ref_name": {
+      "include": ["refs/heads/release/**", "refs/heads/hotfix/**"],
+      "exclude": []
+    }
+  },
+  "rules": [
+    { "type": "non_fast_forward" }
+  ]
+}
