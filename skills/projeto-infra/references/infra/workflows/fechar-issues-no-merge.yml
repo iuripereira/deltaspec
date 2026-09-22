@@ -1,0 +1,177 @@
+# fechar-issues-no-merge — fecha a issue no merge da PR que a resolve e carimba a versão
+# na release (ADR-0049). Instalado no perfil com `develop` pelo projeto-infra.
+#
+# Por que existe: o GitHub só lê `Closes #N` em merge na branch default (`main`). Com
+# `develop`, a PR de escopo mergeia nela e a issue ficava aberta até a release, ou para
+# sempre quando o vínculo não chegava ao corpo da PR de release.
+#
+# Duas camadas, um job:
+#   - PR mergeada na `develop` (camada 1): fecha as issues que a PR resolve.
+#   - `release/X.Y.Z` ou `hotfix/X.Y.Z` mergeada na `main` (camada 2): para cada PR de escopo
+#     que ela leva (o `(#N)` do squash no subject dos commits) e para ela própria, fecha o que
+#     ainda está aberto e comenta "lançada na vX.Y.Z" nas que a camada 1 fechou.
+# "Resolve" = palavra de fechamento do GitHub seguida de `#N` no corpo da PR, ou DT que a PR
+# tirou de `debts/ativos/` e pôs em `debts/_archive/`: o `Ticket` `#N` da versão ativa e a
+# issue com título `[DT-NNN] ...` (projeção do `debito.py exportar`) ou `DT-NNN — ...`.
+# `quitado` fecha como concluída; `descartado`, como não planejada e sem carimbo. Issue
+# fechada nunca é reaberta: reincidência abre issue nova (references/debito.md da handoff).
+# Leitura que falha vira ::warning:: e o job fecha vermelho no fim, depois de fazer o resto.
+#
+# ESPELHO: a leitura do Ticket repete chave_ticket() de skills/handoff/scripts/debito.py
+# (deltaspec) em shell, porque o CI do consumidor não tem o framework (ADR-0001). Mudou um,
+# mude o outro no mesmo commit.
+#
+# `issues: write` foge do `contents: read` dos demais moldes (delta-066): fechar e comentar é
+# o trabalho do job. PR de fork recebe token só-leitura e o job falha sem fechar nada; o
+# `pull_request_target` foi renunciado na ADR-0049.
+name: fechar-issues-no-merge
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [develop, main]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  fechar-issues:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fechar e carimbar as issues que a PR resolve
+        # Entradas por env:, nunca por expressão dentro do run: — corpo e nome de branch são
+        # dado de terceiro e virariam código (delta-069).
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          BASE: ${{ github.event.pull_request.base.ref }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          SHA: ${{ github.event.pull_request.merge_commit_sha }}
+        run: |
+          set -euo pipefail
+          raw=(-H "Accept: application/vnd.github.raw+json")
+          falhas=0
+          aviso() { echo "::warning::$*"; falhas=$((falhas + 1)); }
+
+          versao=""
+          prs="$PR"
+          if [ "$BASE" = main ]; then
+            case "$HEAD_REF" in
+              release/*|hotfix/*) versao="v${HEAD_REF#*/}" ;;
+              *) echo "PR para a main fora de release/* e hotfix/*: nada a carimbar"; exit 0 ;;
+            esac
+            # ponytail: a API lista no máximo 250 commits por PR; release maior carimba só parte.
+            if assuntos=$(gh api "repos/$GH_REPO/pulls/$PR/commits" --paginate --jq '.[].commit.message | split("\n")[0]' </dev/null); then
+              prs="$(printf '%s\n' "$assuntos" | sed -n 's/.*(#\([0-9][0-9]*\))$/\1/p' | tr '\n' ' ')$PR"
+            else
+              aviso "commits da #$PR ilegíveis: o carimbo cobre só a própria PR"
+            fi
+          fi
+
+          # O que a PR <pr> resolve, uma linha por item:
+          #   issue <n> completed <pr>             palavra de fechamento no corpo
+          #   dt <DT-NNN> <arquivo> <pr> <antes>   DT que saiu de debts/ativos/ e entrou em _archive/
+          #   aviso <texto>                        leitura que falhou
+          # Roda dentro de $(...), onde o bash desliga o -e: falha vira linha "aviso", nunca aborto.
+          leitura() {
+            local pr=$1 corpo arqs merge antes
+            if corpo=$(gh pr view "$pr" --json body --jq '.body // ""' </dev/null); then
+              printf '%s' "$corpo" | grep -oiE '\b(close[sd]?|fix(e[sd])?|resolve[sd]?):?[[:space:]]+#[0-9]+' \
+                | awk -v pr="$pr" '{ sub(/.*#/, ""); print "issue", $0, "completed", pr }'
+            else
+              echo "aviso corpo da #$pr ilegível"
+            fi
+            if ! arqs=$(gh api "repos/$GH_REPO/pulls/$pr/files" --paginate \
+                          --jq '.[] | [.status, .filename, (.previous_filename // "-")] | @tsv' </dev/null); then
+              echo "aviso arquivos da #$pr ilegíveis"
+              return 0
+            fi
+            # Só conta DT que a PR tirou de debts/ativos/: migração que cria arquivo em _archive/
+            # não quita nada.
+            arqs=$(printf '%s\n' "$arqs" | awk -F '\t' '
+              function id(p,  b) { b = p; sub(/.*\//, "", b); return match(b, /^DEBT_DT-[0-9]+/) ? substr(b, 6, RLENGTH - 5) : "" }
+              $1 == "removed" && $2 ~ /^debts\/ativos\// { saiu[id($2)] = 1 }
+              $3 ~ /^debts\/ativos\// { saiu[id($3)] = 1 }
+              ($1 == "added" || $1 == "renamed") && $2 ~ /^debts\/_archive\// && id($2) != "" { entrou[id($2)] = $2 }
+              END { for (d in entrou) if (d in saiu) print d, entrou[d] }')
+            if [ -z "$arqs" ]; then return 0; fi
+            # O Ticket é lido no pai do merge: o registro como estava antes da PR.
+            if merge=$(gh pr view "$pr" --json mergeCommit --jq .mergeCommit.oid </dev/null) \
+               && antes=$(gh api "repos/$GH_REPO/commits/$merge" --jq '.parents[0].sha' </dev/null); then
+              :
+            else
+              echo "aviso merge da #$pr ilegível: o Ticket dos DTs dela não é lido"
+              antes=-
+            fi
+            printf '%s\n' "$arqs" | awk -v pr="$pr" -v antes="$antes" '{ print "dt", $1, $2, pr, antes }'
+            return 0
+          }
+
+          linhas=$(for p in $prs; do leitura "$p"; done)
+          while read -r msg; do aviso "$msg"; done < <(printf '%s\n' "$linhas" | awk '$1 == "aviso" { sub(/^aviso /, ""); print }')
+          issues=$(printf '%s\n' "$linhas" | awk '$1 == "issue" { print $2, $3, $4 }')
+
+          dts=$(printf '%s\n' "$linhas" | awk '$1 == "dt" && !visto[$2]++ { print $2, $3, $4, $5 }')
+          if [ -n "$dts" ]; then
+            # ponytail: uma listagem de até 1000 issues, sem a search API (nem limite de busca nem
+            # atraso de índice); repo com mais issues perde as mais antigas.
+            if ! titulos=$(gh issue list --state all --limit 1000 --json number,title --jq '.[] | "\(.number) \(.title)"' </dev/null); then
+              aviso "lista de issues ilegível: DT achado só pelo Ticket"
+              titulos=""
+            fi
+            while read -r dt arq pr antes; do
+              if ! conteudo=$(gh api "${raw[@]}" "repos/$GH_REPO/contents/$arq?ref=$SHA" </dev/null); then
+                aviso "$arq ilegível"
+                continue
+              fi
+              estado=$(printf '%s\n' "$conteudo" | awk '/^estado:/ && !f { sub(/^estado: */, ""); print; f = 1 }')
+              case "$estado" in
+                quitado) motivo=completed ;;
+                descartado) motivo=not_planned ;;
+                *) aviso "$arq sem estado final (estado: ${estado:-ausente})"; continue ;;
+              esac
+              # ESPELHO de chave_ticket() (debito.py): #N, gh#N, [#N](…/issues/N) e …/issues/N.
+              ticket=""
+              if [ "$antes" != - ] && nome=$(gh api "repos/$GH_REPO/contents/debts/ativos?ref=$antes" \
+                   --jq "[.[].name | select(startswith(\"DEBT_$dt-\"))][0] // empty" </dev/null) && [ -n "$nome" ]; then
+                ticket=$(gh api "${raw[@]}" "repos/$GH_REPO/contents/debts/ativos/$nome?ref=$antes" </dev/null \
+                         | sed -n 's/^-[[:space:]]*\*\*Ticket:\*\*//p' \
+                         | grep -oE '(^|[^[:alnum:]_])(gh)?#[0-9]+|issues/[0-9]+' | grep -oE '[0-9]+$' | head -1) || ticket=""
+              fi
+              if [ -n "$ticket" ]; then issues+=$'\n'"$ticket $motivo $pr"; fi
+              achadas=$(printf '%s\n' "$titulos" | awk -v a="[$dt]" -v b="$dt — " -v m="$motivo" -v pr="$pr" \
+                '{ n = $1; t = substr($0, length(n) + 2); if (index(t, a) == 1 || index(t, b) == 1) print n, m, pr }')
+              if [ -n "$achadas" ]; then issues+=$'\n'"$achadas"; fi
+            done <<< "$dts"
+          fi
+
+          # Uma ação por issue; a origem preferida é a PR de escopo, que vem antes da própria.
+          lista=$(printf '%s\n' "$issues" | awk 'NF == 3' | sort -s -u -k1,1n)
+          if [ -z "$lista" ]; then echo "nenhuma issue resolvida por esta PR"; fi
+          while read -r num motivo origem; do
+            if [ -z "$num" ]; then continue; fi
+            if ! estado=$(gh api "repos/$GH_REPO/issues/$num" </dev/null --jq 'if .pull_request then "pr"
+                elif .state == "closed" and (.state_reason // "completed") != "completed" then "fechada-\(.state_reason)"
+                else .state end'); then
+              aviso "#$num ilegível"
+              continue
+            fi
+            echo "#$num ($motivo, #$origem): $estado"
+            por=""
+            if [ "$origem" != "$PR" ]; then por=" (resolvida pela #$origem)"; fi
+            if [ "$estado" = open ]; then
+              if [ -z "$versao" ] && [ "$motivo" = not_planned ]; then msg="Descartada pela #$origem, mergeada na \`develop\` ($SHA)."
+              elif [ -z "$versao" ]; then msg="Resolvida pela #$origem, mergeada na \`develop\` ($SHA)."
+              elif [ "$motivo" = not_planned ]; then msg="Descartada pela #$origem."
+              else msg="Lançada na $versao pela #$PR$por."
+              fi
+              gh issue close "$num" --reason "${motivo/_/ }" --comment "$msg" </dev/null || aviso "não fechou a #$num"
+            elif [ "$estado" = closed ] && [ -n "$versao" ] && [ "$motivo" = completed ]; then
+              gh issue comment "$num" --body "Lançada na $versao pela #$PR$por." </dev/null || aviso "não comentou a #$num"
+            fi
+          done <<< "$lista"
+          if [ "$falhas" -gt 0 ]; then echo "$falhas aviso(s) acima: o job fecha vermelho para alguém olhar"; exit 1; fi
