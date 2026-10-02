@@ -1,0 +1,50 @@
+name: Claude Code
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  issues:
+    types: [opened, assigned]
+  pull_request_review:
+    types: [submitted]
+
+jobs:
+  claude:
+    if: |
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
+      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
+      (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
+      (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      issues: read
+      id-token: write
+      actions: read # Required for Claude to read CI results on PRs
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 1
+
+      - name: Executa o Claude Code
+        id: claude
+        uses: anthropics/claude-code-action@a874e9ecd7bb36efdad65429c6b35815f5a08f10 # v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+
+          # Opcional: permite que o Claude leia os resultados de CI nos PRs
+          additional_permissions: |
+            actions: read
+
+          # Opcional: prompt customizado para o Claude. Se omitido, o Claude segue as instruções do comentário que o marcou.
+          # prompt: 'Atualize a descrição do pull request com um resumo das mudanças.'
+
+          # Opcional: use claude_args para customizar comportamento e configuração
+          # Ver https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
+          # ou https://code.claude.com/docs/en/cli-reference para as opções disponíveis
+          # claude_args: '--allowed-tools Bash(gh pr *)'
+

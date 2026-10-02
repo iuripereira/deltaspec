@@ -1,0 +1,84 @@
+# release-check — gate da PR para a main (ADR-0045). Só release/* e hotfix/* entram
+# na main, e entram por merge commit; este job é o contexto exigido pelo ruleset
+# main.json ao lado de "ci" — não renomeie o job sem ajustar o JSON.
+#
+# Quem faz o quê: o HUMANO decide a versão e invoca /deltaspec:criar-release X.Y.Z;
+# a SKILL corta a branch, libera o CHANGELOG e abre a PR; este CI só REPETE as
+# checagens que a skill já fez local — é defesa em profundidade para PR aberta à mão
+# e para hotfix. A tag nasce na skill /deltaspec:release, nunca aqui, com o token do
+# humano — e esse token DISPARA eventos (só o GITHUB_TOKEN do runner não dispara).
+# O deploy não reage à tag: a skill o despacha por workflow_dispatch com --ref
+# vX.Y.Z, e é por isso que o workflow de deploy não pode ter on: push: tags.
+#
+# Premissa: a branch default do repo é "main". O ruleset main.json protege
+# refs/heads/main e este gatilho filtra branches: [main] — os dois nomeiam a main
+# literalmente; a projeto-infra confere a default nos pré-requisitos.
+name: release-check
+on:
+  pull_request:
+    branches: [main]
+    # edited cobre a base trocada para a main depois de aberta. A conclusão da sync
+    # na develop não gera evento nesta PR — por isso a mensagem manda re-rodar.
+    types: [opened, synchronize, reopened, edited]
+# Least privilege: o default do repositorio pode ser read/write, e em
+# repositorio publico isso e superficie de graca (delta-066).
+permissions:
+  contents: read
+
+jobs:
+  release-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@{{SHA:actions/checkout@v4}} # v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      - name: Verificar a PR de release
+        # head_ref entra por env:, nunca por expressao dentro do run: — em PR de
+        # fork o nome da branch e dado de terceiro e viraria codigo (delta-069).
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          REPO: ${{ github.repository }}
+        run: |
+          # head_ref é só o nome da branch: um fork com release/X.Y.Z passaria.
+          if [ "$HEAD_REPO" != "$REPO" ]; then
+            echo "::error::release/hotfix só do próprio repositório — head vem de '${HEAD_REPO:-fork apagado}'"; exit 1
+          fi
+          case "$HEAD_REF" in
+            release/*|hotfix/*) ;;
+            *) echo "::error::só release/hotfix entram na main (ADR-0045) — head é '$HEAD_REF'"; exit 1 ;;
+          esac
+          versao="${HEAD_REF#*/}"
+          # O primeiro "## [X.Y.Z]" do CHANGELOG e a versao que a skill liberou; um
+          # cabecalho de versao acima do [Não lançado] cairia aqui com versao errada.
+          lancada=$(grep -m1 -oE '^## \[[0-9]+\.[0-9]+\.[0-9]+\]' CHANGELOG.md | tr -d '#[] ')
+          if [ "$lancada" != "$versao" ]; then
+            echo "::error::CHANGELOG lançou '${lancada:-nada}', mas a branch é $HEAD_REF"; exit 1
+          fi
+          # A versao anterior (primeiro "## [X.Y.Z]" abaixo da lancada) precisa ter tag:
+          # release mergeada fora da skill deixa a tag para tras e e aqui que ela aparece
+          # (ADR-0045). Sem secao anterior = primeira release, passa.
+          anterior=$(grep -oE '^## \[[0-9]+\.[0-9]+\.[0-9]+\]' CHANGELOG.md | sed -n 2p | tr -d '#[] ')
+          if [ -n "$anterior" ] && ! git rev-parse -q --verify "refs/tags/v$anterior" >/dev/null; then
+            echo "::error::versão $anterior lançada sem tag — rode /deltaspec:release"; exit 1
+          fi
+          if git rev-parse -q --verify "refs/tags/v$versao" >/dev/null; then
+            echo "::error::a tag v$versao já existe — a skill release para nela; escolha a próxima versão"; exit 1
+          fi
+          ultima=$(git tag --list 'v[0-9]*' | sort -V | tail -n1)
+          # ultima vazia = primeira release do repo, aceita. ponytail: sort -V não
+          # entende pré-release (v1.0.0-rc.1 ordena acima de v1.0.0); o fluxo não usa
+          # pré-release — quando usar, trocar por comparação SemVer de verdade.
+          if [ -n "$ultima" ] && [ "$(printf '%s\n%s\n' "$ultima" "v$versao" | sort -V | tail -n1)" != "v$versao" ]; then
+            echo "::error::v$versao não é maior que a última tag ($ultima)"; exit 1
+          fi
+          # So release/*: a release corta da develop, entao a main precisa estar toda
+          # dentro dela — senao o merge traria de volta o que um hotfix ja lancou.
+          case "$HEAD_REF" in
+            release/*)
+              if ! git merge-base --is-ancestor origin/main origin/develop; then
+                echo "::error::sync main→develop pendente — a main tem commit que a develop não tem; rode /deltaspec:release (etapa de sync) e depois re-rode este check (a sync não gera evento nesta PR)"; exit 1
+              fi ;;
+          esac
+          echo "release-check: v$versao OK"
