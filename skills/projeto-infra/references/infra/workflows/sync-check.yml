@@ -1,0 +1,85 @@
+# sync-check — sentinela da PR para a develop (ADR-0045). Nao e exigido pelo ruleset:
+# avisa em vermelho, o humano decide. Confere o CHANGELOG por CONJUNTO de bullets,
+# nunca por contagem — a develop ainda carrega no [Não lançado] o que a release acabou
+# de lançar, entao a contagem cai em toda sync correta e empata quando a PR troca um
+# bullet por outro. Duas regras, com X.Y.Z = primeira versao do CHANGELOG da main:
+#   1. todo bullet do [Não lançado] da develop esta, na PR, no [Não lançado] ou na
+#      "## [X.Y.Z]" da main — senao caiu;
+#   2. a "## [X.Y.Z]" da PR nao tem bullet que a da main nao tem — e o bullet nao
+#      lancado que o merge limpo do CHANGELOG empurra para baixo da versao lancada.
+# E marcador de conflito que sobrou no CHANGELOG reprova junto.
+#
+# ESPELHO: a mesma regra vive em Python em conferir_sync() de
+# skills/release/scripts/secao_changelog.py (deltaspec), usado pela skill
+# /deltaspec:release antes de abrir a PR de sync. Aqui e shell/awk porque o CI do
+# consumidor nao tem o framework nem Python (ADR-0045). Bullet = linha "- ", secao do
+# "## [rotulo]" ao proximo "## ", linha de comentario HTML nao conta. Mudou um, mude
+# o outro no mesmo commit.
+#
+# O gate mora na PR porque e ali que o merge da sync e decidido. A PR de sync sai da
+# sessao do humano e dispara os workflows normalmente: so push, tag e PR feitos com o
+# GITHUB_TOKEN deixam de disparar.
+name: sync-check
+on:
+  pull_request:
+    branches: [develop]
+# Least privilege: o default do repositorio pode ser read/write, e em
+# repositorio publico isso e superficie de graca (delta-066).
+permissions:
+  contents: read
+
+jobs:
+  sync-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@{{SHA:actions/checkout@v4}} # v4
+        with:
+          fetch-depth: 0
+      - name: Conferir que nenhum bullet do [Não lançado] caiu
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          d="$RUNNER_TEMP/sync-check"; mkdir -p "$d"
+          # changelog <ref> <arquivo>: CHANGELOG do ref, ou vazio se o ref/arquivo nao existe
+          changelog() { git show "$1:CHANGELOG.md" > "$2" 2>/dev/null || : > "$2"; }
+          # secao <arquivo> <rotulo>: linhas "- " de "## [rotulo]" ate o proximo "## "
+          secao() {
+            awk -v cab="## [$2]" '
+              /<!--/ { c = 1 } c { if (/-->/) c = 0; next }
+              index($0, cab) == 1 { dentro = 1; next }
+              /^## / { dentro = 0 }
+              dentro && /^- /' "$1"
+          }
+          changelog "origin/$BASE_REF" "$d/base.md"
+          changelog HEAD "$d/head.md"
+          changelog origin/main "$d/main.md"
+          v=$(grep -m1 -oE '^## \[[0-9]+\.[0-9]+\.[0-9]+\]' "$d/main.md" | tr -d '#[] ' || true)
+          secao "$d/base.md" "Não lançado" > "$d/antes.txt"
+          secao "$d/head.md" "Não lançado" > "$d/aceitos.txt"
+          : > "$d/lancada-main.txt"; : > "$d/lancada-head.txt"
+          if [ -n "$v" ]; then
+            secao "$d/main.md" "$v" > "$d/lancada-main.txt"
+            secao "$d/head.md" "$v" > "$d/lancada-head.txt"
+            cat "$d/lancada-main.txt" >> "$d/aceitos.txt"
+          fi
+          # grep -f com arquivo vazio nao casa nada: com -v, tudo sobra — e o certo aqui.
+          perdidos=$(grep -vxF -f "$d/aceitos.txt" "$d/antes.txt" || true)
+          estranhos=$(grep -vxF -f "$d/lancada-main.txt" "$d/lancada-head.txt" || true)
+          falhou=0
+          # So <<<<<<< e >>>>>>>: "=======" sozinho tambem e sublinhado setext em Markdown.
+          if grep -nE '^(<<<<<<<|>>>>>>>)( |$)' "$d/head.md"; then
+            echo "::error::marcador de conflito no CHANGELOG da PR (linhas acima)"
+            falhou=1
+          fi
+          if [ -n "$perdidos" ]; then
+            echo "::error::a PR derruba bullets do [Não lançado] da $BASE_REF — não estão no [Não lançado] da PR nem no [${v:-sem versão}] da main:"
+            printf '%s\n' "$perdidos"
+            falhou=1
+          fi
+          if [ -n "$estranhos" ]; then
+            echo "::error::a [$v] da PR tem bullet que a main não lançou — volta ao [Não lançado]:"
+            printf '%s\n' "$estranhos"
+            falhou=1
+          fi
+          [ "$falhou" -eq 0 ] || exit 1
+          echo "sync-check: nenhum bullet do [Não lançado] caiu; [${v:-sem versão}] igual à da main"

@@ -1,0 +1,176 @@
+<!doctype html>
+<!--
+  EXEMPLO E ESQUELETO da página de apresentação do deltaspec (delta-042, ADR-0029).
+  Regra dona dos invariantes: html-autocontido.md — este arquivo é a materialização dela.
+  Cada ponto de substituição está marcado com TROQUE. Copie, troque, apague os comentários.
+-->
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>delta-042 — apresentação como modo</title><!-- TROQUE: delta-NNN — nome -->
+<style>
+  /* Nove tokens canônicos, nenhum a mais. Valores vêm de apresentacao.paleta
+     no doc-profile.yaml; os daqui são o default. TROQUE: cores da marca. */
+  :root {
+    --ink:#22262B; --paper:#F6F8FA; --card:#FFFFFF;
+    --muted:#67706E; --line:#DFE4E8; --acc:#2563EB;
+    --serif: ui-serif, Georgia, "Times New Roman", serif;
+    --sans:  system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono:  ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  /* Escuro entra SÓ pelo toggle — nunca por prefers-color-scheme (invariante 4). */
+  :root[data-theme="dark"] {
+    --ink:#E7EAE9; --paper:#14171A; --card:#1D2226;
+    --muted:#9AA5A2; --line:#333B40; --acc:#60A5FA;
+  }
+
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--paper); color:var(--ink); font-family:var(--sans);
+         line-height:1.6; -webkit-font-smoothing:antialiased; }
+  .sheet { max-width:980px; margin:0 auto; padding:56px 24px 96px; }
+
+  .eyebrow { font-family:var(--mono); font-size:.72rem; letter-spacing:.12em;
+             text-transform:uppercase; color:var(--muted); margin-bottom:10px; }
+  h1 { font-family:var(--serif); font-size:clamp(1.8rem,4vw,2.6rem); line-height:1.15;
+       letter-spacing:-.015em; text-wrap:balance; margin-bottom:14px; }
+  .lede { font-size:1.08rem; color:var(--muted); max-width:62ch; }
+
+  nav { display:flex; flex-wrap:wrap; gap:8px; margin:32px 0 0; }
+  nav a { font-size:.8rem; font-weight:600; text-decoration:none; color:var(--muted);
+          border:1px solid var(--line); background:var(--card);
+          padding:5px 13px; border-radius:999px; }
+  nav a:hover, nav a:focus-visible { color:var(--acc); border-color:var(--acc); }
+
+  section { margin-top:56px; }
+  h2 { font-family:var(--serif); font-size:1.45rem; letter-spacing:-.01em;
+       margin-bottom:.5em; text-wrap:balance; }
+  p + p { margin-top:.9em; }
+  .fig { background:var(--card); border:1px solid var(--line); border-radius:10px;
+         padding:22px 18px 14px; margin:22px 0 10px; overflow-x:auto; }
+  .fig svg { display:block; width:100%; height:auto; min-width:640px; }
+  figcaption { font-size:.85rem; color:var(--muted); margin-top:10px; }
+
+  /* O SVG pinta por CLASSE, nunca por atributo de apresentação: `fill="var(--x)"`
+     não é resolvido por navegador nenhum, e o diagrama sairia sem cor e surdo ao
+     toggle de tema. Regra CSS resolve var() — atributo não. */
+  .box  { fill:var(--card); stroke:var(--line); stroke-width:1.5; }
+  .box.hl { stroke:var(--acc); stroke-width:2.5; }
+  .lbl  { fill:var(--ink); font-family:var(--sans); font-size:17px; font-weight:650; }
+  .lbl.hl { fill:var(--acc); }
+  .sub  { fill:var(--muted); font-family:var(--sans); font-size:12.5px; }
+  .edge { stroke:var(--muted); stroke-width:1.6; }
+  .edge.hl { stroke:var(--acc); stroke-dasharray:4 3; }
+  .tag  { fill:var(--muted); font-family:var(--mono); font-size:11.5px; }
+  .note { fill:var(--acc); font-family:var(--sans); font-size:12.5px; font-weight:650; }
+  .seta { fill:var(--muted); }
+
+  .decisoes { list-style:none; }
+  .decisoes li { border-left:3px solid var(--acc); background:var(--card);
+                 border-radius:0 8px 8px 0; padding:14px 18px; margin:12px 0; }
+  .decisoes b { display:block; margin-bottom:.2em; }
+  .decisoes span { color:var(--muted); font-size:.94rem; }
+
+  footer { margin-top:72px; border-top:1px solid var(--line); padding-top:18px;
+           font-size:.85rem; color:var(--muted); }
+  footer a { color:var(--acc); }
+
+  .toggle { position:fixed; top:14px; right:16px; background:var(--card); color:var(--ink);
+            border:1px solid var(--line); border-radius:999px; padding:5px 14px;
+            font:600 .78rem var(--sans); cursor:pointer; }
+  .toggle:focus-visible { outline:2px solid var(--acc); outline-offset:2px; }
+
+  /* Invariante 5: sai em A4 sem corte horizontal. */
+  @media print {
+    .toggle, nav { display:none !important; }
+    body { background:#fff; color:#000; }
+    .sheet { max-width:none; padding:0 8mm; }
+    section { margin-top:22px; break-inside:avoid; }
+    .fig { border:none; padding:0; overflow:visible; }
+    .fig svg { min-width:0; }
+    a { color:inherit; text-decoration:none; }
+  }
+</style>
+</head>
+<body>
+<button class="toggle" onclick="document.documentElement.dataset.theme=document.documentElement.dataset.theme==='dark'?'light':'dark'">tema</button>
+
+<div class="sheet">
+
+  <header>
+    <p class="eyebrow">delta-042 · 2026-08-10</p><!-- TROQUE: delta-NNN · data do archive -->
+    <h1>Apresentação deixa de ser um tipo de diagrama e vira um modo</h1><!-- TROQUE -->
+    <p class="lede">Qualquer categoria do perfil pode pedir acabamento para a alta gestão, sem abandonar a ferramenta correta dela.</p><!-- TROQUE: 1 frase -->
+  </header>
+
+  <nav><!-- TROQUE: uma âncora por seção existente -->
+    <a href="#contexto">Contexto</a>
+    <a href="#fluxos">Fluxos</a>
+    <a href="#decisoes">Decisões</a>
+  </nav>
+
+  <!-- BLOCO 1: o Contexto da spec, em prosa curta. -->
+  <section id="contexto">
+    <h2>Contexto</h2>
+    <p>Documentação que vai a cliente, gestão ou stakeholder precisa sair bem renderizada. Até aqui, <code>apresentacao</code> era o sétimo <em>tipo de diagrama</em> do perfil do projeto — irmão de arquitetura, modelo de dados e fluxos.</p>
+    <p>Isso tornava impossível pedir “a arquitetura com acabamento”: só dava para pedir “um diagrama da categoria apresentação”, o que forçava escolher entre a ferramenta correta da categoria e o acabamento. Acabamento é um eixo perpendicular à categoria, não um valor dela.</p>
+  </section>
+
+  <!-- BLOCO 2: uma seção por categoria marcada com `apresentacao: true`.
+       O diagrama entra em SVG INLINE (invariante 2) — nunca como <img>. -->
+  <section id="fluxos">
+    <h2>Fluxos</h2>
+    <div class="fig">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 190" role="img"
+           aria-label="Ciclo de vida da delta: proposta segue para aplicada no implement, e de aplicada para arquivada no archive, que é onde a página de apresentação nasce.">
+        <defs>
+          <marker id="seta" viewBox="0 0 10 8" refX="9" refY="4"
+                  markerWidth="9" markerHeight="7" orient="auto-start-reverse">
+            <path class="seta" d="M0,0 L10,4 L0,8 z"/>
+          </marker>
+        </defs>
+
+        <rect class="box" x="10"  y="46" width="230" height="66" rx="9"/>
+        <text class="lbl" x="125" y="79"  text-anchor="middle">proposta</text>
+        <text class="sub" x="125" y="98"  text-anchor="middle">a spec existe, o código não</text>
+
+        <rect class="box" x="325" y="46" width="230" height="66" rx="9"/>
+        <text class="lbl" x="440" y="79"  text-anchor="middle">aplicada</text>
+        <text class="sub" x="440" y="98"  text-anchor="middle">código mergeado, TRUTH ainda não</text>
+
+        <rect class="box hl" x="640" y="46" width="230" height="66" rx="9"/>
+        <text class="lbl hl" x="755" y="79"  text-anchor="middle">arquivada</text>
+        <text class="sub" x="755" y="98"  text-anchor="middle">TRUTH consolidado</text>
+
+        <line class="edge" x1="245" y1="79" x2="318" y2="79" marker-end="url(#seta)"/>
+        <text class="tag"  x="281" y="68" text-anchor="middle">implement</text>
+
+        <line class="edge" x1="560" y1="79" x2="633" y2="79" marker-end="url(#seta)"/>
+        <text class="tag"  x="596" y="68" text-anchor="middle">archive</text>
+
+        <line class="edge hl" x1="755" y1="118" x2="755" y2="146"/>
+        <text class="note"    x="755" y="164" text-anchor="middle">esta página nasce aqui</text>
+      </svg>
+    </div>
+    <figcaption>A página é materializada no archive, quando o conteúdo já estabilizou — spec em rascunho apresentada à gestão é ruído e retrabalho.</figcaption>
+  </section>
+
+  <!-- BLOCO 3: os Rn da spec DESTILADOS — reescritos para quem não lê DADO/QUANDO/ENTÃO. -->
+  <section id="decisoes">
+    <h2>Decisões</h2>
+    <ul class="decisoes">
+      <li><b>Apresentação virou uma marca, não uma categoria</b><span>Cada artefato do perfil ganha <code>apresentacao: true</code>. A ferramenta continua seguindo a categoria; a marca só diz se aquele artefato também sai com acabamento.</span></li>
+      <li><b>O motor padrão não depende de plugin</b><span>O HTML é escrito seguindo a regra canônica do framework. O plugin de terceiro continua disponível para quem o quiser, mas saiu do caminho padrão.</span></li>
+      <li><b>Um arquivo por delta, com âncoras</b><span>Quem lê não navega pasta. A arquitetura avulsa se manda por link direto para a seção, sem um segundo arquivo existir.</span></li>
+      <li><b>O documento assinável não foi tocado</b><span>O entregável congelado continua saindo pelo mesmo pipeline de sempre. Esta camada é apresentação, nunca contrato.</span></li>
+    </ul>
+  </section>
+
+  <footer>
+    <!-- TROQUE: o caminho relativo do TRUTH.md a partir da pasta de saída. -->
+    Fonte da verdade consolidada: <a href="../../../specs/TRUTH.md">specs/TRUTH.md</a> · gerado do fonte versionado do diagrama, que governa em caso de divergência.
+  </footer>
+
+</div>
+</body>
+</html>
