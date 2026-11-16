@@ -1,0 +1,30 @@
+{
+  "description": "Memória de projeto do deltaspec (ADR-0050): injeta o índice e registra o início da sessão no SessionStart; cobra o fato da frente no Stop. Repo sem .claude/memory/ não sente nada.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/skills/memoria/scripts/memoria.py\" injetar \"$CLAUDE_PROJECT_DIR\""
+          },
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/skills/memoria/scripts/parada.py\" --registrar \"$CLAUDE_PROJECT_DIR\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/skills/memoria/scripts/parada.py\" \"$CLAUDE_PROJECT_DIR\""
+          }
+        ]
+      }
+    ]
+  }
+}

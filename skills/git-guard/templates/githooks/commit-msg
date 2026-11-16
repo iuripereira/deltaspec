@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# commit-msg do deltaspec — template da git-guard (delta-090). SÓ AVISA (G6): bloquear
+# estilo no hook é o que produz --no-verify, e --no-verify desliga também o check de
+# segredo. A variante que bloqueia é o padrão de mensagem do ruleset (projeto-infra),
+# imune ao bypass; o job `commits` do CI é a réplica neste repositório.
+# Manter em sincronia com RE_CONVENTIONAL do audit_workspace.py (duplicação deliberada:
+# bash não importa regex de Python).
+set -u
+primeira=$(sed -n '1p' "$1")
+case "$primeira" in
+  Merge*|Revert*|fixup!*|squash!*|"") exit 0 ;;
+esac
+if ! printf '%s' "$primeira" | grep -qE '^(feat|fix|docs|refactor|chore|ci|test|style|perf|build|revert)(\([^)]+\))?!?: .+'; then
+  echo "commit-msg (deltaspec): mensagem fora de Conventional Commits — 'tipo(escopo): descrição' (G6, só aviso; o job commits do CI reprova)" >&2
+fi
+exit 0

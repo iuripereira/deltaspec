@@ -1,0 +1,23 @@
+# CI Python — lint (ruff) + testes (pytest). Ajuste os comandos ao gerenciador real do projeto
+# (pip/uv/poetry). O nome do job ("ci") é o contexto exigido pelos rulesets.
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main, develop]
+# Least privilege: o default do repositorio pode ser read/write, e em
+# repositorio publico isso e superficie de graca (delta-066).
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@{{SHA:actions/checkout@v4}} # v4
+      - uses: actions/setup-python@{{SHA:actions/setup-python@v5}} # v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e ".[dev]" || pip install -r requirements.txt
+      - run: ruff check .
+      - run: pytest

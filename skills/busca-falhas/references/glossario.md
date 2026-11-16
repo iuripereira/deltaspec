@@ -1,0 +1,7 @@
+# Glossário — busca-falhas (rascunho; destino: GLOSSARY.md do deltaspec + references/ da skill)
+
+- **Teste de confirmação (CT)** — caso do `test-plan.md`, derivado de um cenário DADO/QUANDO/ENTÃO da spec, escrito antes ou junto do código. Prova que o requisito foi atendido. Não inventa cenário (R3, delta-015). Técnica: caixa-preta.
+- **Teste de busca de falha** — caso escrito depois do implement, dirigido a código que o mapa de cobertura mostra não exercitado ou a limites que a spec não cita. Existe para encontrar defeito, não para provar conformidade (Myers; Sandler, 2004). Técnica: caixa-branca guiada pela cobertura, oráculo ainda caixa-preta (a spec).
+- **Oráculo** — a fonte que diz o que é o resultado esperado de um teste. No deltaspec, o oráculo é sempre um Rn/RNFn do `TRUTH.md` (ou da delta aplicada). Teste sem Rn que o ampare não tem oráculo: fica `todo` e vira pendência.
+- **Mapa do não exercitado** — relatório de cobertura lido como lista de arquivos/linhas que nenhum teste tocou. É entrada da busca de falha, nunca meta: cobertura alta não prova efetividade (Inozemtseva; Holmes, 2014).
+- **Regra do requisito** — quando um teste fica vermelho, só duas saídas: corrigir o código (defeito → `Tipo: bugfix`, o teste vira o teste de regressão) ou corrigir o teste **citando o Rn/MUDA que mudou**. Sem Rn, o teste não muda: vira `it.todo` + DT-NNN ou pergunta de clarify. Nunca se ajusta oráculo ou dado esperado ao comportamento atual.
